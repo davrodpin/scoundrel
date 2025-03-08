@@ -42,15 +42,10 @@ function gameReducer(state: GameState, action: ExtendedGameAction): GameState {
 
     case 'DRAW_ROOM':
       if (state.dungeon.length < 3) {
-        const allMonsters = [
-          ...state.dungeon.filter(card => card.type === 'MONSTER'),
-          ...state.room.filter(card => card.type === 'MONSTER'),
-          ...state.discardPile.filter(card => card.type === 'MONSTER')
-        ] as Monster[];
-        
+        const monstersInDungeon = state.dungeon.filter(card => card.type === 'MONSTER') as Monster[];
         const score = state.health > 0 
           ? state.health 
-          : -allMonsters.reduce((acc, monster) => acc + getRankValue(monster.rank), 0);
+          : -monstersInDungeon.reduce((acc, monster) => acc + getRankValue(monster.rank), 0);
         return { ...state, gameOver: true, score };
       }
       
@@ -101,14 +96,8 @@ function gameReducer(state: GameState, action: ExtendedGameAction): GameState {
       const isGameOver = newHealth <= 0;
       
       if (isGameOver) {
-        const allMonsters = [
-          ...state.dungeon.filter(card => card.type === 'MONSTER'),
-          ...updatedRoom.filter(card => card.type === 'MONSTER'),
-          ...state.discardPile.filter(card => card.type === 'MONSTER'),
-          monster
-        ] as Monster[];
-        
-        const score = -allMonsters.reduce((acc, m) => acc + getRankValue(m.rank), 0);
+        const monstersInDungeon = state.dungeon.filter(card => card.type === 'MONSTER') as Monster[];
+        const score = -monstersInDungeon.reduce((acc, m) => acc + getRankValue(m.rank), 0);
         return {
           ...state,
           health: newHealth,
@@ -145,14 +134,8 @@ function gameReducer(state: GameState, action: ExtendedGameAction): GameState {
       const isGameOverAfterWeapon = newHealthAfterWeapon <= 0;
 
       if (isGameOverAfterWeapon) {
-        const allMonsters = [
-          ...state.dungeon.filter(card => card.type === 'MONSTER'),
-          ...roomAfterWeapon.filter(card => card.type === 'MONSTER'),
-          ...state.discardPile.filter(card => card.type === 'MONSTER'),
-          action.monster
-        ] as Monster[];
-        
-        const score = -allMonsters.reduce((acc, m) => acc + getRankValue(m.rank), 0);
+        const monstersInDungeon = state.dungeon.filter(card => card.type === 'MONSTER') as Monster[];
+        const score = -monstersInDungeon.reduce((acc, m) => acc + getRankValue(m.rank), 0);
         return {
           ...state,
           health: newHealthAfterWeapon,
