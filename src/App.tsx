@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Button, Grid, Paper, Stack, Tooltip } from '@mui/material';
+import { Container, Typography, Box, Button, Grid, Paper, Tooltip } from '@mui/material';
 import { useGame } from './hooks/useGame';
 import { initializeDeck } from './utils/deck';
 import { Card } from './components/Card';
 import { Monster, Weapon, HealthPotion, GameCard } from './types/cards';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 function DeckPile({ count, label, onClick, topCard }: { count: number; label: string; onClick?: () => void; topCard?: GameCard }) {
   return (
@@ -111,7 +112,7 @@ function App() {
     actions.initializeGame(deck);
   }, []);
 
-  const handleCardClick = (card: GameCard, index: number) => {
+  const handleCardClick = (card: GameCard) => {
     switch (card.type) {
       case 'MONSTER':
         if (state.equippedWeapon) {
@@ -172,8 +173,8 @@ function App() {
         
         {/* Player Status */}
         <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <Typography variant="h5">
-            Health: {state.health}/{state.maxHealth}
+          <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+            <FavoriteIcon sx={{ color: 'error.main' }} /> {state.health}/{state.maxHealth}
           </Typography>
         </Box>
 
@@ -193,7 +194,7 @@ function App() {
             {/* Current Room */}
             <Grid item xs={6}>
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
-                {state.room.map((card, index) => {
+                {state.room.map((card) => {
                   if (card.type === 'MONSTER') {
                     const monster = card as Monster;
                     const cardKey = `${card.suit}-${card.rank}`;
@@ -214,7 +215,7 @@ function App() {
                           >
                             <Card 
                               card={monster} 
-                              onClick={() => handleCardClick(monster, index)}
+                              onClick={() => handleCardClick(monster)}
                               showFist={showFist}
                             />
                           </Box>
@@ -227,7 +228,7 @@ function App() {
                     <Card 
                       key={`${card.suit}-${card.rank}`} 
                       card={card} 
-                      onClick={() => handleCardClick(card, index)} 
+                      onClick={() => handleCardClick(card)} 
                     />
                   );
                 })}
