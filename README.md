@@ -24,6 +24,10 @@ All technologies in this project were selected by the AI agent during the develo
 - Material-UI for components
 - State management with React Hooks
 
+## Play Online
+
+You can play the game online at [https://davrodpin.github.io/scoundrel-ai/](https://davrodpin.github.io/scoundrel-ai/)
+
 ## How to Play
 
 1. Clone the repository
