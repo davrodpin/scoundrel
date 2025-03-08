@@ -380,7 +380,8 @@ function App() {
             <Typography variant="body2" sx={{ mb: 1 }}>
               • Draw 4 cards per room<br />
               • Must handle all cards<br />
-              • Can avoid room once
+              • Can avoid many rooms, but not<br />
+              &nbsp;&nbsp;two in a row
             </Typography>
 
             <Typography variant="subtitle2" sx={{ mt: 2, color: 'primary.main' }}>
