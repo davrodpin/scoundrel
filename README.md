@@ -28,7 +28,7 @@ All technologies in this project were selected by the AI agent during the develo
 
 You can play the game online at [https://davrodpin.github.io/scoundrel-ai/](https://davrodpin.github.io/scoundrel-ai/)
 
-## How to Play
+## How to Play Offline
 
 1. Clone the repository
 2. Install dependencies with `npm install`
