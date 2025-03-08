@@ -127,7 +127,8 @@ function gameReducer(state: GameState, action: ExtendedGameAction): GameState {
       const damage = Math.max(0, action.monster.damage - state.equippedWeapon.damage);
       const updatedWeapon = {
         ...state.equippedWeapon,
-        monstersSlain: [...state.equippedWeapon.monstersSlain, action.monster]
+        monstersSlain: [...state.equippedWeapon.monstersSlain, action.monster],
+        damage: action.monster.damage
       };
       const roomAfterWeapon = state.room.filter(card => card !== action.monster);
       const newHealthAfterWeapon = state.health - damage;
