@@ -24,7 +24,9 @@ const suitColors = {
 
 export function Card({ card, onClick, showFist }: CardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const isRed = card.suit === 'HEARTS' || card.suit === 'DIAMONDS';
+  const isMonster = card.type === 'MONSTER';
+  const isWeapon = card.type === 'WEAPON';
+  const isPotion = card.type === 'HEALTH_POTION';
 
   return (
     <Paper
@@ -86,14 +88,14 @@ export function Card({ card, onClick, showFist }: CardProps) {
         position: 'relative'
       }}>
         <Typography variant="body1" sx={{ mb: 1 }}>
-          {card.type === 'MONSTER' && 'Monster'}
-          {card.type === 'WEAPON' && 'Weapon'}
-          {card.type === 'HEALTH_POTION' && 'Potion'}
+          {isMonster && 'Monster'}
+          {isWeapon && 'Weapon'}
+          {isPotion && 'Potion'}
         </Typography>
         <Typography variant="h5">
-          {card.type === 'MONSTER' && `Damage: ${(card as any).damage}`}
-          {card.type === 'WEAPON' && `Damage: ${(card as any).damage}`}
-          {card.type === 'HEALTH_POTION' && `Heal: ${(card as any).healing}`}
+          {isMonster && `Damage: ${(card as any).damage}`}
+          {isWeapon && `Damage: ${(card as any).damage}`}
+          {isPotion && `Heal: ${(card as any).healing}`}
         </Typography>
       </Box>
 
