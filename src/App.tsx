@@ -73,7 +73,23 @@ function DeckPile({ count, label, onClick, topCard }: { count: number; label: st
               />
             </>
           )}
-          {topCard ? (
+          {count === 0 ? (
+            <Paper
+              sx={{
+                width: 120,
+                height: 180,
+                backgroundColor: 'transparent',
+                position: 'relative',
+                border: '2px dashed #666',
+                borderRadius: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Typography color="#666">Empty</Typography>
+            </Paper>
+          ) : topCard ? (
             <Box sx={{ position: 'relative' }}>
               <Card card={topCard} />
             </Box>
