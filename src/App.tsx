@@ -7,68 +7,96 @@ import { Monster, Weapon, HealthPotion, GameCard } from './types/cards';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
 function DeckPile({ count, label, onClick, topCard }: { count: number; label: string; onClick?: () => void; topCard?: GameCard }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const isClickable = Boolean(onClick);
+
   return (
     <Box sx={{ textAlign: 'center' }}>
-      <Box 
-        sx={{ 
-          position: 'relative', 
-          width: 120, 
-          height: 180, 
-          display: 'inline-block',
-          cursor: onClick ? 'pointer' : 'default'
-        }}
-        onClick={onClick}
+      <Tooltip 
+        title={isClickable ? "Click to reveal a new room" : ""}
+        arrow
+        open={isClickable && isHovered}
       >
-        {count > 0 && (
-          <>
-            {count > 1 && (
-              <>
-                <Paper
-                  sx={{
-                    position: 'absolute',
-                    width: 120,
-                    height: 180,
-                    backgroundColor: '#666',
-                    top: 4,
-                    left: 4,
-                    border: '2px solid #444',
-                    borderRadius: 1,
-                  }}
-                />
-                <Paper
-                  sx={{
-                    position: 'absolute',
-                    width: 120,
-                    height: 180,
-                    backgroundColor: '#666',
-                    top: 2,
-                    left: 2,
-                    border: '2px solid #444',
-                    borderRadius: 1,
-                  }}
-                />
-              </>
-            )}
-            {topCard ? (
-              <Box sx={{ position: 'relative' }}>
-                <Card card={topCard} />
-              </Box>
-            ) : (
+        <Box 
+          sx={{ 
+            position: 'relative', 
+            width: 120, 
+            height: 180, 
+            display: 'inline-block',
+            cursor: isClickable ? 'pointer' : 'default',
+            '&:hover': isClickable ? {
+              transform: 'translateY(-5px)',
+              transition: 'all 0.2s ease-in-out'
+            } : {},
+            animation: isClickable ? 'glow 2s infinite' : 'none',
+            '@keyframes glow': {
+              '0%': {
+                boxShadow: '0 0 5px rgba(255, 215, 0, 0.5)'
+              },
+              '50%': {
+                boxShadow: '0 0 20px rgba(255, 215, 0, 0.8)'
+              },
+              '100%': {
+                boxShadow: '0 0 5px rgba(255, 215, 0, 0.5)'
+              }
+            }
+          }}
+          onClick={onClick}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {count > 1 && (
+            <>
               <Paper
                 sx={{
+                  position: 'absolute',
                   width: 120,
                   height: 180,
                   backgroundColor: '#666',
-                  position: 'relative',
+                  top: 4,
+                  left: 4,
                   border: '2px solid #444',
                   borderRadius: 1,
-                  backgroundImage: 'repeating-linear-gradient(45deg, #555 0, #555 2px, #666 2px, #666 8px)',
                 }}
               />
-            )}
-          </>
-        )}
-      </Box>
+              <Paper
+                sx={{
+                  position: 'absolute',
+                  width: 120,
+                  height: 180,
+                  backgroundColor: '#666',
+                  top: 2,
+                  left: 2,
+                  border: '2px solid #444',
+                  borderRadius: 1,
+                }}
+              />
+            </>
+          )}
+          {topCard ? (
+            <Box sx={{ position: 'relative' }}>
+              <Card card={topCard} />
+            </Box>
+          ) : (
+            <Paper
+              sx={{
+                width: 120,
+                height: 180,
+                backgroundColor: '#666',
+                position: 'relative',
+                border: '2px solid #444',
+                borderRadius: 1,
+                backgroundImage: 'repeating-linear-gradient(45deg, #555 0, #555 2px, #666 2px, #666 8px)',
+                transition: 'all 0.2s ease-in-out',
+                ...(isClickable && isHovered && {
+                  backgroundColor: '#777',
+                  backgroundImage: 'repeating-linear-gradient(45deg, #666 0, #666 2px, #777 2px, #777 8px)',
+                })
+              }}
+            />
+          )}
+        </Box>
+      </Tooltip>
       <Typography variant="h6" sx={{ mt: 1 }}>{label}</Typography>
       <Typography>({count} cards)</Typography>
     </Box>
@@ -106,6 +134,8 @@ function App() {
   const { state, actions } = useGame();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
+  const canDrawRoom = !state.gameOver && (state.room.length === 0 || state.room.length === 1);
+
   useEffect(() => {
     // Initialize the game with a new deck
     const deck = initializeDeck();
@@ -127,25 +157,14 @@ function App() {
         } else {
           actions.fightMonster(card as Monster);
         }
-        
-        // Check if there's only one card left (the one being removed) and draw a new room
-        if (state.room.length === 1 && !state.gameOver) {
-          setTimeout(() => actions.drawRoom(), 100);
-        }
         break;
       
       case 'WEAPON':
         actions.equipWeapon(card as Weapon);
-        if (state.room.length === 1 && !state.gameOver) {
-          setTimeout(() => actions.drawRoom(), 100);
-        }
         break;
       
       case 'HEALTH_POTION':
         actions.useHealthPotion(card as HealthPotion);
-        if (state.room.length === 1 && !state.gameOver) {
-          setTimeout(() => actions.drawRoom(), 100);
-        }
         break;
     }
   };
@@ -187,7 +206,7 @@ function App() {
               <DeckPile 
                 count={state.dungeon.length} 
                 label="Dungeon" 
-                onClick={() => state.gameOver || state.room.length > 1 ? null : actions.drawRoom()}
+                onClick={canDrawRoom ? actions.drawRoom : undefined}
               />
             </Grid>
 
