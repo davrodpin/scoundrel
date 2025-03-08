@@ -8,6 +8,13 @@ Scoundrel is a solitaire card game where you explore a dungeon full of monsters,
 
 To understand all the rules and mechanics of the original game, you can check the [official rules PDF](http://www.stfj.net/art/2011/Scoundrel.pdf).
 
+## Vibe Coding
+
+This project was developed using Vibe coding, a natural and efficient way of programming through voice input and AI assistance. All files in this project were created and edited exclusively through AI assistance, with no manual coding involved. The following tools were used:
+
+- [Cursor](https://www.cursor.com/) - AI-powered code editor that serves as the IDE and AI agent, providing intelligent code completion and natural language processing capabilities
+- [WhisperTyping](https://whispertyping.com/) - Speech-to-text software that enables voice dictation, powered by OpenAI's Whisper model for accurate transcription
+
 ## Technologies Used
 
 All technologies in this project were selected by the AI agent during the development process:
@@ -16,13 +23,6 @@ All technologies in this project were selected by the AI agent during the develo
 - Vite for build and development
 - Material-UI for components
 - State management with React Hooks
-
-## Vibe Coding
-
-This project was developed using Vibe coding, a natural and efficient way of programming through voice input and AI assistance. All files in this project were created and edited exclusively through AI assistance, with no manual coding involved. The following tools were used:
-
-- [Cursor](https://www.cursor.com/) - AI-powered code editor that serves as the IDE and AI agent, providing intelligent code completion and natural language processing capabilities
-- [WhisperTyping](https://whispertyping.com/) - Speech-to-text software that enables voice dictation, powered by OpenAI's Whisper model for accurate transcription
 
 ## How to Play
 
