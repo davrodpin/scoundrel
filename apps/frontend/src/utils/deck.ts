@@ -2,10 +2,10 @@ import { GameCard, Suit, Rank, Monster, Weapon, HealthPotion } from '../types/ca
 
 function getCardValue(rank: Rank): number {
   switch (rank) {
-    case 'ACE': return 14;
-    case 'KING': return 13;
-    case 'QUEEN': return 12;
-    case 'JACK': return 11;
+    case 'A': return 14;
+    case 'K': return 13;
+    case 'Q': return 12;
+    case 'J': return 11;
     default: return parseInt(rank, 10);
   }
 }
@@ -13,7 +13,7 @@ function getCardValue(rank: Rank): number {
 export function initializeDeck(): GameCard[] {
   const deck: GameCard[] = [];
   const suits: Suit[] = ['CLUBS', 'SPADES', 'HEARTS', 'DIAMONDS'];
-  const ranks: Rank[] = ['ACE', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'JACK', 'QUEEN', 'KING'];
+  const ranks: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
   for (const suit of suits) {
     for (const rank of ranks) {
@@ -21,7 +21,7 @@ export function initializeDeck(): GameCard[] {
       
       // Pular cartas vermelhas de face (incluindo Ases)
       if ((suit === 'HEARTS' || suit === 'DIAMONDS') && 
-          (rank === 'JACK' || rank === 'QUEEN' || rank === 'KING' || rank === 'ACE')) {
+          (rank === 'J' || rank === 'Q' || rank === 'K' || rank === 'A')) {
         continue;
       }
 

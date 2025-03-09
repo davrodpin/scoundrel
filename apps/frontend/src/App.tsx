@@ -7,6 +7,8 @@ import { Monster, Weapon, HealthPotion, GameCard } from './types/cards';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import HelpIcon from '@mui/icons-material/Help';
 import CloseIcon from '@mui/icons-material/Close';
+import { Leaderboard } from './components/Leaderboard';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
 function DeckPile({ count, label, onClick, topCard }: { count: number; label: string; onClick?: () => void; topCard?: GameCard }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -148,10 +150,12 @@ function WeaponStack({ weapon, monstersSlain }: { weapon: Weapon; monstersSlain:
   );
 }
 
-function App() {
+export default function App() {
   const { state, actions } = useGame();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [showRules, setShowRules] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [hasPromptedLeaderboard, setHasPromptedLeaderboard] = useState(false);
 
   const canDrawRoom = !state.gameOver && (state.room.length === 0 || state.room.length === 1);
 
@@ -161,12 +165,19 @@ function App() {
     actions.initializeGame(deck);
   }, []);
 
+  useEffect(() => {
+    if (state.gameOver && !hasPromptedLeaderboard) {
+      setShowLeaderboard(true);
+      setHasPromptedLeaderboard(true);
+    }
+  }, [state.gameOver, hasPromptedLeaderboard]);
+
   const handleCardClick = (card: GameCard) => {
     switch (card.type) {
       case 'MONSTER':
         if (state.equippedWeapon) {
           const monster = card as Monster;
-          const canUseWeapon = state.equippedWeapon.damage > monster.damage;
+          const canUseWeapon = state.equippedWeapon.damage >= monster.damage;
           
           if (canUseWeapon) {
             actions.useWeapon(monster);
@@ -193,7 +204,7 @@ function App() {
       return "⚠️ You will fight barehanded and take full damage!";
     }
     
-    const canUseWeapon = state.equippedWeapon.damage > monster.damage;
+    const canUseWeapon = state.equippedWeapon.damage >= monster.damage;
     
     if (!canUseWeapon) {
       return "⚠️ Your weapon is too weak! You will fight barehanded and take full damage!";
@@ -213,32 +224,38 @@ function App() {
             display: 'inline-flex', 
             alignItems: 'center', 
             gap: 1,
-            color: 'text.primary'
+            color: 'text.primary',
+            mb: 2
           }}>
             <FavoriteIcon sx={{ color: 'error.main' }} /> {state.health}/{state.maxHealth}
           </Typography>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mb: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setShowRules(!showRules)}
+              startIcon={<HelpIcon />}
+            >
+              Rules
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => setShowLeaderboard(true)}
+              startIcon={<LeaderboardIcon />}
+            >
+              Leaderboard
+            </Button>
+            {state.gameOver && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => window.location.reload()}
+              >
+                Play Again
+              </Button>
+            )}
+          </Box>
         </Box>
 
-        {/* Rules Toggle Button */}
-        <Box sx={{ 
-          position: 'fixed', 
-          top: 20, 
-          right: 20, 
-          zIndex: 1200 
-        }}>
-          <IconButton 
-            onClick={() => setShowRules(!showRules)}
-            sx={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.2)'
-              }
-            }}
-          >
-            {showRules ? <CloseIcon /> : <HelpIcon />}
-          </IconButton>
-        </Box>
-        
         {/* Game Layout Container */}
         <Grid container spacing={4}>
           {/* Game Area */}
@@ -269,7 +286,7 @@ function App() {
                         const monster = card as Monster;
                         const cardKey = `${card.suit}-${card.rank}`;
                         const showFist = !state.equippedWeapon || (
-                          state.equippedWeapon && state.equippedWeapon.damage <= monster.damage
+                          state.equippedWeapon && state.equippedWeapon.damage < monster.damage
                         );
 
                         return (
@@ -409,7 +426,7 @@ function App() {
           </Paper>
         </Slide>
 
-        {/* Game Over */}
+        {/* Game Over message without the button */}
         {state.gameOver && (
           <Box sx={{ textAlign: 'center', mt: 4 }}>
             <Typography variant="h3" color={state.health > 0 ? 'success.main' : 'error.main'}>
@@ -418,16 +435,15 @@ function App() {
             <Typography variant="h4">
               Final Score: {state.score}
             </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-              onClick={() => window.location.reload()}
-            >
-              Play Again
-            </Button>
           </Box>
         )}
+
+        <Leaderboard
+          open={showLeaderboard}
+          onClose={() => setShowLeaderboard(false)}
+          currentScore={state.score}
+          gameOver={state.gameOver}
+        />
       </Box>
 
       {/* Copyright Footer */}
@@ -455,5 +471,3 @@ function App() {
     </Container>
   );
 }
-
-export default App;

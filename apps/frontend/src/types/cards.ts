@@ -1,5 +1,5 @@
-export type Suit = 'CLUBS' | 'SPADES' | 'HEARTS' | 'DIAMONDS';
-export type Rank = 'ACE' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'JACK' | 'QUEEN' | 'KING';
+export type Suit = 'HEARTS' | 'DIAMONDS' | 'CLUBS' | 'SPADES';
+export type Rank = 'A' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K';
 
 export interface Card {
   suit: Suit;
@@ -7,24 +7,20 @@ export interface Card {
   value: number;
 }
 
-export type CardType = 'MONSTER' | 'WEAPON' | 'HEALTH_POTION';
-
-export interface GameCard extends Card {
-  type: CardType;
-}
-
-export interface Monster extends GameCard {
+export interface Monster extends Card {
   type: 'MONSTER';
   damage: number;
 }
 
-export interface Weapon extends GameCard {
+export interface Weapon extends Card {
   type: 'WEAPON';
   damage: number;
   monstersSlain: Monster[];
 }
 
-export interface HealthPotion extends GameCard {
+export interface HealthPotion extends Card {
   type: 'HEALTH_POTION';
   healing: number;
-} 
+}
+
+export type GameCard = Monster | Weapon | HealthPotion; 
