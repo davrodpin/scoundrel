@@ -1,27 +1,23 @@
 {
-  "name": "scoundrel",
+  "name": "scoundrel-monorepo",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "dev:frontend": "npm run dev -w @scoundrel/frontend",
+    "build:frontend": "npm run build -w @scoundrel/frontend",
+    "lint:frontend": "npm run lint -w @scoundrel/frontend",
+    "preview:frontend": "npm run preview -w @scoundrel/frontend",
+    "deploy:frontend": "npm run deploy -w @scoundrel/frontend",
+    "dev:backend": "npm run dev -w @scoundrel/backend",
+    "build:backend": "npm run build -w @scoundrel/backend",
+    "start:backend": "npm run start -w @scoundrel/backend",
+    "lint:backend": "npm run lint -w @scoundrel/backend"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "gh-pages": "^6.3.0",
-    "typescript": "~5.7.2",
-    "vite": "^6.2.0"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@fontsource/roboto": "^5.2.5",
-    "@mui/icons-material": "^6.4.7",
-    "@mui/material": "^6.4.7"
+    "typescript": "~5.3.3"
   }
 }
