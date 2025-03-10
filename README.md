@@ -2,6 +2,12 @@
 
 This project is a digital implementation of the card game Scoundrel, originally created by Zach Gage and Kurt Bieg. The implementation was done entirely using [Vibe coding](https://en.wikipedia.org/wiki/Vibe_coding), an AI-powered programming practice where developers can describe their intent in natural language and let AI tools generate the implementation.
 
+## 🎮 Play Now!
+
+**[Click here to play Scoundrel online](https://davrodpin.github.io/scoundrel/)**
+
+No installation required - just open the link and start playing!
+
 ## About the Game
 
 Scoundrel is a solitaire card game where you explore a dungeon full of monsters, collecting weapons and potions to survive. The goal is to defeat monsters and survive as long as possible.
@@ -35,10 +41,6 @@ Backend:
 Deployment:
 - Frontend hosted on GitHub Pages
 - Backend hosted on Render.com
-
-## Play Online
-
-You can play the game online at [https://davrodpin.github.io/scoundrel/](https://davrodpin.github.io/scoundrel/)
 
 ## How to Play Offline
 
