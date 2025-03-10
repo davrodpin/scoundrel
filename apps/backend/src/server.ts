@@ -10,13 +10,22 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "https://davrodpin.github.io"
+    ],
     methods: ["GET", "POST"]
   }
 });
 
 app.use(cors());
 app.use(express.json());
+
+// Health check endpoint for Render
+app.get('/health', (_, res) => {
+  res.status(200).json({ status: 'healthy' });
+});
 
 const gameService = new GameService();
 

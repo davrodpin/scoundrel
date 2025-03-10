@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: scoundrel-backend
+    env: node
+    region: oregon
+    buildCommand: cd apps/backend && npm install && npm run build
+    startCommand: cd apps/backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+    healthCheckPath: /health 
