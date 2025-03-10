@@ -17,7 +17,7 @@ import {
   IconButton
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import axios from 'axios';
+import { useGame } from '../hooks/useGame';
 
 interface LeaderboardEntry {
   id: string;
@@ -33,19 +33,17 @@ interface LeaderboardProps {
   gameOver?: boolean;
 }
 
-const API_URL = 'http://localhost:3000';
-
 export function Leaderboard({ open, onClose, currentScore, gameOver }: LeaderboardProps) {
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const { actions, leaderboardEntries } = useGame();
   const [playerName, setPlayerName] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (open) {
-      fetchLeaderboard();
+      actions.fetchLeaderboard();
     }
-  }, [open]);
+  }, [open, actions]);
 
   useEffect(() => {
     if (!open) {
@@ -64,33 +62,19 @@ export function Leaderboard({ open, onClose, currentScore, gameOver }: Leaderboa
     }
   }, [gameOver]);
 
-  const fetchLeaderboard = async () => {
-    try {
-      const response = await axios.get<LeaderboardEntry[]>(`${API_URL}/leaderboard`);
-      setEntries(response.data);
-    } catch (err) {
-      setError('Failed to load leaderboard');
-    }
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!playerName.trim()) {
       setError('Please enter your name');
       return;
     }
 
-    try {
-      await axios.post(`${API_URL}/leaderboard`, {
-        playerName: playerName.trim(),
-        score: currentScore
-      });
-      await fetchLeaderboard();
-      setSubmitted(true);
-      setPlayerName('');
-      setError('');
-    } catch (err) {
-      setError('Failed to submit score');
-    }
+    actions.submitScore({
+      playerName: playerName.trim(),
+      score: currentScore
+    });
+    setSubmitted(true);
+    setPlayerName('');
+    setError('');
   };
 
   return (
@@ -102,7 +86,7 @@ export function Leaderboard({ open, onClose, currentScore, gameOver }: Leaderboa
       sx={{ '& .MuiDialog-paper': { minHeight: '400px' } }}
     >
       <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">
+        <Typography variant="h6" component="span">
           {gameOver && !submitted ? 'Game Over - Submit Your Score' : 'Leaderboard'}
         </Typography>
         <IconButton
@@ -165,7 +149,7 @@ export function Leaderboard({ open, onClose, currentScore, gameOver }: Leaderboa
               </TableRow>
             </TableHead>
             <TableBody>
-              {entries.map((entry, index) => (
+              {leaderboardEntries.map((entry, index) => (
                 <TableRow key={entry.id}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{entry.playerName}</TableCell>
@@ -175,7 +159,7 @@ export function Leaderboard({ open, onClose, currentScore, gameOver }: Leaderboa
                   </TableCell>
                 </TableRow>
               ))}
-              {entries.length === 0 && (
+              {leaderboardEntries.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} align="center">
                     No entries yet

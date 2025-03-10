@@ -1,6 +1,8 @@
-import { useReducer } from 'react';
-import { GameState, GameAction } from '../types/game';
-import { GameCard, Monster, Weapon, HealthPotion } from '../types/cards';
+import { useState, useEffect, useCallback } from 'react';
+import io, { Socket } from 'socket.io-client';
+import type { GameState, GameAction, GameSession } from '../types/game';
+import type { Monster, Weapon, HealthPotion, GameCard } from '../types/cards';
+import { gameReducer } from '../reducers/gameReducer';
 
 function getRankValue(rank: string): number {
   const rankMap: { [key: string]: number } = {
@@ -28,210 +30,134 @@ const initialState: GameState = {
 
 type ExtendedGameAction = GameAction | { type: 'INITIALIZE_GAME'; deck: GameCard[] };
 
-function gameReducer(state: GameState, action: ExtendedGameAction): GameState {
-  if (state.gameOver && action.type !== 'INITIALIZE_GAME') {
-    return state;
-  }
-
-  switch (action.type) {
-    case 'INITIALIZE_GAME':
-      return {
-        ...initialState,
-        dungeon: action.deck
-      };
-
-    case 'DRAW_ROOM':
-      if (state.dungeon.length < 3) {
-        const monstersInDungeon = state.dungeon.filter(card => card.type === 'MONSTER') as Monster[];
-        const score = state.health > 0 
-          ? state.health 
-          : -monstersInDungeon.reduce((acc, monster) => acc + getRankValue(monster.rank), 0);
-        return { ...state, gameOver: true, score };
-      }
-      
-      // If there's one card in the room, keep it and add three new cards
-      if (state.room.length === 1) {
-        const newCards = state.dungeon.slice(0, 3);
-        const dungeon = state.dungeon.slice(3);
-        return { 
-          ...state, 
-          room: [...state.room, ...newCards], 
-          dungeon,
-          canAvoidRoom: !state.lastActionWasAvoid,
-          originalRoomSize: 4,
-          remainingAvoids: 1,
-          lastActionWasAvoid: false
-        };
-      }
-      
-      // Otherwise, draw a fresh room of 4 cards
-      const room = state.dungeon.slice(0, 4);
-      const dungeon = state.dungeon.slice(4);
-      return { 
-        ...state, 
-        room, 
-        dungeon, 
-        canAvoidRoom: !state.lastActionWasAvoid,
-        originalRoomSize: 4,
-        remainingAvoids: 1,
-        lastActionWasAvoid: false
-      };
-
-    case 'AVOID_ROOM':
-      if (!state.canAvoidRoom || state.lastActionWasAvoid) return state;
-      const updatedDungeon = [...state.dungeon, ...state.room];
-      return { 
-        ...state, 
-        room: [], 
-        dungeon: updatedDungeon,
-        originalRoomSize: 0,
-        remainingAvoids: 0,
-        lastActionWasAvoid: true
-      };
-
-    case 'FIGHT_MONSTER':
-      const { monster } = action;
-      const newHealth = state.health - monster.damage;
-      const updatedRoom = state.room.filter(card => card !== monster);
-      const isGameOver = newHealth <= 0;
-      
-      if (isGameOver) {
-        const monstersInDungeon = state.dungeon.filter(card => card.type === 'MONSTER') as Monster[];
-        const score = -monstersInDungeon.reduce((acc, m) => acc + getRankValue(m.rank), 0);
-        return {
-          ...state,
-          health: newHealth,
-          room: updatedRoom,
-          discardPile: [...state.discardPile, monster],
-          gameOver: true,
-          score,
-          canAvoidRoom: false,
-          remainingAvoids: 0,
-          lastActionWasAvoid: false
-        };
-      }
-
-      return {
-        ...state,
-        health: newHealth,
-        room: updatedRoom,
-        discardPile: [...state.discardPile, monster],
-        gameOver: false,
-        canAvoidRoom: updatedRoom.length === state.originalRoomSize,
-        remainingAvoids: 0,
-        lastActionWasAvoid: false
-      };
-
-    case 'USE_WEAPON':
-      if (!state.equippedWeapon) return state;
-      const damage = Math.max(0, action.monster.damage - state.equippedWeapon.damage);
-      const updatedWeapon = {
-        ...state.equippedWeapon,
-        monstersSlain: [...state.equippedWeapon.monstersSlain, action.monster],
-        damage: action.monster.damage
-      };
-      const roomAfterWeapon = state.room.filter(card => card !== action.monster);
-      const newHealthAfterWeapon = state.health - damage;
-      const isGameOverAfterWeapon = newHealthAfterWeapon <= 0;
-
-      if (isGameOverAfterWeapon) {
-        const monstersInDungeon = state.dungeon.filter(card => card.type === 'MONSTER') as Monster[];
-        const score = -monstersInDungeon.reduce((acc, m) => acc + getRankValue(m.rank), 0);
-        return {
-          ...state,
-          health: newHealthAfterWeapon,
-          equippedWeapon: updatedWeapon,
-          room: roomAfterWeapon,
-          gameOver: true,
-          score,
-          canAvoidRoom: false,
-          remainingAvoids: 0,
-          lastActionWasAvoid: false
-        };
-      }
-
-      return {
-        ...state,
-        health: newHealthAfterWeapon,
-        equippedWeapon: updatedWeapon,
-        room: roomAfterWeapon,
-        gameOver: false,
-        canAvoidRoom: roomAfterWeapon.length === state.originalRoomSize,
-        remainingAvoids: 0,
-        lastActionWasAvoid: false
-      };
-
-    case 'USE_HEALTH_POTION':
-      const potion = state.room.find(card => 
-        card.type === 'HEALTH_POTION' && (card as HealthPotion).healing === action.healing
-      );
-      if (!potion) return state;
-      
-      const newHealthWithPotion = Math.min(
-        state.maxHealth,
-        state.health + action.healing
-      );
-      const roomAfterPotion = state.room.filter(card => card !== potion);
-      return {
-        ...state,
-        health: newHealthWithPotion,
-        room: roomAfterPotion,
-        discardPile: [...state.discardPile, potion],
-        canAvoidRoom: roomAfterPotion.length === state.originalRoomSize,
-        remainingAvoids: 0,
-        lastActionWasAvoid: false
-      };
-
-    case 'EQUIP_WEAPON':
-      const oldWeapon = state.equippedWeapon;
-      const roomAfterEquip = state.room.filter(card => card !== action.weapon);
-      if (oldWeapon) {
-        return {
-          ...state,
-          equippedWeapon: action.weapon,
-          discardPile: [...state.discardPile, oldWeapon, ...oldWeapon.monstersSlain],
-          room: roomAfterEquip,
-          canAvoidRoom: roomAfterEquip.length === state.originalRoomSize,
-          remainingAvoids: 0,
-          lastActionWasAvoid: false
-        };
-      }
-      return {
-        ...state,
-        equippedWeapon: action.weapon,
-        room: roomAfterEquip,
-        canAvoidRoom: roomAfterEquip.length === state.originalRoomSize,
-        remainingAvoids: 0,
-        lastActionWasAvoid: false
-      };
-
-    default:
-      return state;
-  }
+interface LeaderboardEntry {
+  id: string;
+  playerName: string;
+  score: number;
+  timestamp: string;
 }
 
 export function useGame() {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [socket, setSocket] = useState<typeof Socket | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [state, setState] = useState<GameState | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
 
-  const initializeGame = (deck: GameCard[]) => dispatch({ type: 'INITIALIZE_GAME', deck });
-  const drawRoom = () => dispatch({ type: 'DRAW_ROOM' });
-  const avoidRoom = () => dispatch({ type: 'AVOID_ROOM' });
-  const fightMonster = (monster: Monster) => dispatch({ type: 'FIGHT_MONSTER', monster });
-  const useWeapon = (monster: Monster) => dispatch({ type: 'USE_WEAPON', monster });
-  const useHealthPotion = (potion: HealthPotion) => 
-    dispatch({ type: 'USE_HEALTH_POTION', healing: potion.healing });
-  const equipWeapon = (weapon: Weapon) => dispatch({ type: 'EQUIP_WEAPON', weapon });
+  useEffect(() => {
+    console.log('Initializing Socket.IO connection...');
+    const newSocket = io('http://localhost:3001', {
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
+    });
+    
+    newSocket.on('connect', () => {
+      console.log('Connected to Socket.IO server with ID:', newSocket.id);
+      setIsConnected(true);
+      setError(null);
+    });
+
+    newSocket.on('connect_error', (err: Error) => {
+      console.error('Socket.IO connection error:', err);
+      setIsConnected(false);
+      setError(`Failed to connect to game server: ${err.message}`);
+    });
+
+    newSocket.on('disconnect', (reason: string) => {
+      console.log('Disconnected from Socket.IO server:', reason);
+      setIsConnected(false);
+    });
+
+    newSocket.on('leaderboard_updated', (entries: LeaderboardEntry[]) => {
+      setLeaderboardEntries(entries);
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      console.log('Cleaning up Socket.IO connection...');
+      newSocket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('game_created', (session: GameSession) => {
+      console.log('Game created with session:', session);
+      setSessionId(session.id);
+      setState(session.state);
+    });
+
+    socket.on('game_state_updated', (newState: GameState) => {
+      console.log('Game state updated:', newState);
+      setState(newState);
+    });
+
+    socket.on('error', (err: { message: string }) => {
+      console.error('Game error:', err.message);
+      setError(err.message);
+    });
+
+    return () => {
+      socket.off('game_created');
+      socket.off('game_state_updated');
+      socket.off('error');
+    };
+  }, [socket]);
+
+  const createGame = useCallback(() => {
+    if (!isConnected || !socket) {
+      console.error('Cannot create game: socket is not connected');
+      return;
+    }
+    console.log('Creating new game...');
+    socket.emit('create_game');
+  }, [socket, isConnected]);
+
+  const dispatchAction = useCallback((action: GameAction) => {
+    if (!isConnected || !socket || !sessionId) {
+      console.error('Cannot dispatch action: socket is not connected or sessionId is missing');
+      return;
+    }
+    console.log('Dispatching action:', action);
+    socket.emit('game_action', { sessionId, action });
+  }, [socket, sessionId, isConnected]);
+
+  const fetchLeaderboard = useCallback(() => {
+    if (!isConnected || !socket) {
+      console.error('Cannot fetch leaderboard: socket is not connected');
+      return;
+    }
+    socket.emit('fetch_leaderboard');
+  }, [socket, isConnected]);
+
+  const submitScore = useCallback((data: { playerName: string; score: number }) => {
+    if (!isConnected || !socket) {
+      console.error('Cannot submit score: socket is not connected');
+      return;
+    }
+    socket.emit('submit_score', data);
+  }, [socket, isConnected]);
 
   return {
     state,
+    error,
+    isConnected,
+    leaderboardEntries,
     actions: {
-      initializeGame,
-      drawRoom,
-      avoidRoom,
-      fightMonster,
-      useWeapon,
-      useHealthPotion,
-      equipWeapon
+      createGame,
+      drawRoom: () => dispatchAction({ type: 'DRAW_ROOM' }),
+      avoidRoom: () => dispatchAction({ type: 'AVOID_ROOM' }),
+      fightMonster: (monster: Monster) => dispatchAction({ type: 'FIGHT_MONSTER', monster }),
+      useWeapon: (monster: Monster) => dispatchAction({ type: 'USE_WEAPON', monster }),
+      useHealthPotion: (potion: HealthPotion) => 
+        dispatchAction({ type: 'USE_HEALTH_POTION', healing: potion.healing }),
+      equipWeapon: (weapon: Weapon) => dispatchAction({ type: 'EQUIP_WEAPON', weapon }),
+      fetchLeaderboard,
+      submitScore
     }
   };
 } 
