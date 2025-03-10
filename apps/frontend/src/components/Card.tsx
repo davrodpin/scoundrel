@@ -8,13 +8,6 @@ interface CardProps {
   showFist?: boolean;
 }
 
-const suitSymbols = {
-  HEARTS: '♥',
-  DIAMONDS: '♦',
-  CLUBS: '♣',
-  SPADES: '♠'
-} as const;
-
 // Add reverse mapping from symbols to suit names
 const symbolToSuit: Record<string, Suit> = {
   '♥': 'HEARTS',

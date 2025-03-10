@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Button, Grid, Paper, Tooltip, Slide, IconButton, CircularProgress } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Box, Button, Container, Paper, Typography, Tooltip, Grid, CircularProgress, Slide } from '@mui/material';
 import { useGame } from './hooks/useGame';
-import { initializeDeck } from './utils/deck';
+import type { GameCard, Monster, Weapon, HealthPotion } from './types/cards';
 import { Card } from './components/Card';
-import { Monster, Weapon, HealthPotion, GameCard } from './types/cards';
+import { Leaderboard } from './components/Leaderboard';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import HelpIcon from '@mui/icons-material/Help';
-import CloseIcon from '@mui/icons-material/Close';
-import { Leaderboard } from './components/Leaderboard';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
 function DeckPile({ count, label, onClick, topCard }: { count: number; label: string; onClick?: () => void; topCard?: GameCard }) {

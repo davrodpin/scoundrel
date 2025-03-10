@@ -1,12 +1,5 @@
-import { GameState, GameAction } from '../types/game';
-import { Monster, GameCard, HealthPotion, Suit } from '../types/cards';
-
-const suitSymbols = {
-  HEARTS: '♥',
-  DIAMONDS: '♦',
-  CLUBS: '♣',
-  SPADES: '♠'
-} as const;
+import type { GameState, GameAction } from '../types/game';
+import type { Monster, GameCard, HealthPotion, Suit } from '../types/cards';
 
 const symbolToSuit: Record<string, Suit> = {
   '♥': 'HEARTS',

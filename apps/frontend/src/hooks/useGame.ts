@@ -1,34 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import io, { Socket } from 'socket.io-client';
 import type { GameState, GameAction, GameSession } from '../types/game';
-import type { Monster, Weapon, HealthPotion, GameCard } from '../types/cards';
-import { gameReducer } from '../reducers/gameReducer';
-
-function getRankValue(rank: string): number {
-  const rankMap: { [key: string]: number } = {
-    'A': 14, 'K': 13, 'Q': 12, 'J': 11,
-    '10': 10, '9': 9, '8': 8, '7': 7,
-    '6': 6, '5': 5, '4': 4, '3': 3, '2': 2
-  };
-  return rankMap[rank] || 0;
-}
-
-const initialState: GameState = {
-  health: 20,
-  maxHealth: 20,
-  dungeon: [],
-  room: [],
-  discardPile: [],
-  equippedWeapon: null,
-  canAvoidRoom: true,
-  gameOver: false,
-  score: 0,
-  originalRoomSize: 0,
-  remainingAvoids: 1,
-  lastActionWasAvoid: false
-};
-
-type ExtendedGameAction = GameAction | { type: 'INITIALIZE_GAME'; deck: GameCard[] };
+import type { Monster, Weapon, HealthPotion } from '../types/cards';
 
 interface LeaderboardEntry {
   id: string;

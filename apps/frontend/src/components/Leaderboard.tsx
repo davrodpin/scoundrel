@@ -19,13 +19,6 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useGame } from '../hooks/useGame';
 
-interface LeaderboardEntry {
-  id: string;
-  playerName: string;
-  score: number;
-  timestamp: string;
-}
-
 interface LeaderboardProps {
   open: boolean;
   onClose: () => void;
