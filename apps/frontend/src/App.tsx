@@ -517,7 +517,7 @@ export default function App() {
             </Typography>
             <Typography variant="body2" sx={{ mb: 1 }}>
               • Draw 4 cards per room<br />
-              • Must handle all cards<br />
+              • Handle 3-4 cards before revealing a new room<br />
               • Can avoid many rooms, but not<br />
               &nbsp;&nbsp;two in a row
             </Typography>
