@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Button, Grid, Paper, Tooltip, Slide, IconButton } from '@mui/material';
+import { Container, Typography, Box, Button, Grid, Paper, Tooltip, Slide, IconButton, CircularProgress } from '@mui/material';
 import { useGame } from './hooks/useGame';
 import { initializeDeck } from './utils/deck';
 import { Card } from './components/Card';
@@ -151,28 +151,31 @@ function WeaponStack({ weapon, monstersSlain }: { weapon: Weapon; monstersSlain:
 }
 
 export default function App() {
-  const { state, actions } = useGame();
+  const { state, error, isConnected, actions } = useGame();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [showRules, setShowRules] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [hasPromptedLeaderboard, setHasPromptedLeaderboard] = useState(false);
 
-  const canDrawRoom = !state.gameOver && (state.room.length === 0 || state.room.length === 1);
+  const canDrawRoom = state && !state.gameOver && (state.room.length === 0 || state.room.length === 1);
 
   useEffect(() => {
-    // Initialize the game with a new deck
-    const deck = initializeDeck();
-    actions.initializeGame(deck);
-  }, []);
+    if (isConnected && !state) {
+      console.log('Connection established, creating new game...');
+      actions.createGame();
+    }
+  }, [isConnected, state, actions]);
 
   useEffect(() => {
-    if (state.gameOver && !hasPromptedLeaderboard) {
+    if (state?.gameOver && !hasPromptedLeaderboard) {
       setShowLeaderboard(true);
       setHasPromptedLeaderboard(true);
     }
-  }, [state.gameOver, hasPromptedLeaderboard]);
+  }, [state?.gameOver, hasPromptedLeaderboard]);
 
   const handleCardClick = (card: GameCard) => {
+    if (!state) return;
+
     switch (card.type) {
       case 'MONSTER':
         if (state.equippedWeapon) {
@@ -200,7 +203,7 @@ export default function App() {
   };
 
   const getMonsterTooltip = (monster: Monster) => {
-    if (!state.equippedWeapon) {
+    if (!state?.equippedWeapon) {
       return "⚠️ You will fight barehanded and take full damage!";
     }
     
@@ -212,6 +215,47 @@ export default function App() {
     
     return "";
   };
+
+  if (!isConnected || error) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        gap: 2
+      }}>
+        <CircularProgress />
+        {error && (
+          <Typography color="error" variant="body1">
+            {error}
+          </Typography>
+        )}
+        <Typography variant="body2" color="text.secondary">
+          {isConnected ? 'Connected, waiting for game...' : 'Connecting to server...'}
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!state) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        gap: 2
+      }}>
+        <CircularProgress />
+        <Typography variant="body2" color="text.secondary">
+          Initializing game...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Container maxWidth="lg">

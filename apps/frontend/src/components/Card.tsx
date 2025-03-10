@@ -1,5 +1,5 @@
 import { Paper, Typography, Box } from '@mui/material';
-import { GameCard } from '../types/cards';
+import { GameCard, Suit } from '../types/cards';
 import { useState } from 'react';
 
 interface CardProps {
@@ -13,20 +13,41 @@ const suitSymbols = {
   DIAMONDS: '♦',
   CLUBS: '♣',
   SPADES: '♠'
+} as const;
+
+// Add reverse mapping from symbols to suit names
+const symbolToSuit: Record<string, Suit> = {
+  '♥': 'HEARTS',
+  '♦': 'DIAMONDS',
+  '♣': 'CLUBS',
+  '♠': 'SPADES'
 };
 
+// Make colors more vivid for better contrast
 const suitColors = {
-  HEARTS: '#ff0000',
-  DIAMONDS: '#ff0000',
+  HEARTS: '#e31b23',
+  DIAMONDS: '#e31b23',
   CLUBS: '#000000',
   SPADES: '#000000'
-};
+} as const;
 
 export function Card({ card, onClick, showFist }: CardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const isMonster = card.type === 'MONSTER';
-  const isWeapon = card.type === 'WEAPON';
-  const isPotion = card.type === 'HEALTH_POTION';
+
+  // Get the proper suit name and color
+  const suitName = typeof card.suit === 'string' ? (symbolToSuit[card.suit] || card.suit) : card.suit;
+  const color = suitColors[suitName as keyof typeof suitColors];
+
+  // Debug log only in development mode
+  if (import.meta.env.DEV) {
+    console.log('Card render:', {
+      suit: card.suit,
+      suitName,
+      color,
+      rank: card.rank,
+      type: card.type
+    });
+  }
 
   return (
     <Paper
@@ -34,24 +55,15 @@ export function Card({ card, onClick, showFist }: CardProps) {
       sx={{
         width: 120,
         height: 180,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: 1,
-        cursor: onClick ? 'pointer' : 'default',
         position: 'relative',
+        cursor: onClick ? 'pointer' : 'default',
         backgroundColor: '#fff',
         border: (showFist && isHovered) ? '2px solid #ff0000' : '1px solid rgba(0, 0, 0, 0.12)',
         animation: (showFist && isHovered) ? 'pulse 1s infinite' : 'none',
         '@keyframes pulse': {
-          '0%': {
-            borderColor: '#ff0000'
-          },
-          '50%': {
-            borderColor: '#ff000080'
-          },
-          '100%': {
-            borderColor: '#ff0000'
-          }
+          '0%': { borderColor: '#ff0000' },
+          '50%': { borderColor: '#ff000080' },
+          '100%': { borderColor: '#ff0000' }
         },
         '&:hover': onClick ? {
           transform: 'translateY(-5px)',
@@ -62,57 +74,59 @@ export function Card({ card, onClick, showFist }: CardProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Rank and Suit in Top Corner */}
-      <Box sx={{ 
-        color: suitColors[card.suit],
-        display: 'flex',
-        alignItems: 'center',
-        gap: 0.5
-      }}>
-        <Typography variant="h6" sx={{ lineHeight: 1 }}>
+      {/* Top Left Corner */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 8,
+          left: 8,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          color: color || '#000000'
+        }}
+      >
+        <Typography sx={{ fontSize: '24px', fontWeight: 'bold', lineHeight: 1 }}>
           {card.rank}
         </Typography>
-        <Typography variant="h6" sx={{ lineHeight: 1 }}>
-          {suitSymbols[card.suit]}
+        <Typography sx={{ fontSize: '24px', lineHeight: 1, ml: 0.5 }}>
+          {card.suit}
         </Typography>
       </Box>
 
-      {/* Card Type and Value */}
-      <Box sx={{ 
-        flex: 1, 
-        display: 'flex', 
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center',
-        position: 'relative'
-      }}>
-        <Typography variant="body1" sx={{ mb: 1 }}>
-          {isMonster && 'Monster'}
-          {isWeapon && 'Weapon'}
-          {isPotion && 'Potion'}
-        </Typography>
-        <Typography variant="h5">
-          {isMonster && `Damage: ${(card as any).damage}`}
-          {isWeapon && `Damage: ${(card as any).damage}`}
-          {isPotion && `Heal: ${(card as any).healing}`}
+      {/* Center Suit */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          color: color || '#000000'
+        }}
+      >
+        <Typography sx={{ fontSize: '48px', lineHeight: 1 }}>
+          {card.suit}
         </Typography>
       </Box>
 
-      {/* Rank and Suit in Bottom Corner (inverted) */}
-      <Box sx={{ 
-        color: suitColors[card.suit],
-        transform: 'rotate(180deg)',
-        alignSelf: 'flex-end',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 0.5
-      }}>
-        <Typography variant="h6" sx={{ lineHeight: 1 }}>
+      {/* Bottom Right Corner */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 8,
+          right: 8,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          transform: 'rotate(180deg)',
+          color: color || '#000000'
+        }}
+      >
+        <Typography sx={{ fontSize: '24px', fontWeight: 'bold', lineHeight: 1 }}>
           {card.rank}
         </Typography>
-        <Typography variant="h6" sx={{ lineHeight: 1 }}>
-          {suitSymbols[card.suit]}
+        <Typography sx={{ fontSize: '24px', lineHeight: 1, ml: 0.5 }}>
+          {card.suit}
         </Typography>
       </Box>
     </Paper>

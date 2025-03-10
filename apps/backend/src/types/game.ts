@@ -1,4 +1,4 @@
-import { GameCard, Monster, Weapon } from './cards';
+import { GameCard, Monster, Weapon } from './cards.js';
 
 export interface GameSession {
   id: string;
