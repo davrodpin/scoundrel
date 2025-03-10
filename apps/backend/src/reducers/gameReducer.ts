@@ -1,8 +1,19 @@
 import { GameState, GameAction } from '../types/game';
-import { Monster, GameCard } from '../types/cards';
+import { Monster, GameCard, HealthPotion } from '../types/cards';
+
+function getNormalizedSuit(suit: string): string {
+  const normalizedSuit = suit.toUpperCase();
+  if (normalizedSuit === 'S' || normalizedSuit === '♠') return 'S';
+  if (normalizedSuit === 'H' || normalizedSuit === '♥') return 'H';
+  if (normalizedSuit === 'D' || normalizedSuit === '♦') return 'D';
+  if (normalizedSuit === 'C' || normalizedSuit === '♣') return 'C';
+  return suit;
+}
 
 function isSameCard(card1: GameCard, card2: GameCard): boolean {
-  return card1.suit === card2.suit && card1.rank === card2.rank;
+  const suit1 = getNormalizedSuit(card1.suit);
+  const suit2 = getNormalizedSuit(card2.suit);
+  return suit1 === suit2 && card1.rank === card2.rank;
 }
 
 function getRankValue(rank: string): number {
@@ -158,7 +169,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'USE_HEALTH_POTION':
       const potion = state.room.find(card => 
-        card.type === 'HEALTH_POTION' && (card as any).healing === action.healing
+        card.type === 'HEALTH_POTION' && (card as HealthPotion).healing === action.healing
       );
       if (!potion) return state;
       

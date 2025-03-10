@@ -1,4 +1,4 @@
-import { GameCard, Suit, Rank, Monster, Weapon, HealthPotion } from '../types/cards';
+import type { GameCard, Suit, Rank } from '../types/cards';
 
 function shuffle<T>(array: T[]): T[] {
   const shuffled = [...array];

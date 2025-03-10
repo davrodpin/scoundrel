@@ -58,7 +58,7 @@ io.on('connection', (socket) => {
 
   socket.on('submit_score', ({ playerName, score }: { playerName: string, score: number }) => {
     try {
-      const newEntry = leaderboardService.addEntry({ playerName, score });
+      leaderboardService.addEntry({ playerName, score });
       const entries = leaderboardService.getEntries();
       io.emit('leaderboard_updated', entries); // Broadcast to all connected clients
     } catch (error: unknown) {
