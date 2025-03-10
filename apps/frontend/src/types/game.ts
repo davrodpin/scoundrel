@@ -21,12 +21,34 @@ export interface GameState {
   originalRoomSize: number;
   remainingAvoids: number;
   lastActionWasAvoid: boolean;
+  lastActionTimestamp: number;
+  lastActionSequence: number;
+  stateChecksum: string;
 }
 
-export type GameAction = 
+interface BaseGameAction {
+  timestamp: number;
+  sequence: number;
+}
+
+type DrawRoomAction = BaseGameAction & { type: 'DRAW_ROOM' };
+type AvoidRoomAction = BaseGameAction & { type: 'AVOID_ROOM' };
+type FightMonsterAction = BaseGameAction & { type: 'FIGHT_MONSTER'; monster: Monster };
+type UseWeaponAction = BaseGameAction & { type: 'USE_WEAPON'; monster: Monster };
+type UseHealthPotionAction = BaseGameAction & { type: 'USE_HEALTH_POTION'; healing: number };
+type EquipWeaponAction = BaseGameAction & { type: 'EQUIP_WEAPON'; weapon: Weapon };
+
+export type GameAction =
+  | DrawRoomAction
+  | AvoidRoomAction
+  | FightMonsterAction
+  | UseWeaponAction
+  | UseHealthPotionAction
+  | EquipWeaponAction;
+
+export type GameActionWithoutSecurity =
   | { type: 'DRAW_ROOM' }
   | { type: 'AVOID_ROOM' }
-  | { type: 'SELECT_CARD'; cardIndex: number }
   | { type: 'FIGHT_MONSTER'; monster: Monster }
   | { type: 'USE_WEAPON'; monster: Monster }
   | { type: 'USE_HEALTH_POTION'; healing: number }

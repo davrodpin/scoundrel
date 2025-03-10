@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import io, { Socket } from 'socket.io-client';
-import type { GameState, GameAction, GameSession } from '../types/game';
+import type { GameState, GameAction, GameSession, GameActionWithoutSecurity } from '../types/game';
 import type { Monster, Weapon, HealthPotion } from '../types/cards';
 
 interface LeaderboardEntry {
@@ -125,14 +125,21 @@ export function useGame() {
     socket.emit('create_game');
   }, [socket, isConnected]);
 
-  const dispatchAction = useCallback((action: GameAction) => {
-    if (!isConnected || !socket || !sessionId) {
-      debug.error('Cannot dispatch action: socket is not connected or sessionId is missing');
+  const dispatchAction = useCallback((baseAction: GameActionWithoutSecurity) => {
+    if (!isConnected || !socket || !sessionId || !state) {
+      debug.error('Cannot dispatch action: socket is not connected, sessionId is missing, or state is null');
       return;
     }
+
+    const action: GameAction = {
+      ...baseAction,
+      timestamp: Date.now(),
+      sequence: (state.lastActionSequence || 0) + 1
+    } as GameAction;
+
     debug.log('Dispatching action:', action);
     socket.emit('game_action', { sessionId, action });
-  }, [socket, sessionId, isConnected]);
+  }, [socket, sessionId, isConnected, state]);
 
   const fetchLeaderboard = useCallback(() => {
     if (!isConnected || !socket) {
