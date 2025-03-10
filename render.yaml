@@ -3,7 +3,7 @@ services:
     name: scoundrel-backend
     env: node
     region: oregon
-    buildCommand: npm install && cd apps/backend && npm install && npm run build
+    buildCommand: npm install --production=false && cd apps/backend && npm install --production=false && npm run build
     startCommand: cd apps/backend && npm start
     envVars:
       - key: NODE_ENV
