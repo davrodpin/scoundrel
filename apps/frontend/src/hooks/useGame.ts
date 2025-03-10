@@ -73,8 +73,8 @@ export function useGame() {
     newSocket.on('disconnect', (reason: string) => {
       debug.log('Disconnected from Socket.IO server:', reason);
       setIsConnected(false);
-      if (reason === 'transport close') {
-        setError('Connection to game server lost. Attempting to reconnect...');
+      if (reason === 'transport close' || reason === 'io server disconnect') {
+        setError('Connection to game server lost. Please start a new game.');
       }
     });
 
@@ -106,7 +106,13 @@ export function useGame() {
 
     socket.on('error', (err: { message: string }) => {
       debug.error('Game error:', err.message);
-      setError(err.message);
+      if (err.message.includes('Game session not found') || 
+          err.message.includes('has expired') ||
+          err.message.includes('integrity violation')) {
+        setError('Your game session has expired. Please start a new game.');
+      } else {
+        setError(err.message);
+      }
     });
 
     return () => {

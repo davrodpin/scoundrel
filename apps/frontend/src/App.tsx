@@ -273,19 +273,31 @@ export default function App() {
         p: 3,
         textAlign: 'center'
       }}>
-        <CircularProgress />
         {error ? (
-          <Typography color="error" variant="body1">
-            {error}
-          </Typography>
-        ) : (
-          <Typography variant="body1" color="text.secondary">
-            Connecting to game server...
-            <br />
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Note: The server may take up to 1 minute to start if it hasn't been used recently.
+          <>
+            <Typography color="error" variant="body1" gutterBottom>
+              {error}
             </Typography>
-          </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => window.location.reload()}
+              sx={{ mt: 2 }}
+            >
+              Start New Game
+            </Button>
+          </>
+        ) : (
+          <>
+            <CircularProgress />
+            <Typography variant="body1" color="text.secondary">
+              Connecting to game server...
+              <br />
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                Note: The server may take up to 1 minute to start if it hasn't been used recently.
+              </Typography>
+            </Typography>
+          </>
         )}
       </Box>
     );
