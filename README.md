@@ -19,10 +19,22 @@ This project was developed using Vibe coding, a natural and efficient way of pro
 
 All technologies in this project were selected by the AI agent during the development process:
 
+Frontend:
 - React + TypeScript
 - Vite for build and development
 - Material-UI for components
 - State management with React Hooks
+- Socket.IO client for real-time communication
+
+Backend:
+- Node.js + TypeScript
+- Express.js for HTTP server
+- Socket.IO for WebSocket communication
+- In-memory storage for leaderboard
+
+Deployment:
+- Frontend hosted on GitHub Pages
+- Backend hosted on Render.com
 
 ## Play Online
 
@@ -30,10 +42,44 @@ You can play the game online at [https://davrodpin.github.io/scoundrel/](https:/
 
 ## How to Play Offline
 
-1. Clone the repository
-2. Install dependencies with `npm install`
-3. Run the project with `npm run dev`
-4. Open your browser at `http://localhost:5173`
+This project uses a monorepo structure with both frontend and backend applications.
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/davrodpin/scoundrel.git
+   cd scoundrel
+   ```
+
+2. Install dependencies for both applications:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   - Create `.env` file in `apps/frontend`:
+     ```
+     VITE_BACKEND_URL=http://localhost:3001
+     ```
+   - Create `.env` file in `apps/backend`:
+     ```
+     PORT=3001
+     ```
+
+4. Start the backend service:
+   ```bash
+   cd apps/backend
+   npm run dev
+   ```
+
+5. In a new terminal, start the frontend:
+   ```bash
+   cd apps/frontend
+   npm run dev
+   ```
+
+6. Open your browser at `http://localhost:5173`
+
+Note: The game requires both frontend and backend services to be running. Without the backend service, features like the leaderboard won't be available.
 
 ## Credits
 
@@ -41,4 +87,4 @@ Original game Scoundrel © 2011 Zach Gage & Kurt Bieg. This digital implementati
 
 ## License
 
-This project is distributed under the MIT License. Note that this license applies only to the code implementation, not to the original Scoundrel game and its rules, which are property of their respective creators. 
+This project is distributed under the MIT License. Note that this license applies only to the code implementation, not to the original Scoundrel game and its rules, which are property of their respective creators.
