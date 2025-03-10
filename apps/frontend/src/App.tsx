@@ -8,6 +8,15 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import HelpIcon from '@mui/icons-material/Help';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
+// Debug logging utility that only logs in development
+const debug = {
+  log: (...args: any[]) => {
+    if (import.meta.env.DEV) {
+      console.log(...args);
+    }
+  }
+};
+
 function DeckPile({ count, label, onClick, topCard }: { count: number; label: string; onClick?: () => void; topCard?: GameCard }) {
   const [isHovered, setIsHovered] = useState(false);
   const isClickable = Boolean(onClick);
@@ -159,7 +168,7 @@ export default function App() {
 
   useEffect(() => {
     if (isConnected && !state) {
-      console.log('Connection established, creating new game...');
+      debug.log('Connection established, creating new game...');
       actions.createGame();
     }
   }, [isConnected, state, actions]);
