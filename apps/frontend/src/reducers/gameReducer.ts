@@ -39,7 +39,10 @@ export const initialState: GameState = {
   score: 0,
   originalRoomSize: 0,
   remainingAvoids: 1,
-  lastActionWasAvoid: false
+  lastActionWasAvoid: false,
+  lastActionTimestamp: 0,
+  lastActionSequence: 0,
+  stateChecksum: ''
 };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
