@@ -1,5 +1,5 @@
 import { GameState, GameAction } from '../types/game';
-import { Monster, GameCard, HealthPotion } from '../types/cards';
+import { Monster, GameCard, HealthPotion, Weapon } from '../types/cards';
 
 function getNormalizedSuit(suit: string): string {
   const normalizedSuit = suit.toUpperCase();
@@ -37,7 +37,10 @@ export const initialState: GameState = {
   score: 0,
   originalRoomSize: 0,
   remainingAvoids: 1,
-  lastActionWasAvoid: false
+  lastActionWasAvoid: false,
+  lastActionTimestamp: Date.now(),
+  lastActionSequence: 0,
+  stateChecksum: ''
 };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -52,7 +55,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         const score = state.health > 0 
           ? state.health 
           : -monstersInDungeon.reduce((acc, monster) => acc + getRankValue(monster.rank), 0);
-        return { ...state, gameOver: true, score };
+        return { 
+          ...state, 
+          gameOver: true, 
+          score
+        };
       }
       
       // If there's one card in the room, keep it and add three new cards
@@ -95,8 +102,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         lastActionWasAvoid: true
       };
 
-    case 'FIGHT_MONSTER':
-      const { monster } = action;
+    case 'FIGHT_MONSTER': {
+      if (!action.monster) {
+        throw new Error('Monster is required for FIGHT_MONSTER action');
+      }
+      const monster = action.monster;
       const newHealth = state.health - monster.damage;
       const updatedRoom = state.room.filter(card => !isSameCard(card, monster));
       const isGameOver = newHealth <= 0;
@@ -127,16 +137,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         remainingAvoids: 0,
         lastActionWasAvoid: false
       };
+    }
 
-    case 'USE_WEAPON':
+    case 'USE_WEAPON': {
+      if (!action.monster) {
+        throw new Error('Monster is required for USE_WEAPON action');
+      }
       if (!state.equippedWeapon) return state;
-      const damage = Math.max(0, action.monster.damage - state.equippedWeapon.damage);
-      const updatedWeapon = {
+      
+      const monster = action.monster;
+      const damage = Math.max(0, monster.damage - state.equippedWeapon.damage);
+      const updatedWeapon: Weapon = {
         ...state.equippedWeapon,
-        monstersSlain: [...state.equippedWeapon.monstersSlain, action.monster],
-        damage: action.monster.damage
+        monstersSlain: [...state.equippedWeapon.monstersSlain, monster],
+        damage: monster.damage
       };
-      const roomAfterWeapon = state.room.filter(card => !isSameCard(card, action.monster));
+      const roomAfterWeapon = state.room.filter(card => !isSameCard(card, monster));
       const newHealthAfterWeapon = state.health - damage;
       const isGameOverAfterWeapon = newHealthAfterWeapon <= 0;
 
@@ -166,8 +182,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         remainingAvoids: 0,
         lastActionWasAvoid: false
       };
+    }
 
-    case 'USE_HEALTH_POTION':
+    case 'USE_HEALTH_POTION': {
+      if (typeof action.healing !== 'number') {
+        throw new Error('Healing amount is required for USE_HEALTH_POTION action');
+      }
       const potion = state.room.find(card => 
         card.type === 'HEALTH_POTION' && (card as HealthPotion).healing === action.healing
       );
@@ -187,14 +207,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         remainingAvoids: 0,
         lastActionWasAvoid: false
       };
+    }
 
-    case 'EQUIP_WEAPON':
+    case 'EQUIP_WEAPON': {
+      if (!action.weapon) {
+        throw new Error('Weapon is required for EQUIP_WEAPON action');
+      }
       const oldWeapon = state.equippedWeapon;
-      const roomAfterEquip = state.room.filter(card => !isSameCard(card, action.weapon));
+      const weapon = action.weapon;
+      const roomAfterEquip = state.room.filter(card => !isSameCard(card, weapon));
       if (oldWeapon) {
         return {
           ...state,
-          equippedWeapon: action.weapon,
+          equippedWeapon: weapon,
           discardPile: [...state.discardPile, oldWeapon, ...oldWeapon.monstersSlain],
           room: roomAfterEquip,
           canAvoidRoom: roomAfterEquip.length === state.originalRoomSize,
@@ -204,12 +229,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
       return {
         ...state,
-        equippedWeapon: action.weapon,
+        equippedWeapon: weapon,
         room: roomAfterEquip,
         canAvoidRoom: roomAfterEquip.length === state.originalRoomSize,
         remainingAvoids: 0,
         lastActionWasAvoid: false
       };
+    }
 
     default:
       return state;
