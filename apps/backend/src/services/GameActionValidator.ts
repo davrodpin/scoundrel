@@ -1,6 +1,8 @@
 import { GameState, GameAction } from '../types/game';
 import { Monster, GameCard, Weapon, HealthPotion } from '../types/cards';
 
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
 function isSameCard(card1: GameCard, card2: GameCard): boolean {
   return card1.suit === card2.suit && card1.rank === card2.rank;
 }
@@ -11,6 +13,22 @@ function findCardInRoom(state: GameState, card: GameCard): GameCard | undefined 
 
 export class GameActionValidator {
   validateAction(state: GameState, action: GameAction): string | null {
+    if (isDevelopment) {
+      console.log('[DEBUG] Validating game action:', {
+        actionType: action.type,
+        gameOver: state.gameOver,
+        currentState: {
+          health: state.health,
+          maxHealth: state.maxHealth,
+          roomCards: state.room.map(card => ({
+            type: card.type,
+            suit: card.suit,
+            rank: card.rank
+          }))
+        }
+      });
+    }
+
     if (state.gameOver) {
       return 'Game is already over';
     }
@@ -52,6 +70,14 @@ export class GameActionValidator {
   }
 
   private validateDrawRoom(state: GameState): string | null {
+    if (isDevelopment) {
+      console.log('[DEBUG] Validating draw room:', {
+        roomSize: state.room.length,
+        dungeonSize: state.dungeon.length,
+        requiredCards: state.room.length === 1 ? 3 : 4
+      });
+    }
+
     if (state.room.length > 1) {
       return 'Cannot draw room when current room has more than one card';
     }
@@ -62,6 +88,14 @@ export class GameActionValidator {
   }
 
   private validateAvoidRoom(state: GameState): string | null {
+    if (isDevelopment) {
+      console.log('[DEBUG] Validating avoid room:', {
+        canAvoidRoom: state.canAvoidRoom,
+        lastActionWasAvoid: state.lastActionWasAvoid,
+        roomSize: state.room.length
+      });
+    }
+
     if (!state.canAvoidRoom) {
       return 'Cannot avoid room at this time';
     }
@@ -75,6 +109,22 @@ export class GameActionValidator {
   }
 
   private validateFightMonster(state: GameState, monster: Monster): string | null {
+    if (isDevelopment) {
+      console.log('[DEBUG] Validating fight monster:', {
+        monsterDetails: {
+          type: monster.type,
+          suit: monster.suit,
+          rank: monster.rank,
+          damage: monster.damage
+        },
+        roomCards: state.room.map(card => ({
+          type: card.type,
+          suit: card.suit,
+          rank: card.rank
+        }))
+      });
+    }
+
     const roomMonster = findCardInRoom(state, monster);
     if (!roomMonster || roomMonster.type !== 'MONSTER') {
       return 'Monster not found in current room';
@@ -86,6 +136,23 @@ export class GameActionValidator {
   }
 
   private validateUseWeapon(state: GameState, monster: Monster): string | null {
+    if (isDevelopment) {
+      console.log('[DEBUG] Validating use weapon:', {
+        monsterDetails: {
+          type: monster.type,
+          suit: monster.suit,
+          rank: monster.rank,
+          damage: monster.damage
+        },
+        equippedWeapon: state.equippedWeapon ? {
+          type: state.equippedWeapon.type,
+          suit: state.equippedWeapon.suit,
+          rank: state.equippedWeapon.rank,
+          damage: state.equippedWeapon.damage
+        } : null
+      });
+    }
+
     if (!state.equippedWeapon) {
       return 'No weapon equipped';
     }
@@ -103,19 +170,54 @@ export class GameActionValidator {
   }
 
   private validateUseHealthPotion(state: GameState, healing: number): string | null {
+    if (isDevelopment) {
+      console.log('[DEBUG] Validating use health potion:', {
+        healing,
+        currentHealth: state.health,
+        maxHealth: state.maxHealth,
+        roomCards: state.room.map(card => ({
+          type: card.type,
+          suit: card.suit,
+          rank: card.rank,
+          ...(card.type === 'HEALTH_POTION' ? { healing: (card as HealthPotion).healing } : {})
+        }))
+      });
+    }
+
     const potion = state.room.find(
       card => card.type === 'HEALTH_POTION' && (card as HealthPotion).healing === healing
     );
+
     if (!potion) {
+      if (isDevelopment) {
+        console.log('[DEBUG] Health potion validation failed: potion not found in room');
+      }
       return 'Health potion not found in current room';
     }
-    if (state.health >= state.maxHealth) {
-      return 'Health is already at maximum';
+
+    if (isDevelopment) {
+      console.log('[DEBUG] Health potion validation passed');
     }
     return null;
   }
 
   private validateEquipWeapon(state: GameState, weapon: Weapon): string | null {
+    if (isDevelopment) {
+      console.log('[DEBUG] Validating equip weapon:', {
+        weaponDetails: {
+          type: weapon.type,
+          suit: weapon.suit,
+          rank: weapon.rank,
+          damage: weapon.damage
+        },
+        roomCards: state.room.map(card => ({
+          type: card.type,
+          suit: card.suit,
+          rank: card.rank
+        }))
+      });
+    }
+
     const roomWeapon = findCardInRoom(state, weapon);
     if (!roomWeapon || roomWeapon.type !== 'WEAPON') {
       return 'Weapon not found in current room';

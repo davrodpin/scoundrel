@@ -205,7 +205,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         discardPile: [...state.discardPile, potion],
         canAvoidRoom: roomAfterPotion.length === state.originalRoomSize,
         remainingAvoids: 0,
-        lastActionWasAvoid: false
+        lastActionWasAvoid: false,
+        lastActionTimestamp: action.timestamp,
+        lastActionSequence: action.sequence,
+        stateChecksum: state.stateChecksum
       };
     }
 

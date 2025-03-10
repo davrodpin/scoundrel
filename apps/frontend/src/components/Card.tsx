@@ -6,6 +6,7 @@ interface CardProps {
   card: GameCard;
   onClick?: () => void;
   showFist?: boolean;
+  disabled?: boolean;
 }
 
 // Add reverse mapping from symbols to suit names
@@ -24,7 +25,7 @@ const suitColors = {
   SPADES: '#000000'
 } as const;
 
-export function Card({ card, onClick, showFist }: CardProps) {
+export function Card({ card, onClick, showFist, disabled }: CardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   // Get the proper suit name and color
@@ -49,8 +50,9 @@ export function Card({ card, onClick, showFist }: CardProps) {
         width: 120,
         height: 180,
         position: 'relative',
-        cursor: onClick ? 'pointer' : 'default',
-        backgroundColor: '#fff',
+        cursor: onClick && !disabled ? 'pointer' : 'default',
+        backgroundColor: disabled ? '#f5f5f5' : '#fff',
+        opacity: disabled ? 0.7 : 1,
         border: (showFist && isHovered) ? '2px solid #ff0000' : '1px solid rgba(0, 0, 0, 0.12)',
         animation: (showFist && isHovered) ? 'pulse 1s infinite' : 'none',
         '@keyframes pulse': {
@@ -58,12 +60,12 @@ export function Card({ card, onClick, showFist }: CardProps) {
           '50%': { borderColor: '#ff000080' },
           '100%': { borderColor: '#ff0000' }
         },
-        '&:hover': onClick ? {
+        '&:hover': onClick && !disabled ? {
           transform: 'translateY(-5px)',
           transition: 'transform 0.2s'
         } : {}
       }}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

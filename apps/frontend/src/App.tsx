@@ -215,7 +215,8 @@ export default function App() {
         break;
       
       case 'HEALTH_POTION':
-        actions.useHealthPotion(card as HealthPotion);
+        const potion = card as HealthPotion;
+        actions.useHealthPotion(potion);
         break;
     }
   };
@@ -399,6 +400,31 @@ export default function App() {
                                   card={monster} 
                                   onClick={() => handleCardClick(monster)}
                                   showFist={showFist}
+                                />
+                              </Box>
+                            </Tooltip>
+                          </Box>
+                        );
+                      }
+
+                      if (card.type === 'HEALTH_POTION') {
+                        const cardKey = `${card.suit}-${card.rank}`;
+                        const isHealthFull = state.health >= state.maxHealth;
+
+                        return (
+                          <Box key={cardKey}>
+                            <Tooltip 
+                              title={isHealthFull ? "Using this potion will discard it without healing" : ""}
+                              open={isHealthFull && hoveredCard === cardKey}
+                              arrow
+                            >
+                              <Box 
+                                onMouseEnter={() => setHoveredCard(cardKey)}
+                                onMouseLeave={() => setHoveredCard(null)}
+                              >
+                                <Card 
+                                  card={card} 
+                                  onClick={() => handleCardClick(card)}
                                 />
                               </Box>
                             </Tooltip>

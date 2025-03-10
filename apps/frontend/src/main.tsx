@@ -8,6 +8,14 @@ import '@fontsource/roboto/700.css';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+const isDevelopment = import.meta.env.MODE !== 'production';
+if (isDevelopment) {
+  console.log('[ENV] Frontend running in development mode');
+  console.log('[ENV] MODE =', import.meta.env.MODE);
+  console.log('[ENV] DEV =', import.meta.env.DEV);
+  console.log('[ENV] PROD =', import.meta.env.PROD);
+}
+
 const theme = createTheme({
   palette: {
     mode: 'dark',

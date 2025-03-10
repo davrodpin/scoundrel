@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'http';
 import cors from 'cors';
@@ -6,26 +7,35 @@ import { GameAction } from './types/game';
 import { Server } from 'socket.io';
 import { leaderboardService } from './services/leaderboardService';
 
+const isDevelopment = process.env.NODE_ENV !== 'production';
+if (isDevelopment) {
+  console.log('[ENV] Backend running in development mode');
+  console.log('[ENV] NODE_ENV =', process.env.NODE_ENV || 'not set');
+  console.log('[ENV] PORT =', process.env.PORT || '3001');
+}
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://davrodpin.github.io"
+];
+
+if (isDevelopment) {
+  console.log('[ENV] Allowed origins:', allowedOrigins);
+}
+
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "https://davrodpin.github.io"
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 
 app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "https://davrodpin.github.io"
-  ],
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());
