@@ -47,7 +47,10 @@ export function useGame() {
 
   useEffect(() => {
     console.log('Initializing Socket.IO connection...');
-    const newSocket = io('http://localhost:3001', {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    console.log('Connecting to backend at:', backendUrl);
+    
+    const newSocket = io(backendUrl, {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000
