@@ -21,14 +21,17 @@ export function useGame() {
   useEffect(() => {
     console.log('Initializing Socket.IO connection...');
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
-    console.log('Connecting to backend at:', backendUrl);
+    console.log('Backend URL from env:', backendUrl);
     
     const newSocket = io({
       transports: ['websocket']
     });
+
+    console.log('Socket.IO instance URI:', newSocket.io.uri);
     
     newSocket.on('connect', () => {
       console.log('Connected to Socket.IO server with ID:', newSocket.id);
+      console.log('Final connection URI:', newSocket.io.uri);
       setIsConnected(true);
       setError(null);
     });
