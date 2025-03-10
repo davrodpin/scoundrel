@@ -10,9 +10,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TextField,
-  Button,
-  Box,
   Typography,
   IconButton
 } from '@mui/material';
@@ -28,9 +25,6 @@ interface LeaderboardProps {
 
 export function Leaderboard({ open, onClose, currentScore, gameOver }: LeaderboardProps) {
   const { actions, leaderboardEntries } = useGame();
-  const [playerName, setPlayerName] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (open) {
@@ -38,49 +32,25 @@ export function Leaderboard({ open, onClose, currentScore, gameOver }: Leaderboa
     }
   }, [open, actions]);
 
-  useEffect(() => {
-    if (!open) {
-      // Only reset the player name and error when closing
-      setPlayerName('');
-      setError('');
-    }
-  }, [open]);
-
-  useEffect(() => {
-    // Reset all states when game is not over
-    if (!gameOver) {
-      setSubmitted(false);
-      setPlayerName('');
-      setError('');
-    }
-  }, [gameOver]);
-
-  const handleSubmit = () => {
-    if (!playerName.trim()) {
-      setError('Please enter your name');
-      return;
-    }
-
-    actions.submitScore({
-      playerName: playerName.trim(),
-      score: currentScore
-    });
-    setSubmitted(true);
-    setPlayerName('');
-    setError('');
-  };
-
   return (
     <Dialog 
       open={open} 
       onClose={onClose} 
       maxWidth="sm" 
       fullWidth
-      sx={{ '& .MuiDialog-paper': { minHeight: '400px' } }}
+      sx={{ 
+        '& .MuiDialog-paper': { 
+          minHeight: '400px',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 2
+        },
+        zIndex: 1050
+      }}
     >
       <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" component="span">
-          {gameOver && !submitted ? 'Game Over - Submit Your Score' : 'Leaderboard'}
+          Leaderboard
         </Typography>
         <IconButton
           aria-label="close"
@@ -96,41 +66,6 @@ export function Leaderboard({ open, onClose, currentScore, gameOver }: Leaderboa
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        {gameOver && !submitted && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              Game Over! Your score: {currentScore}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField
-                label="Your Name"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                error={!!error}
-                helperText={error}
-                size="small"
-                autoFocus
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
-                  }
-                }}
-              />
-              <Button variant="contained" onClick={handleSubmit}>
-                Submit
-              </Button>
-            </Box>
-          </Box>
-        )}
-
-        {submitted && (
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" color="success.main" align="center" gutterBottom>
-              Score submitted successfully!
-            </Typography>
-          </Box>
-        )}
-
         <TableContainer component={Paper}>
           <Table>
             <TableHead>

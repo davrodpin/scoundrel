@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Container, Paper, Typography, Tooltip, Grid, CircularProgress, Slide } from '@mui/material';
+import { Box, Button, Container, Paper, Typography, Tooltip, Grid, CircularProgress, Slide, Dialog, DialogContent, TextField } from '@mui/material';
 import { useGame } from './hooks/useGame';
 import type { GameCard, Monster, Weapon, HealthPotion } from './types/cards';
 import { Card } from './components/Card';
@@ -163,6 +163,10 @@ export default function App() {
   const [showRules, setShowRules] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [hasPromptedLeaderboard, setHasPromptedLeaderboard] = useState(false);
+  const [gameOverDialogOpen, setGameOverDialogOpen] = useState(false);
+  const [playerName, setPlayerName] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const canDrawRoom = state && !state.gameOver && (state.room.length === 0 || state.room.length === 1);
 
@@ -174,11 +178,18 @@ export default function App() {
   }, [isConnected, state, actions]);
 
   useEffect(() => {
-    if (state?.gameOver && !hasPromptedLeaderboard) {
+    if (state?.gameOver) {
+      setGameOverDialogOpen(true);
+    }
+  }, [state?.gameOver]);
+
+  const handleGameOverClose = () => {
+    setGameOverDialogOpen(false);
+    if (!hasPromptedLeaderboard) {
       setShowLeaderboard(true);
       setHasPromptedLeaderboard(true);
     }
-  }, [state?.gameOver, hasPromptedLeaderboard]);
+  };
 
   const handleCardClick = (card: GameCard) => {
     if (!state) return;
@@ -221,6 +232,32 @@ export default function App() {
     }
     
     return "";
+  };
+
+  const handleScoreSubmit = async () => {
+    if (!state) return;
+
+    if (!playerName.trim()) {
+      setNameError('Name is required');
+      return;
+    }
+
+    setSubmitted(true);
+
+    try {
+      await actions.submitScore({
+        playerName: playerName.trim(),
+        score: state.score
+      });
+      setPlayerName('');
+      setNameError('');
+      setShowLeaderboard(true);
+      handleGameOverClose();
+    } catch (e) {
+      console.error('Error submitting score:', e);
+      setSubmitted(false);
+      setNameError('Failed to submit score. Please try again.');
+    }
   };
 
   if (!isConnected || error) {
@@ -484,23 +521,71 @@ export default function App() {
           </Paper>
         </Slide>
 
-        {/* Game Over message without the button */}
-        {state.gameOver && (
-          <Box sx={{ textAlign: 'center', mt: 4 }}>
-            <Typography variant="h3" color={state.health > 0 ? 'success.main' : 'error.main'}>
+        {/* Game Over message */}
+        <Dialog 
+          open={gameOverDialogOpen} 
+          maxWidth="sm"
+          fullWidth
+          onClose={handleGameOverClose}
+          sx={{
+            '& .MuiDialog-paper': {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: 2,
+              textAlign: 'center',
+              p: 3
+            }
+          }}
+        >
+          <DialogContent>
+            <Typography variant="h3" color={state?.health > 0 ? 'success.main' : 'error.main'} gutterBottom>
               Game Over!
             </Typography>
-            <Typography variant="h4">
-              Final Score: {state.score}
+            <Typography variant="h4" gutterBottom>
+              Final Score: {state?.score}
             </Typography>
-          </Box>
-        )}
+            <Box sx={{ mt: 3, mb: 3 }}>
+              <TextField
+                label="Enter your name for the leaderboard"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                error={!!nameError}
+                helperText={nameError}
+                size="medium"
+                fullWidth
+                autoFocus
+                sx={{ mb: 2 }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleScoreSubmit();
+                  }
+                }}
+              />
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleScoreSubmit}
+                  disabled={submitted}
+                >
+                  {submitted ? 'Score Submitted!' : 'Submit Score'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => window.location.reload()}
+                >
+                  Play Again
+                </Button>
+              </Box>
+            </Box>
+          </DialogContent>
+        </Dialog>
 
         <Leaderboard
           open={showLeaderboard}
           onClose={() => setShowLeaderboard(false)}
-          currentScore={state.score}
-          gameOver={state.gameOver}
+          currentScore={state?.score || 0}
+          gameOver={state?.gameOver || false}
         />
       </Box>
 
