@@ -17,6 +17,8 @@ export function useGame() {
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 12; // 1 minute with 5-second intervals
 
   useEffect(() => {
     console.log('Initializing Socket.IO connection...');
@@ -24,7 +26,10 @@ export function useGame() {
     console.log('Backend URL from env:', backendUrl);
     
     const newSocket = io(backendUrl, {
-      transports: ['websocket']
+      transports: ['websocket'],
+      reconnectionDelay: 5000, // 5 seconds between retries
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: maxRetries
     });
 
     console.log('Socket.IO instance URI:', newSocket.io.uri);
@@ -32,6 +37,7 @@ export function useGame() {
     newSocket.on('connect', () => {
       console.log('Connected to Socket.IO server with ID:', newSocket.id);
       console.log('Final connection URI:', newSocket.io.uri);
+      setRetryCount(0);
       setIsConnected(true);
       setError(null);
     });
@@ -39,12 +45,23 @@ export function useGame() {
     newSocket.on('connect_error', (err: Error) => {
       console.error('Socket.IO connection error:', err);
       setIsConnected(false);
-      setError(`Failed to connect to game server: ${err.message}`);
+      setRetryCount(prev => {
+        const newCount = prev + 1;
+        if (newCount <= maxRetries) {
+          setError(`Waiting for game server to start... Attempt ${newCount}/${maxRetries}`);
+        } else {
+          setError('Could not connect to game server. Please try refreshing the page.');
+        }
+        return newCount;
+      });
     });
 
     newSocket.on('disconnect', (reason: string) => {
       console.log('Disconnected from Socket.IO server:', reason);
       setIsConnected(false);
+      if (reason === 'transport close') {
+        setError('Connection to game server lost. Attempting to reconnect...');
+      }
     });
 
     newSocket.on('leaderboard_updated', (entries: LeaderboardEntry[]) => {

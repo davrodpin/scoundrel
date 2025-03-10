@@ -222,17 +222,24 @@ export default function App() {
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '100vh',
-        gap: 2
+        gap: 2,
+        p: 3,
+        textAlign: 'center'
       }}>
         <CircularProgress />
-        {error && (
+        {error ? (
           <Typography color="error" variant="body1">
             {error}
           </Typography>
+        ) : (
+          <Typography variant="body1" color="text.secondary">
+            Connecting to game server...
+            <br />
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              Note: The server may take up to 1 minute to start if it hasn't been used recently.
+            </Typography>
+          </Typography>
         )}
-        <Typography variant="body2" color="text.secondary">
-          {isConnected ? 'Connected, waiting for game...' : 'Connecting to server...'}
-        </Typography>
       </Box>
     );
   }
