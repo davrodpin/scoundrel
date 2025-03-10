@@ -1,11 +1,14 @@
-import { GameCard, Monster, Weapon } from './cards.js';
+import type { Monster, Weapon, GameCard } from './cards';
 
 export interface GameSession {
   id: string;
-  state: GameState;
   playerId: string;
+  state: GameState;
   createdAt: Date;
   lastUpdatedAt: Date;
+  actionCount: number;
+  lastActionTime: number;
+  actionsInLastMinute: number;
 }
 
 export interface GameState {
@@ -21,13 +24,16 @@ export interface GameState {
   originalRoomSize: number;
   remainingAvoids: number;
   lastActionWasAvoid: boolean;
+  lastActionTimestamp: number;
+  lastActionSequence: number;
+  stateChecksum: string;
 }
 
-export type GameAction = 
-  | { type: 'DRAW_ROOM' }
-  | { type: 'AVOID_ROOM' }
-  | { type: 'SELECT_CARD'; cardIndex: number }
-  | { type: 'FIGHT_MONSTER'; monster: Monster }
-  | { type: 'USE_WEAPON'; monster: Monster }
-  | { type: 'USE_HEALTH_POTION'; healing: number }
-  | { type: 'EQUIP_WEAPON'; weapon: Weapon }; 
+export interface GameAction {
+  type: 'DRAW_ROOM' | 'AVOID_ROOM' | 'FIGHT_MONSTER' | 'USE_WEAPON' | 'USE_HEALTH_POTION' | 'EQUIP_WEAPON';
+  monster?: Monster;
+  weapon?: Weapon;
+  healing?: number;
+  timestamp: number;
+  sequence: number;
+} 
