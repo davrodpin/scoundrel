@@ -20,10 +20,10 @@ export function useGame() {
 
   useEffect(() => {
     console.log('Initializing Socket.IO connection...');
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://scoundrel-backend.onrender.com';
     console.log('Backend URL from env:', backendUrl);
     
-    const newSocket = io({
+    const newSocket = io(backendUrl, {
       transports: ['websocket']
     });
 
