@@ -28,9 +28,18 @@ jobs:
         working-directory: apps/frontend
         run: npm ci
 
+      - name: Create production env file
+        working-directory: apps/frontend
+        run: |
+          echo "VITE_NODE_ENV=production" > .env.production
+          echo "VITE_BACKEND_URL=https://scoundrel-backend.onrender.com" >> .env.production
+
       - name: Build frontend
         working-directory: apps/frontend
         run: npm run build
+        env:
+          VITE_NODE_ENV: production
+          VITE_BACKEND_URL: https://scoundrel-backend.onrender.com
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
