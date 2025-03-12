@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { GameState, GameSession as IGameSession } from '../types/game';
+import { getCollectionName } from '../utils/dbUtils';
 
 interface GameSessionDocument extends Document, Omit<IGameSession, 'id'> {
   createdAt: Date;
@@ -80,4 +81,8 @@ const gameSessionSchema = new Schema({
 // Add TTL index to automatically remove sessions after 24 hours of inactivity
 gameSessionSchema.index({ lastUpdatedAt: 1 }, { expireAfterSeconds: 24 * 60 * 60 });
 
-export const GameSessionModel = mongoose.model<GameSessionDocument>('GameSession', gameSessionSchema); 
+export const GameSessionModel = mongoose.model<GameSessionDocument>(
+  'GameSession',
+  gameSessionSchema,
+  getCollectionName('game_sessions')
+); 

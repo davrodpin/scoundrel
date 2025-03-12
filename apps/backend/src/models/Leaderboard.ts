@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { getCollectionName } from '../utils/dbUtils';
 
 interface LeaderboardEntry extends Document {
   playerName: string;
@@ -19,4 +20,8 @@ const leaderboardSchema = new Schema({
 // Compound index for efficient leaderboard queries
 leaderboardSchema.index({ score: -1, timestamp: -1 });
 
-export const LeaderboardModel = mongoose.model<LeaderboardEntry>('Leaderboard', leaderboardSchema); 
+export const LeaderboardModel = mongoose.model<LeaderboardEntry>(
+  'Leaderboard',
+  leaderboardSchema,
+  getCollectionName('leaderboard')
+); 

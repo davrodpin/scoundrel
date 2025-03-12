@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { getCollectionName } from '../utils/dbUtils';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -14,6 +15,11 @@ export async function connectToDatabase() {
     
     if (isDevelopment) {
       console.log('[DEBUG] Connected to MongoDB');
+      console.log('[DEBUG] Using collections:', {
+        gameSession: getCollectionName('game_sessions'),
+        leaderboard: getCollectionName('leaderboard'),
+        gameStateHistory: getCollectionName('game_state_history')
+      });
     }
 
     mongoose.connection.on('error', (error) => {
