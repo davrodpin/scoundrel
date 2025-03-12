@@ -17,33 +17,34 @@ export class GameService {
     }
 
     try {
-      const initialGameState: GameState = {
-        ...initialState,
-        dungeon: initializeDeck(),
-        lastActionTimestamp: Date.now(),
-        lastActionSequence: 0,
-        stateChecksum: '' // Temporary value, will be updated below
-      };
-
-      // Calculate and set the initial checksum
-      initialGameState.stateChecksum = securityService.calculateStateChecksum(initialGameState);
-
-      if (isDevelopment) {
-        console.log('[DEBUG] Created initial game state:', {
-          dungeonSize: initialGameState.dungeon.length,
-          health: initialGameState.health,
-          maxHealth: initialGameState.maxHealth,
-          checksum: initialGameState.stateChecksum
-        });
-      }
-
       const session = new GameSessionModel({
         playerId,
-        state: initialGameState,
+        state: {
+          ...initialState,
+          dungeon: initializeDeck(),
+          lastActionTimestamp: Date.now(),
+          lastActionSequence: 0,
+          stateChecksum: '' // Temporary value, will be updated below
+        },
         actionCount: 0,
         lastActionTime: Date.now(),
         actionsInLastMinute: 0
       });
+
+      // Set the sessionId in the state after we have the session's ID
+      session.state.sessionId = session.id;
+
+      // Calculate and set the initial checksum
+      session.state.stateChecksum = securityService.calculateStateChecksum(session.state);
+
+      if (isDevelopment) {
+        console.log('[DEBUG] Created initial game state:', {
+          dungeonSize: session.state.dungeon.length,
+          health: session.state.health,
+          maxHealth: session.state.maxHealth,
+          checksum: session.state.stateChecksum
+        });
+      }
 
       await session.save();
 
@@ -51,8 +52,8 @@ export class GameService {
         console.log('[DEBUG] Game session saved successfully:', {
           sessionId: session.id,
           playerId,
-          initialHealth: initialGameState.health,
-          dungeonSize: initialGameState.dungeon.length,
+          initialHealth: session.state.health,
+          dungeonSize: session.state.dungeon.length,
           timestamp: new Date().toISOString()
         });
       }

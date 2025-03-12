@@ -60,7 +60,8 @@ const gameStateSchema = new Schema({
   lastActionWasAvoid: Boolean,
   lastActionTimestamp: Number,
   lastActionSequence: Number,
-  stateChecksum: String
+  stateChecksum: String,
+  sessionId: String
 }, { _id: false });
 
 const gameSessionSchema = new Schema({

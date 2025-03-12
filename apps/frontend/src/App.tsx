@@ -244,6 +244,7 @@ export default function App() {
     }
 
     setSubmitted(true);
+    setNameError('');
 
     try {
       await actions.submitScore({
@@ -251,13 +252,13 @@ export default function App() {
         score: state.score
       });
       setPlayerName('');
-      setNameError('');
       setShowLeaderboard(true);
       handleGameOverClose();
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to submit score. Please try again.';
       console.error('Error submitting score:', e);
       setSubmitted(false);
-      setNameError('Failed to submit score. Please try again.');
+      setNameError(errorMessage);
     }
   };
 

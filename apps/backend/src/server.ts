@@ -100,9 +100,14 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('submit_score', async ({ playerName, score }: { playerName: string, score: number }) => {
+  socket.on('submit_score', async ({ playerName, score, sessionId }: { playerName: string, score: number, sessionId: string }) => {
     try {
-      await leaderboardService.addEntry({ playerName, score });
+      await leaderboardService.addEntry({ 
+        playerName, 
+        score, 
+        playerId: socket.id,
+        sessionId 
+      });
       const entries = await leaderboardService.getEntries();
       io.emit('leaderboard_updated', entries); // Broadcast to all connected clients
     } catch (error: unknown) {

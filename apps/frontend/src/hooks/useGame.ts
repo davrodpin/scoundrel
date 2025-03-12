@@ -6,6 +6,8 @@ import type { Monster, Weapon, HealthPotion } from '../types/cards';
 interface LeaderboardEntry {
   id: string;
   playerName: string;
+  playerId: string;
+  sessionId: string;
   score: number;
   timestamp: string;
 }
@@ -54,6 +56,11 @@ export function useGame() {
       setRetryCount(0);
       setIsConnected(true);
       setError(null);
+    });
+
+    newSocket.on('error', (error: { message: string }) => {
+      debug.error('Socket error:', error);
+      setError(error.message);
     });
 
     newSocket.on('connect_error', (err: Error) => {
@@ -156,12 +163,38 @@ export function useGame() {
   }, [socket, isConnected]);
 
   const submitScore = useCallback((data: { playerName: string; score: number }) => {
-    if (!isConnected || !socket) {
-      debug.error('Cannot submit score: socket is not connected');
-      return;
+    if (!isConnected || !socket || !sessionId) {
+      const error = 'Cannot submit score: socket is not connected or session is not available';
+      debug.error(error);
+      throw new Error(error);
     }
-    socket.emit('submit_score', data);
-  }, [socket, isConnected]);
+    debug.log('Submitting score:', { ...data, sessionId });
+    return new Promise<void>((resolve, reject) => {
+      socket.emit('submit_score', { ...data, sessionId });
+      
+      const errorHandler = (error: { message: string }) => {
+        debug.error('Score submission error:', error);
+        socket.off('error', errorHandler);
+        reject(new Error(error.message));
+      };
+      
+      const successHandler = () => {
+        debug.log('Score submitted successfully');
+        socket.off('error', errorHandler);
+        resolve();
+      };
+      
+      socket.once('error', errorHandler);
+      socket.once('leaderboard_updated', successHandler);
+      
+      // Add a timeout to prevent hanging
+      setTimeout(() => {
+        socket.off('error', errorHandler);
+        socket.off('leaderboard_updated', successHandler);
+        reject(new Error('Score submission timed out'));
+      }, 5000);
+    });
+  }, [socket, isConnected, sessionId]);
 
   const equipWeapon = useCallback((weapon: Weapon) => {
     console.log('[DEBUG] Equipping weapon:', weapon);

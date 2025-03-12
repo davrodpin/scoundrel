@@ -24,6 +24,7 @@ export interface GameState {
   lastActionTimestamp: number;
   lastActionSequence: number;
   stateChecksum: string;
+  sessionId?: string;
 }
 
 interface BaseGameAction {

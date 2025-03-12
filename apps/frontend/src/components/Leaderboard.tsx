@@ -78,7 +78,11 @@ export function Leaderboard({ open, onClose, currentScore, gameOver }: Leaderboa
             </TableHead>
             <TableBody>
               {leaderboardEntries.map((entry, index) => (
-                <TableRow key={entry.id}>
+                <TableRow 
+                  key={entry.id}
+                  title={`Player ID: ${entry.playerId}\nSession ID: ${entry.sessionId}`}
+                  sx={{ cursor: 'help' }}
+                >
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{entry.playerName}</TableCell>
                   <TableCell align="right">{entry.score}</TableCell>
