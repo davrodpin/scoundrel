@@ -130,8 +130,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
       const monster = action.monster;
       
-      // Se não tem arma equipada ou o monstro é mais forte que a arma
-      // o jogador toma o dano total
+      // If no weapon is equipped or the monster is stronger than the weapon
+      // the player takes the total damage
       if (!state.equippedWeapon || state.equippedWeapon.damage === 0 || monster.damage > state.equippedWeapon.damage) {
         const newHealth = state.health - monster.damage;
         const updatedRoom = state.room.filter(card => !isSameCard(card, monster));
@@ -171,8 +171,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
 
-      // Se tem arma equipada e ela é forte o suficiente
-      // o jogador toma o dano reduzido e a arma é atualizada
+      // If a weapon is equipped and it's strong enough
+      // the player takes reduced damage and the weapon is updated
       const damage = Math.max(0, monster.damage - state.equippedWeapon.damage);
       const updatedWeapon: Weapon = {
         type: 'WEAPON',
