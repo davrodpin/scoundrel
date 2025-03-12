@@ -5,6 +5,7 @@ import { initializeDeck } from '../utils/deck';
 import { gameActionValidator } from './GameActionValidator';
 import { securityService } from './SecurityService';
 import { GameSessionModel } from '../models/GameSession';
+import { GameStateHistoryModel } from '../models/GameStateHistory';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -220,6 +221,23 @@ export class GameService {
       newState.lastActionSequence = action.sequence;
       newState.stateChecksum = securityService.calculateStateChecksum(newState);
 
+      // Save state history
+      try {
+        await GameStateHistoryModel.create({
+          sessionId: session.id,
+          playerId: session.playerId,
+          state: session.state, // Save the state before the action
+          action,
+          timestamp: new Date(action.timestamp)
+        });
+      } catch (error) {
+        console.error('[DEBUG] Failed to save game state history:', {
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        // Don't throw here - we want to continue even if history saving fails
+      }
+
       // Update session in database
       session.state = newState;
       session.lastActionTime = Date.now();
@@ -253,6 +271,19 @@ export class GameService {
       });
       throw error;
     }
+  }
+
+  // Add method to retrieve game history
+  async getGameHistory(sessionId: string): Promise<{ state: GameState; action: GameAction; timestamp: Date }[]> {
+    const history = await GameStateHistoryModel.find({ sessionId })
+      .sort({ timestamp: -1 })
+      .lean();
+    
+    return history.map(entry => ({
+      state: entry.state,
+      action: entry.action,
+      timestamp: entry.timestamp
+    }));
   }
 
   private convertToGameSession(doc: any): GameSession {

@@ -133,6 +133,20 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('get_game_history', async (sessionId: string, callback: (history: any) => void) => {
+    try {
+      const history = await gameService.getGameHistory(sessionId);
+      callback({ success: true, history });
+    } catch (error) {
+      console.error('[DEBUG] Error retrieving game history:', {
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
+        sessionId
+      });
+      callback({ success: false, error: 'Failed to retrieve game history' });
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
   });
