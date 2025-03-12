@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { GameSession, GameState, GameAction } from '../types/game';
+import type { GameCard, Monster, Weapon, HealthPotion, Suit, Rank } from '../types/cards';
 import { gameReducer, initialState } from '../reducers/gameReducer';
 import { initializeDeck } from '../utils/deck';
 import { gameActionValidator } from './GameActionValidator';
@@ -48,6 +49,80 @@ export class GameService {
       }
 
       await session.save();
+
+      // Save initial state in history
+      try {
+        const initialState = {
+          s: session.id,                    // sessionId
+          p: playerId,                      // playerId
+          seq: 0,                           // Initial state has sequence 0
+          st: {                             // Complete initial state
+            h: session.state.health,        // health
+            m: session.state.maxHealth,     // maxHealth
+            d: session.state.dungeon.map(card => ({
+              t: card.type,
+              s: card.suit,
+              r: card.rank,
+              d: 'damage' in card ? card.damage : undefined,
+              h: 'healing' in card ? card.healing : undefined
+            })),
+            r: session.state.room.map(card => ({
+              t: card.type,
+              s: card.suit,
+              r: card.rank,
+              d: 'damage' in card ? card.damage : undefined,
+              h: 'healing' in card ? card.healing : undefined
+            })),
+            w: session.state.equippedWeapon ? {
+              t: session.state.equippedWeapon.type,
+              s: session.state.equippedWeapon.suit,
+              r: session.state.equippedWeapon.rank,
+              d: session.state.equippedWeapon.damage
+            } : undefined,
+            dp: session.state.discardPile.map(card => ({
+              t: card.type,
+              s: card.suit,
+              r: card.rank,
+              d: 'damage' in card ? card.damage : undefined,
+              h: 'healing' in card ? card.healing : undefined
+            })),
+            sc: 0  // Initial score
+          },
+          t: new Date()
+        };
+
+        if (isDevelopment) {
+          console.log('[DEBUG] Saving initial game state to history:', {
+            sessionId: initialState.s,
+            playerId: initialState.p,
+            sequence: initialState.seq,
+            health: initialState.st.h,
+            maxHealth: initialState.st.m,
+            dungeonSize: initialState.st.d.length,
+            roomSize: initialState.st.r.length,
+            discardPileSize: initialState.st.dp.length,
+            score: initialState.st.sc,
+            timestamp: initialState.t
+          });
+        }
+
+        await GameStateHistoryModel.create(initialState);
+
+        if (isDevelopment) {
+          console.log('[DEBUG] Saved initial game state to history');
+        }
+      } catch (error) {
+        console.error('[DEBUG] Failed to save initial game state history:', {
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined,
+          sessionId: session.id,
+          playerId,
+          health: session.state.health,
+          maxHealth: session.state.maxHealth,
+          dungeonSize: session.state.dungeon.length
+        });
+        // Don't throw here - we want to continue even if history saving fails
+      }
 
       if (isDevelopment) {
         console.log('[DEBUG] Game session saved successfully:', {
@@ -221,15 +296,96 @@ export class GameService {
       newState.lastActionSequence = action.sequence;
       newState.stateChecksum = securityService.calculateStateChecksum(newState);
 
-      // Save state history
+      // Save action in state history
       try {
-        await GameStateHistoryModel.create({
-          sessionId: session.id,
-          playerId: session.playerId,
-          state: session.state, // Save the state before the action
-          action,
-          timestamp: new Date(action.timestamp)
-        });
+        type HistoryAction = {
+          t: string;
+          ts: number;
+          m?: {
+            t: string;
+            s: string;
+            r: string;
+            d: number;
+          };
+          w?: {
+            t: string;
+            s: string;
+            r: string;
+            d: number;
+          };
+          h?: number;
+          // Add drawn cards for DRAW_ROOM action
+          c?: Array<{
+            t: string;
+            s: string;
+            r: string;
+            d?: number;
+            h?: number;
+          }>;
+        };
+
+        type HistoryEntry = {
+          s: string;
+          p: string;
+          seq: number;
+          a: HistoryAction;
+          t: Date;
+        };
+
+        const historyEntry: HistoryEntry = {
+          s: session.id,                    // sessionId
+          p: session.playerId,              // playerId
+          seq: action.sequence,             // Action sequence number
+          a: {                              // Action details
+            t: action.type,                 // action type
+            ts: action.timestamp,           // action timestamp
+            ...(action.type === 'DRAW_ROOM' ? {
+              c: newState.room.map(card => ({
+                t: card.type,
+                s: card.suit,
+                r: card.rank,
+                ...(card.type === 'MONSTER' ? { d: card.damage } : {}),
+                ...(card.type === 'HEALTH_POTION' ? { h: card.healing } : {}),
+                ...(card.type === 'WEAPON' ? { d: card.damage } : {})
+              }))
+            } : {}),
+            ...(action.monster ? {
+              m: {
+                t: action.monster.type,
+                s: action.monster.suit,
+                r: action.monster.rank,
+                d: action.monster.damage
+              }
+            } : {}),
+            ...(action.weapon ? {
+              w: {
+                t: action.weapon.type,
+                s: action.weapon.suit,
+                r: action.weapon.rank,
+                d: action.weapon.damage
+              }
+            } : {}),
+            ...(action.healing ? { h: action.healing } : {})
+          },
+          t: new Date(action.timestamp)     // document timestamp
+        };
+
+        await GameStateHistoryModel.create(historyEntry);
+
+        if (isDevelopment) {
+          console.log('[DEBUG] Saved action to game state history:', {
+            sessionId,
+            sequence: action.sequence,
+            actionType: action.type,
+            ...(action.type === 'DRAW_ROOM' ? {
+              drawnCards: newState.room.map(card => ({
+                type: card.type,
+                suit: card.suit,
+                rank: card.rank
+              }))
+            } : {})
+          });
+        }
       } catch (error) {
         console.error('[DEBUG] Failed to save game state history:', {
           error: error instanceof Error ? error.message : error,
@@ -249,41 +405,122 @@ export class GameService {
       } catch (error) {
         console.error('[DEBUG] Mongoose save error:', {
           error: error instanceof Error ? error.message : error,
-          stack: error instanceof Error ? error.stack : undefined,
-          state: {
-            equippedWeapon: newState.equippedWeapon,
-            discardPile: newState.discardPile,
-            room: newState.room
-          }
+          stack: error instanceof Error ? error.stack : undefined
         });
         throw error;
       }
-      
+
       return newState;
     } catch (error) {
-      console.error('[DEBUG] handleAction error:', {
-        error: error instanceof Error ? error.message : error,
-        stack: error instanceof Error ? error.stack : undefined,
-        action: {
-          type: action.type,
-          weapon: action.weapon
-        }
-      });
+      if (isDevelopment) {
+        console.error('[DEBUG] Error in handleAction:', {
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined,
+          sessionId,
+          actionType: action.type
+        });
+      }
       throw error;
     }
   }
 
   // Add method to retrieve game history
-  async getGameHistory(sessionId: string): Promise<{ state: GameState; action: GameAction; timestamp: Date }[]> {
-    const history = await GameStateHistoryModel.find({ sessionId })
-      .sort({ timestamp: -1 })
-      .lean();
+  async getGameHistory(sessionId: string): Promise<{ state: GameState; action: GameAction; timestamp: number }[]> {
+    const entries = await GameStateHistoryModel.find({ s: sessionId }).sort({ seq: 1 }).lean();
     
-    return history.map(entry => ({
-      state: entry.state,
-      action: entry.action,
-      timestamp: entry.timestamp
-    }));
+    const convertCard = (card: any): GameCard => {
+      const baseCard = {
+        suit: card.s === 'S' ? '♠' : card.s === 'H' ? '♥' : card.s === 'D' ? '♦' : '♣' as Suit,
+        rank: card.r as Rank
+      };
+
+      switch (card.t) {
+        case 'M':
+          return {
+            ...baseCard,
+            type: 'MONSTER',
+            damage: card.d
+          } as Monster;
+        case 'W':
+          return {
+            ...baseCard,
+            type: 'WEAPON',
+            damage: card.d,
+            monstersSlain: []
+          } as Weapon;
+        case 'H':
+          return {
+            ...baseCard,
+            type: 'HEALTH_POTION',
+            healing: card.h
+          } as HealthPotion;
+        default:
+          throw new Error(`Unknown card type: ${card.t}`);
+      }
+    };
+
+    return entries.map(entry => {
+      // For initial state (seq = 0)
+      if (entry.seq === 0 && entry.st) {
+        const state: GameState = {
+          health: entry.st.h,
+          maxHealth: entry.st.m,
+          dungeon: (entry.st.d || []).map(convertCard),
+          room: (entry.st.r || []).map(convertCard),
+          discardPile: (entry.st.dp || []).map(convertCard),
+          equippedWeapon: entry.st.w ? convertCard(entry.st.w) as Weapon : null,
+          canAvoidRoom: true,
+          gameOver: false,
+          score: entry.st.sc || 0,
+          originalRoomSize: entry.st.r?.length || 0,
+          remainingAvoids: 1,
+          lastActionWasAvoid: false,
+          lastActionTimestamp: entry.t.getTime(),
+          lastActionSequence: entry.seq,
+          stateChecksum: '',
+          sessionId
+        };
+
+        return {
+          state,
+          action: {
+            type: 'DRAW_ROOM',
+            timestamp: entry.t.getTime(),
+            sequence: 0
+          },
+          timestamp: entry.t.getTime()
+        };
+      }
+
+      // For action entries (seq > 0)
+      const action: GameAction = entry.a ? {
+        type: entry.a.t === 'DRAW_ROOM' ? 'DRAW_ROOM' :
+              entry.a.t === 'AVOID_ROOM' ? 'AVOID_ROOM' :
+              entry.a.t === 'FIGHT_MONSTER' ? 'FIGHT_MONSTER' :
+              entry.a.t === 'USE_WEAPON' ? 'USE_WEAPON' :
+              entry.a.t === 'USE_HEALTH_POTION' ? 'USE_HEALTH_POTION' :
+              'EQUIP_WEAPON',
+        monster: entry.a.m ? convertCard(entry.a.m) as Monster : undefined,
+        weapon: entry.a.w ? convertCard(entry.a.w) as Weapon : undefined,
+        healing: entry.a.h,
+        timestamp: entry.a.ts,
+        sequence: entry.seq
+      } : {
+        type: 'DRAW_ROOM',
+        timestamp: entry.t.getTime(),
+        sequence: entry.seq
+      };
+
+      // For action entries, we need to reconstruct the state by applying the action
+      // This should be handled by the game reducer
+      const state = gameReducer(initialState, action);
+
+      return {
+        state,
+        action,
+        timestamp: entry.t.getTime()
+      };
+    });
   }
 
   private convertToGameSession(doc: any): GameSession {
