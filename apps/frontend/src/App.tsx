@@ -168,7 +168,7 @@ export default function App() {
   const [nameError, setNameError] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const canDrawRoom = state && !state.gameOver && (state.room.length === 0 || state.room.length === 1);
+  const canDrawRoom = state && !state.gameOver && (state?.room?.length === 0 || state?.room?.length === 1);
 
   useEffect(() => {
     if (isConnected && !state) {
@@ -374,7 +374,7 @@ export default function App() {
                 {/* Dungeon Deck */}
                 <Grid item>
                   <DeckPile 
-                    count={state.dungeon.length} 
+                    count={state?.dungeon?.length ?? 0} 
                     label="Dungeon" 
                     onClick={canDrawRoom ? actions.drawRoom : undefined}
                   />
@@ -458,9 +458,9 @@ export default function App() {
                 {/* Discard Pile */}
                 <Grid item>
                   <DeckPile 
-                    count={state.discardPile.length} 
+                    count={Array.isArray(state?.discardPile) ? state.discardPile.length : 0} 
                     label="Discard" 
-                    topCard={state.discardPile[state.discardPile.length - 1]}
+                    topCard={Array.isArray(state?.discardPile) && state.discardPile.length > 0 ? state.discardPile[state.discardPile.length - 1] : undefined}
                   />
                 </Grid>
               </Grid>
@@ -472,9 +472,12 @@ export default function App() {
                   display: 'flex', 
                   flexDirection: 'column',
                   alignItems: 'center',
-                  mb: `${state.equippedWeapon.monstersSlain.length * 30 + 20}px`
+                  mb: `${Array.isArray(state.equippedWeapon.monstersSlain) ? state.equippedWeapon.monstersSlain.length * 30 + 20 : 20}px`
                 }}>
-                  <WeaponStack weapon={state.equippedWeapon} monstersSlain={state.equippedWeapon.monstersSlain} />
+                  <WeaponStack 
+                    weapon={state.equippedWeapon} 
+                    monstersSlain={Array.isArray(state.equippedWeapon.monstersSlain) ? state.equippedWeapon.monstersSlain : []} 
+                  />
                 </Box>
               )}
 
@@ -488,7 +491,7 @@ export default function App() {
                 <Button
                   variant="outlined"
                   onClick={actions.avoidRoom}
-                  disabled={state.gameOver || !state.canAvoidRoom || state.room.length === 0}
+                  disabled={state?.gameOver || !state?.canAvoidRoom || state?.room?.length === 0}
                 >
                   Avoid Room
                 </Button>

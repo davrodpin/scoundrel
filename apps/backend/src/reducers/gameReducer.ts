@@ -58,7 +58,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return { 
           ...state, 
           gameOver: true, 
-          score
+          score,
+          discardPile: state.discardPile
         };
       }
       
@@ -73,7 +74,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           canAvoidRoom: !state.lastActionWasAvoid,
           originalRoomSize: 4,
           remainingAvoids: 1,
-          lastActionWasAvoid: false
+          lastActionWasAvoid: false,
+          discardPile: state.discardPile,
+          equippedWeapon: state.equippedWeapon,
+          maxHealth: state.maxHealth,
+          health: state.health
         };
       }
       
@@ -87,70 +92,94 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         canAvoidRoom: !state.lastActionWasAvoid,
         originalRoomSize: 4,
         remainingAvoids: 1,
-        lastActionWasAvoid: false
+        lastActionWasAvoid: false,
+        health: state.health,
+        maxHealth: state.maxHealth,
+        discardPile: state.discardPile,
+        equippedWeapon: state.equippedWeapon
       };
 
-    case 'AVOID_ROOM':
-      if (!state.canAvoidRoom || state.lastActionWasAvoid) return state;
+    case 'AVOID_ROOM': {
+      if (!state.canAvoidRoom) {
+        return state;
+      }
+
+      // Put the current room cards back into the dungeon
       const updatedDungeon = [...state.dungeon, ...state.room];
-      return { 
-        ...state, 
-        room: [], 
+
+      return {
+        ...state,
+        room: [],
         dungeon: updatedDungeon,
-        originalRoomSize: 0,
+        canAvoidRoom: false,
         remainingAvoids: 0,
-        lastActionWasAvoid: true
+        lastActionWasAvoid: true,
+        health: state.health,
+        maxHealth: state.maxHealth,
+        equippedWeapon: state.equippedWeapon,
+        discardPile: state.discardPile,
+        score: state.score,
+        gameOver: state.gameOver,
+        originalRoomSize: state.originalRoomSize
       };
+    }
 
     case 'FIGHT_MONSTER': {
       if (!action.monster) {
         throw new Error('Monster is required for FIGHT_MONSTER action');
       }
       const monster = action.monster;
-      const newHealth = state.health - monster.damage;
-      const updatedRoom = state.room.filter(card => !isSameCard(card, monster));
-      const isGameOver = newHealth <= 0;
       
-      if (isGameOver) {
-        const monstersInDungeon = state.dungeon.filter(card => card.type === 'MONSTER') as Monster[];
-        const score = -monstersInDungeon.reduce((acc, m) => acc + getRankValue(m.rank), 0);
+      // Se não tem arma equipada ou o monstro é mais forte que a arma
+      // o jogador toma o dano total
+      if (!state.equippedWeapon || state.equippedWeapon.damage === 0 || monster.damage > state.equippedWeapon.damage) {
+        const newHealth = state.health - monster.damage;
+        const updatedRoom = state.room.filter(card => !isSameCard(card, monster));
+        const isGameOver = newHealth <= 0;
+        
+        if (isGameOver) {
+          const monstersInDungeon = state.dungeon.filter(card => card.type === 'MONSTER') as Monster[];
+          const score = -monstersInDungeon.reduce((acc, m) => acc + getRankValue(m.rank), 0);
+          return {
+            ...state,
+            health: newHealth,
+            maxHealth: state.maxHealth,
+            room: updatedRoom,
+            discardPile: [...state.discardPile, monster],
+            gameOver: true,
+            score,
+            canAvoidRoom: false,
+            remainingAvoids: 0,
+            lastActionWasAvoid: false,
+            dungeon: state.dungeon,
+            equippedWeapon: state.equippedWeapon
+          };
+        }
+
         return {
           ...state,
           health: newHealth,
+          maxHealth: state.maxHealth,
           room: updatedRoom,
           discardPile: [...state.discardPile, monster],
-          gameOver: true,
-          score,
-          canAvoidRoom: false,
+          gameOver: false,
+          canAvoidRoom: updatedRoom.length === state.originalRoomSize,
           remainingAvoids: 0,
-          lastActionWasAvoid: false
+          lastActionWasAvoid: false,
+          dungeon: state.dungeon,
+          equippedWeapon: state.equippedWeapon
         };
       }
 
-      return {
-        ...state,
-        health: newHealth,
-        room: updatedRoom,
-        discardPile: [...state.discardPile, monster],
-        gameOver: false,
-        canAvoidRoom: updatedRoom.length === state.originalRoomSize,
-        remainingAvoids: 0,
-        lastActionWasAvoid: false
-      };
-    }
-
-    case 'USE_WEAPON': {
-      if (!action.monster) {
-        throw new Error('Monster is required for USE_WEAPON action');
-      }
-      if (!state.equippedWeapon) return state;
-      
-      const monster = action.monster;
+      // Se tem arma equipada e ela é forte o suficiente
+      // o jogador toma o dano reduzido e a arma é atualizada
       const damage = Math.max(0, monster.damage - state.equippedWeapon.damage);
       const updatedWeapon: Weapon = {
-        ...state.equippedWeapon,
-        monstersSlain: [...state.equippedWeapon.monstersSlain, monster],
-        damage: monster.damage
+        type: 'WEAPON',
+        suit: state.equippedWeapon.suit,
+        rank: state.equippedWeapon.rank,
+        damage: monster.damage,
+        monstersSlain: [...state.equippedWeapon.monstersSlain, monster]
       };
       const roomAfterWeapon = state.room.filter(card => !isSameCard(card, monster));
       const newHealthAfterWeapon = state.health - damage;
@@ -162,25 +191,84 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return {
           ...state,
           health: newHealthAfterWeapon,
+          maxHealth: state.maxHealth,
           equippedWeapon: updatedWeapon,
           room: roomAfterWeapon,
           gameOver: true,
           score,
           canAvoidRoom: false,
           remainingAvoids: 0,
-          lastActionWasAvoid: false
+          lastActionWasAvoid: false,
+          dungeon: state.dungeon,
+          discardPile: state.discardPile
         };
       }
 
       return {
         ...state,
         health: newHealthAfterWeapon,
+        maxHealth: state.maxHealth,
         equippedWeapon: updatedWeapon,
         room: roomAfterWeapon,
         gameOver: false,
         canAvoidRoom: roomAfterWeapon.length === state.originalRoomSize,
         remainingAvoids: 0,
-        lastActionWasAvoid: false
+        lastActionWasAvoid: false,
+        dungeon: state.dungeon,
+        discardPile: state.discardPile
+      };
+    }
+
+    case 'USE_WEAPON': {
+      if (!action.monster) {
+        throw new Error('Monster is required for USE_WEAPON action');
+      }
+      if (!state.equippedWeapon || state.equippedWeapon.damage === 0) return state;
+      
+      const monster = action.monster;
+      const damage = Math.max(0, monster.damage - state.equippedWeapon.damage);
+      const updatedWeapon: Weapon = {
+        type: 'WEAPON',
+        suit: state.equippedWeapon.suit,
+        rank: state.equippedWeapon.rank,
+        damage: monster.damage,
+        monstersSlain: [...state.equippedWeapon.monstersSlain, monster]
+      };
+      const roomAfterWeapon = state.room.filter(card => !isSameCard(card, monster));
+      const newHealthAfterWeapon = state.health - damage;
+      const isGameOverAfterWeapon = newHealthAfterWeapon <= 0;
+
+      if (isGameOverAfterWeapon) {
+        const monstersInDungeon = state.dungeon.filter(card => card.type === 'MONSTER') as Monster[];
+        const score = -monstersInDungeon.reduce((acc, m) => acc + getRankValue(m.rank), 0);
+        return {
+          ...state,
+          health: newHealthAfterWeapon,
+          maxHealth: state.maxHealth,
+          equippedWeapon: updatedWeapon,
+          room: roomAfterWeapon,
+          gameOver: true,
+          score,
+          canAvoidRoom: false,
+          remainingAvoids: 0,
+          lastActionWasAvoid: false,
+          dungeon: state.dungeon,
+          discardPile: state.discardPile
+        };
+      }
+
+      return {
+        ...state,
+        health: newHealthAfterWeapon,
+        maxHealth: state.maxHealth,
+        equippedWeapon: updatedWeapon,
+        room: roomAfterWeapon,
+        gameOver: false,
+        canAvoidRoom: roomAfterWeapon.length === state.originalRoomSize,
+        remainingAvoids: 0,
+        lastActionWasAvoid: false,
+        dungeon: state.dungeon,
+        discardPile: state.discardPile
       };
     }
 
@@ -201,6 +289,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         health: newHealthWithPotion,
+        maxHealth: state.maxHealth,
         room: roomAfterPotion,
         discardPile: [...state.discardPile, potion],
         canAvoidRoom: roomAfterPotion.length === state.originalRoomSize,
@@ -208,7 +297,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         lastActionWasAvoid: false,
         lastActionTimestamp: action.timestamp,
         lastActionSequence: action.sequence,
-        stateChecksum: state.stateChecksum
+        stateChecksum: state.stateChecksum,
+        dungeon: state.dungeon,
+        equippedWeapon: state.equippedWeapon
       };
     }
 
@@ -216,27 +307,65 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!action.weapon) {
         throw new Error('Weapon is required for EQUIP_WEAPON action');
       }
-      const oldWeapon = state.equippedWeapon;
-      const weapon = action.weapon;
+
+      console.log('[DEBUG] Initial state:', {
+        health: state.health,
+        maxHealth: state.maxHealth,
+        equippedWeapon: state.equippedWeapon,
+        discardPile: state.discardPile,
+        room: state.room
+      });
+
+      // Criar um objeto simples para a nova arma
+      const weapon = {
+        type: action.weapon.type,
+        suit: action.weapon.suit,
+        rank: action.weapon.rank,
+        damage: action.weapon.damage,
+        monstersSlain: []
+      };
+
+      console.log('[DEBUG] New weapon to equip:', weapon);
+      
       const roomAfterEquip = state.room.filter(card => !isSameCard(card, weapon));
-      if (oldWeapon) {
-        return {
-          ...state,
-          equippedWeapon: weapon,
-          discardPile: [...state.discardPile, oldWeapon, ...oldWeapon.monstersSlain],
-          room: roomAfterEquip,
-          canAvoidRoom: roomAfterEquip.length === state.originalRoomSize,
-          remainingAvoids: 0,
-          lastActionWasAvoid: false
+      const discardPile = Array.isArray(state.discardPile) ? [...state.discardPile] : [];
+      
+      // Se já existe uma arma equipada, adiciona ela e seus monstros à pilha de descarte
+      if (state.equippedWeapon && state.equippedWeapon.type) {
+        const oldWeapon = {
+          type: state.equippedWeapon.type,
+          suit: state.equippedWeapon.suit,
+          rank: state.equippedWeapon.rank,
+          damage: state.equippedWeapon.damage,
+          monstersSlain: Array.isArray(state.equippedWeapon.monstersSlain) 
+            ? state.equippedWeapon.monstersSlain.map(m => ({
+                type: m.type,
+                suit: m.suit,
+                rank: m.rank,
+                damage: m.damage
+              }))
+            : []
         };
+          
+        console.log('[DEBUG] Discarding current weapon:', {
+          weapon: oldWeapon,
+          monstersSlain: oldWeapon.monstersSlain
+        });
+
+        discardPile.push(oldWeapon);
       }
+
       return {
         ...state,
-        equippedWeapon: weapon,
         room: roomAfterEquip,
+        equippedWeapon: weapon,
+        discardPile,
         canAvoidRoom: roomAfterEquip.length === state.originalRoomSize,
         remainingAvoids: 0,
-        lastActionWasAvoid: false
+        lastActionWasAvoid: false,
+        health: state.health,
+        maxHealth: state.maxHealth,
+        dungeon: state.dungeon
       };
     }
 

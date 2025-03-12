@@ -163,6 +163,11 @@ export function useGame() {
     socket.emit('submit_score', data);
   }, [socket, isConnected]);
 
+  const equipWeapon = useCallback((weapon: Weapon) => {
+    console.log('[DEBUG] Equipping weapon:', weapon);
+    dispatchAction({ type: 'EQUIP_WEAPON', weapon });
+  }, [dispatchAction]);
+
   return {
     state,
     error,
@@ -176,7 +181,7 @@ export function useGame() {
       useWeapon: (monster: Monster) => dispatchAction({ type: 'USE_WEAPON', monster }),
       useHealthPotion: (potion: HealthPotion) => 
         dispatchAction({ type: 'USE_HEALTH_POTION', healing: potion.healing }),
-      equipWeapon: (weapon: Weapon) => dispatchAction({ type: 'EQUIP_WEAPON', weapon }),
+      equipWeapon,
       fetchLeaderboard,
       submitScore
     }
