@@ -11,13 +11,7 @@ export async function connectToDatabase() {
   }
 
   try {
-    await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      ssl: true,
-      tls: true,
-      tlsAllowInvalidCertificates: false
-    });
+    await mongoose.connect(mongoUri);
     
     if (isDevelopment) {
       console.log('[DEBUG] Connected to MongoDB');
