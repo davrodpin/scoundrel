@@ -132,7 +132,7 @@ gameStateHistorySchema.pre('validate', function(next) {
 });
 
 // Add TTL index to automatically remove history entries after 7 days
-gameStateHistorySchema.index({ t: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60 });
+gameStateHistorySchema.index({ t: 1 }, { expires: '7d' });
 
 // Add compound indexes for efficient querying
 gameStateHistorySchema.index({ s: 1, seq: 1 });     // For replaying games
