@@ -10,11 +10,20 @@ export async function connectToDatabase() {
     throw new Error('MONGODB_URI environment variable is not set');
   }
 
+  // Set strictQuery to false to prepare for Mongoose 7
+  mongoose.set('strictQuery', false);
+
   try {
-    await mongoose.connect(mongoUri);
+    // Add connection options for better reliability
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+    });
+    
+    // Log connection status in both development and production
+    console.log(`[${isDevelopment ? 'DEBUG' : 'INFO'}] Connected to MongoDB`);
     
     if (isDevelopment) {
-      console.log('[DEBUG] Connected to MongoDB');
       console.log('[DEBUG] Using collections:', {
         gameSession: getCollectionName('game_sessions'),
         leaderboard: getCollectionName('leaderboard'),
@@ -23,21 +32,39 @@ export async function connectToDatabase() {
     }
 
     mongoose.connection.on('error', (error) => {
-      if (isDevelopment) {
-        console.error('[DEBUG] MongoDB connection error:', error);
-      }
+      const logLevel = isDevelopment ? 'DEBUG' : 'ERROR';
+      console.error(`[${logLevel}] MongoDB connection error:`, error);
     });
 
     mongoose.connection.on('disconnected', () => {
-      if (isDevelopment) {
-        console.log('[DEBUG] MongoDB disconnected');
-      }
+      const logLevel = isDevelopment ? 'DEBUG' : 'WARN';
+      console.log(`[${logLevel}] MongoDB disconnected`);
+    });
+
+    mongoose.connection.on('reconnected', () => {
+      const logLevel = isDevelopment ? 'DEBUG' : 'INFO';
+      console.log(`[${logLevel}] MongoDB reconnected`);
     });
 
   } catch (error) {
-    if (isDevelopment) {
-      console.error('[DEBUG] Error connecting to MongoDB:', error);
+    // Always log connection errors in both development and production
+    console.error(`[${isDevelopment ? 'DEBUG' : 'ERROR'}] Error connecting to MongoDB:`, {
+      error: error instanceof Error ? error.message : String(error),
+      name: error instanceof Error ? error.name : 'Unknown',
+      stack: isDevelopment && error instanceof Error ? error.stack : undefined
+    });
+
+    // If it's a connection error, provide more helpful information
+    if (error instanceof mongoose.Error.MongooseServerSelectionError) {
+      console.error(`
+        MongoDB Connection Troubleshooting:
+        1. Check if MONGODB_URI is correct
+        2. Verify IP Whitelist settings in MongoDB Atlas
+        3. Check MongoDB Atlas cluster status
+        4. Ensure the database user has correct permissions
+      `);
     }
+
     throw error;
   }
 } 
