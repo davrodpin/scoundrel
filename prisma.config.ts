@@ -1,5 +1,5 @@
 import process from "node:process";
-import "dotenv/config";
+
 import { defineConfig } from "prisma/config";
 
 export default defineConfig({

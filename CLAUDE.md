@@ -40,7 +40,7 @@ Refer to local `CLAUDE.md` files for specialized instructions:
 - Every module must have an entry on `deno.json` dependencies, scope by @scoundrel. Example: an authentication modules would have a `@scoundrel/authentication: "./lib/authentication/mod.ts` entry 
 - Each feature must have their own suite of integration tests. Integration tests don't use mocks anywhere. They will run against lower environments.
 - Any administered task like database migrations, run tests and etc should be represented as a Deno task in `deno.json`
-- Any required environment variable should be supported through an `.env` file
+- Environment variables are managed via Deno Deploy and injected locally using `deno task --tunnel <task>`
 - When adding logging messages, use the appropriate level and use [structured data](https://logtape.org/manual/struct)
 - Use zod for all schema validations
 - All timestamps in UTC

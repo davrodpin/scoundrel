@@ -25,7 +25,6 @@
   ],
   "imports": {
     "@/": "./",
-    "@std/dotenv": "jsr:@std/dotenv@^0.225.6",
     "fresh": "jsr:@fresh/core@^2.2.0",
     "preact": "npm:preact@^10.27.2",
     "@preact/signals": "npm:@preact/signals@^2.5.0",
@@ -37,8 +36,7 @@
     "@logtape/logtape": "jsr:@logtape/logtape@^0.12",
     "prisma": "npm:prisma@^6",
     "@prisma/client": "npm:@prisma/client@^6",
-    "@scoundrel/scoundrel": "./lib/scoundrel/mod.ts",
-    "dotenv": "npm:dotenv@^16"
+    "@scoundrel/scoundrel": "./lib/scoundrel/mod.ts"
   },
   "compilerOptions": {
     "lib": [
@@ -68,5 +66,9 @@
     "types": [
       "vite/client"
     ]
+  },
+  "deploy": {
+    "org": "ever-forward",
+    "app": "scoundrel"
   }
 }
