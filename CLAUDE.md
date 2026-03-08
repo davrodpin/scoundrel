@@ -25,7 +25,7 @@ Refer to local `CLAUDE.md` files for specialized instructions:
 - `routes/`: Server-side Fresh routes and API handlers.
 - `routes/api/`: API route conventions.
 - `islands/`: Client-side interactive components (Preact).
-- `lib/scoundrel`: Game rule engine.
+- `lib/engine`: Game rule engine.
 
 # Coding Standards
 

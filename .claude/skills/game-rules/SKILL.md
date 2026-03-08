@@ -1,6 +1,6 @@
 ---
 name: game-rules
-description: Use when implementing, modifying, or debugging game logic in lib/scoundrel. Defines how to translate Scoundrel card game rules into domain code, ensuring every behavior matches the official rules spec.
+description: Use when implementing, modifying, or debugging game logic in lib/engine. Defines how to translate Scoundrel card game rules into domain code, ensuring every behavior matches the official rules spec.
 ---
 
 # Game Rules Implementation
@@ -36,10 +36,10 @@ Always confirm the exact rule before implementing. The game has subtle edge case
 
 ## Domain Module
 
-All game logic lives in `lib/scoundrel/`. Follow the module conventions from `lib/scoundrel/CLAUDE.md`:
+All game logic lives in `lib/engine/`. Follow the module conventions from `lib/engine/CLAUDE.md`:
 - Game state is fully contained in the module's data structures
 - Expose public API through `mod.ts`
-- Module is registered as `@scoundrel/scoundrel` in `deno.json`
+- Module is registered as `@scoundrel/engine` in `deno.json`
 
 ## Implementation Patterns
 

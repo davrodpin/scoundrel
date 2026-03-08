@@ -9,6 +9,8 @@
     "jsr:@fresh/core@^2.2.0": "2.2.0",
     "jsr:@fresh/plugin-vite@^1.0.8": "1.0.8",
     "jsr:@logtape/logtape@0.12": "0.12.3",
+    "jsr:@std/assert@*": "1.0.18",
+    "jsr:@std/assert@1": "1.0.18",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
     "jsr:@std/dotenv@~0.225.5": "0.225.6",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
@@ -110,6 +112,12 @@
     },
     "@logtape/logtape@0.12.3": {
       "integrity": "8d2c9b48a72d8bcadc64294a582f08df3fe048850952e26b04b822bb2affb6e9"
+    },
+    "@std/assert@1.0.18": {
+      "integrity": "270245e9c2c13b446286de475131dc688ca9abcd94fc5db41d43a219b34d1c78",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
     },
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
@@ -1624,6 +1632,7 @@
       "jsr:@fresh/core@^2.2.0",
       "jsr:@fresh/plugin-vite@^1.0.8",
       "jsr:@logtape/logtape@0.12",
+      "jsr:@std/assert@1",
       "npm:@preact/signals@^2.5.0",
       "npm:@prisma/client@6",
       "npm:@tailwindcss/vite@^4.1.12",
