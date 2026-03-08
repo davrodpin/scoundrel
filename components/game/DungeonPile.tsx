@@ -14,7 +14,7 @@ export function DungeonPile(
   return (
     <div class="flex flex-col items-center gap-1">
       <div
-        class={`relative w-[clamp(120px,25vw,200px)] transition-transform duration-200 ${cursorClass}`}
+        class={`relative w-[clamp(140px,28vw,230px)] transition-transform duration-200 ${cursorClass}`}
         onClick={interactive ? onClick : undefined}
         role={interactive ? "button" : undefined}
         tabIndex={interactive ? 0 : undefined}
@@ -31,7 +31,7 @@ export function DungeonPile(
             </>
           )
           : (
-            <div class="w-[clamp(120px,25vw,200px)] aspect-[5/7] rounded-sm border border-dungeon-border bg-dungeon-surface flex items-center justify-center">
+            <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] rounded-sm border border-dungeon-border bg-dungeon-surface flex items-center justify-center">
               <span class="text-parchment-dark text-xs">Empty</span>
             </div>
           )}

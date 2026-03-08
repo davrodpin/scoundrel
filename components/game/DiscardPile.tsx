@@ -7,7 +7,7 @@ type DiscardPileProps = {
 export function DiscardPile({ count }: DiscardPileProps) {
   return (
     <div class="flex flex-col items-center gap-1">
-      <div class="relative w-[clamp(120px,25vw,200px)]">
+      <div class="relative w-[clamp(140px,28vw,230px)]">
         {count > 0
           ? (
             <>
@@ -20,7 +20,7 @@ export function DiscardPile({ count }: DiscardPileProps) {
             </>
           )
           : (
-            <div class="w-[clamp(120px,25vw,200px)] aspect-[5/7] rounded-sm border border-dungeon-border bg-dungeon-surface flex items-center justify-center">
+            <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] rounded-sm border border-dungeon-border bg-dungeon-surface flex items-center justify-center">
               <span class="text-parchment-dark text-xs">Empty</span>
             </div>
           )}

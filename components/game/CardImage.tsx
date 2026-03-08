@@ -22,7 +22,7 @@ export function CardImage(
       type="button"
       onClick={interactive ? onClick : undefined}
       disabled={disabled}
-      class={`w-[clamp(120px,25vw,200px)] rounded-sm border transition-transform duration-200 ${
+      class={`w-[clamp(140px,28vw,230px)] rounded-sm border transition-transform duration-200 ${
         highlighted
           ? "border-torch-glow shadow-[0_0_8px_rgba(230,168,50,0.4)]"
           : "border-dungeon-border"
