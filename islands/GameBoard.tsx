@@ -16,11 +16,14 @@ import { RoomArea } from "../components/game/RoomArea.tsx";
 import { EquippedWeaponArea } from "../components/game/EquippedWeaponArea.tsx";
 import { ActionBar } from "../components/game/ActionBar.tsx";
 import { GameOverOverlay } from "../components/game/GameOverOverlay.tsx";
+import { RulesPanel } from "../components/game/RulesPanel.tsx";
+import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
 
 const engine = createGameEngine();
 
 export default function GameBoard() {
   const eventLog = useSignal<EventLog | null>(null);
+  const showRules = useSignal(false);
   const showFightOverlay = useSignal(false);
   const pendingMonsterIndex = useSignal<number | null>(null);
   const damageFlash = useSignal(false);
@@ -182,8 +185,20 @@ export default function GameBoard() {
       })()
       : undefined;
 
+  function handleToggleRules() {
+    showRules.value = !showRules.value;
+  }
+
+  function handleCloseRules() {
+    showRules.value = false;
+  }
+
   return (
     <div class="min-h-screen bg-dungeon-bg text-parchment p-4 font-body">
+      {/* Rules toggle + panel */}
+      <RulesToggleButton onClick={handleToggleRules} />
+      <RulesPanel open={showRules.value} onClose={handleCloseRules} />
+
       {/* Health Display */}
       <HealthDisplay
         health={state.health}
