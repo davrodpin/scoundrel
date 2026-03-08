@@ -249,12 +249,7 @@ export default function GameBoard() {
       {/* Equipped Weapon */}
       <EquippedWeaponArea weapon={state.equippedWeapon} />
 
-      {/* Turn info */}
-      <div class="text-center mt-4 text-parchment-dark text-xs font-body">
-        Turn {state.turnNumber}
-      </div>
-
-      {/* Game Over Overlay */}
+{/* Game Over Overlay */}
       {isGameOver && state.phase.kind === "game_over" && (
         <GameOverOverlay
           reason={state.phase.reason}
