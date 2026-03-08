@@ -67,10 +67,11 @@ first, dependency injection, etc.).
 Whenever `prisma/schema.prisma` is modified, a new migration file must be
 generated before applying it:
 
-1. **Create the migration** — `deno run -A npm:prisma migrate dev --name <descriptive-name>`
-   (this generates a new SQL file under `prisma/migrations/`)
-2. **Apply migrations** — `deno task prisma:migrate`
-   (runs `prisma migrate deploy`, applies all pending migrations)
+1. **Create the migration** —
+   `deno run -A npm:prisma migrate dev --name <descriptive-name>` (this
+   generates a new SQL file under `prisma/migrations/`)
+2. **Apply migrations** — `deno task prisma:migrate` (runs
+   `prisma migrate deploy`, applies all pending migrations)
 
 Never run `prisma migrate deploy` alone after a schema change without first
 creating the migration file. The deploy command only applies existing migration
@@ -84,3 +85,22 @@ files — it does not generate new ones.
 - Inject dependencies through the application state defined in `utils.ts`
 - Use LogTape with structured data for logging
 - All timestamps in UTC
+
+## Logging Requirements
+
+Logging is mandatory and must be implemented as part of every development cycle:
+
+- **API request logging** is handled centrally by the middleware in
+  `routes/_middleware.ts` — no per-route request logging needed
+- **Every service-layer function** that performs a write operation (create,
+  update, delete) must log the operation at `info` level with structured data
+  including relevant entity IDs (e.g. `{ gameId }`)
+- **Every error path** that represents an unexpected failure (thrown exceptions,
+  not business-rule rejections) must be logged at `error` level with structured
+  context
+- **Log category convention**: `["scoundrel", "<module-name>"]` (e.g.
+  `["scoundrel", "game"]`)
+- Use `getLogger` from `@logtape/logtape` and pass structured data as the second
+  argument — never use string interpolation in log messages
+- Call `getLogger` inside the factory function (e.g. inside
+  `createGameService`), not at module top-level

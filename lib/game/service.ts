@@ -1,3 +1,4 @@
+import { getLogger } from "@logtape/logtape";
 import type { EventLog, GameEngine } from "@scoundrel/engine";
 import type { GameView } from "./types.ts";
 import type { GameRepository } from "./repository.ts";
@@ -17,11 +18,14 @@ export function createGameService(
   engine: GameEngine,
   repository: GameRepository,
 ): GameService {
+  const logger = getLogger(["scoundrel", "game"]);
+
   return {
     async createGame(): Promise<GameView> {
       const { state, eventLog } = engine.createGame();
       const createdEvent = eventLog.events[0];
       await repository.createGame(state.gameId, createdEvent);
+      logger.info("Game created", { gameId: state.gameId });
       return toGameView(state);
     },
 
@@ -29,6 +33,12 @@ export function createGameService(
       gameId: string,
       action: unknown,
     ): Promise<{ ok: true; view: GameView } | { ok: false; error: string }> {
+      const actionType = typeof action === "object" &&
+          action !== null &&
+          "type" in action
+        ? String((action as Record<string, unknown>).type)
+        : "unknown";
+
       const latestEvent = await repository.getLatestEvent(gameId);
       if (!latestEvent) {
         return { ok: false, error: "Game not found" };
@@ -73,8 +83,10 @@ export function createGameService(
         if (newState.phase.kind === "game_over") {
           const score = engine.getScore(newState);
           await repository.updateStatus(gameId, "completed", score);
+          logger.info("Game completed", { gameId, score });
         }
 
+        logger.info("Action submitted", { gameId, actionType });
         return { ok: true, view: toGameView(newState) };
       }
 
@@ -93,8 +105,10 @@ export function createGameService(
       if (newState.phase.kind === "game_over") {
         const score = engine.getScore(newState);
         await repository.updateStatus(gameId, "completed", score);
+        logger.info("Game completed", { gameId, score });
       }
 
+      logger.info("Action submitted", { gameId, actionType });
       return { ok: true, view: toGameView(newState) };
     },
 
