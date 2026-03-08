@@ -7,9 +7,9 @@
     "start": "deno serve -A _fresh/server.js",
     "update": "deno run -A -r jsr:@fresh/update .",
     "test": "deno test --allow-all",
-    "prisma:generate": "deno run -A npm:prisma generate",
-    "prisma:migrate": "deno run -A npm:prisma migrate dev",
-    "prisma:studio": "deno run -A npm:prisma studio"
+    "prisma:generate": "deno run -A --env-file npm:prisma generate",
+    "prisma:migrate": "deno run -A --env-file npm:prisma migrate dev",
+    "prisma:studio": "deno run -A --env-file npm:prisma studio"
   },
   "lint": {
     "rules": {
@@ -38,7 +38,8 @@
     "@prisma/client": "npm:@prisma/client@^6",
     "@std/assert": "jsr:@std/assert@^1",
     "@scoundrel/engine": "./lib/engine/mod.ts",
-    "@scoundrel/game": "./lib/scoundrel/mod.ts"
+    "@scoundrel/game": "./lib/scoundrel/mod.ts",
+    "@scoundrel/game-service": "./lib/game/mod.ts"
   },
   "compilerOptions": {
     "lib": [
