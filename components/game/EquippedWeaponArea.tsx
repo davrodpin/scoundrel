@@ -26,18 +26,22 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
     <div class="flex justify-center mt-6">
       <div class="flex flex-col items-center gap-1">
         <div class="flex items-start gap-3">
-          <img
-            src={cardImagePath(weapon.card)}
-            alt={`Weapon: ${weapon.card.rank} of ${weapon.card.suit}`}
-            class="w-[clamp(140px,28vw,230px)] h-auto rounded-sm border border-weapon-steel"
-          />
+          <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] overflow-hidden rounded-sm border border-weapon-steel">
+            <img
+              src={cardImagePath(weapon.card)}
+              alt={`Weapon: ${weapon.card.rank} of ${weapon.card.suit}`}
+              class="w-full h-full object-cover"
+            />
+          </div>
           {lastSlain
             ? (
-              <img
-                src={cardImagePath(lastSlain)}
-                alt={`Last slain: ${lastSlain.rank} of ${lastSlain.suit}`}
-                class="w-[clamp(140px,28vw,230px)] h-auto rounded-sm border border-dungeon-border"
-              />
+              <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] overflow-hidden rounded-sm border border-dungeon-border">
+                <img
+                  src={cardImagePath(lastSlain)}
+                  alt={`Last slain: ${lastSlain.rank} of ${lastSlain.suit}`}
+                  class="w-full h-full object-cover"
+                />
+              </div>
             )
             : (
               <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
