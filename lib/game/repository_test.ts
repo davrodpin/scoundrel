@@ -1,0 +1,196 @@
+import { assertEquals } from "@std/assert";
+import { createPrismaGameRepository } from "./repository.ts";
+import type { GameRepository, StoredEvent } from "./repository.ts";
+import type { PrismaClient } from "../generated/prisma/client.ts";
+import type { GameEvent as EngineGameEvent } from "@scoundrel/engine";
+
+// deno-lint-ignore no-explicit-any
+type MockPrisma = Record<string, any>;
+
+function makeMockPrismaClient(): MockPrisma {
+  return {
+    $transaction: () => Promise.resolve(),
+    game: {
+      create: () => Promise.resolve(),
+      update: () => Promise.resolve(),
+    },
+    gameEvent: {
+      create: () => Promise.resolve(),
+      findFirst: () => Promise.resolve(null),
+      findMany: () => Promise.resolve([]),
+    },
+  };
+}
+
+Deno.test("createPrismaGameRepository returns object with all repository methods", () => {
+  const mockPrisma = makeMockPrismaClient();
+  const repo: GameRepository = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+
+  assertEquals(typeof repo.createGame, "function");
+  assertEquals(typeof repo.appendEvent, "function");
+  assertEquals(typeof repo.getLatestEvent, "function");
+  assertEquals(typeof repo.getAllEvents, "function");
+  assertEquals(typeof repo.updateStatus, "function");
+});
+
+Deno.test("createGame calls $transaction on prisma client", async () => {
+  let transactionCalled = false;
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.$transaction = async (fn: (tx: MockPrisma) => Promise<void>) => {
+    transactionCalled = true;
+    await fn({
+      game: { create: () => Promise.resolve() },
+      gameEvent: { create: () => Promise.resolve() },
+    });
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+
+  await repo.createGame("test-game-id", {
+    kind: "game_created",
+    id: 0,
+    timestamp: "2026-03-08T00:00:00.000Z",
+    gameId: "test-game-id",
+    initialState: {} as never,
+  });
+
+  assertEquals(transactionCalled, true);
+});
+
+Deno.test("appendEvent calls gameEvent.create with correct data", async () => {
+  let createdData: Record<string, unknown> | null = null;
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.gameEvent.create = (args: { data: Record<string, unknown> }) => {
+    createdData = args.data;
+    return Promise.resolve();
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+
+  const event = {
+    kind: "action_applied" as const,
+    id: 3,
+    timestamp: "2026-03-08T00:00:00.000Z",
+    action: {} as never,
+    stateAfter: {} as never,
+  };
+
+  await repo.appendEvent("test-game-id", event);
+
+  assertEquals(createdData, {
+    gameId: "test-game-id",
+    sequence: 3,
+    payload: event,
+  });
+});
+
+Deno.test("getLatestEvent returns null when no events found", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.gameEvent.findFirst = () => Promise.resolve(null);
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getLatestEvent("test-game-id");
+
+  assertEquals(result, null);
+});
+
+Deno.test("getLatestEvent returns StoredEvent when event exists", async () => {
+  const payload: EngineGameEvent = {
+    kind: "game_created",
+    id: 0,
+    timestamp: "2026-03-08T00:00:00.000Z",
+    gameId: "test-game-id",
+    initialState: {} as never,
+  };
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.gameEvent.findFirst = () =>
+    Promise.resolve({ sequence: 0, payload });
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getLatestEvent("test-game-id");
+
+  const expected: StoredEvent = { sequence: 0, payload };
+  assertEquals(result, expected);
+});
+
+Deno.test("getAllEvents returns events ordered by sequence", async () => {
+  const event0: EngineGameEvent = {
+    kind: "game_created",
+    id: 0,
+    timestamp: "2026-03-08T00:00:00.000Z",
+    gameId: "test-game-id",
+    initialState: {} as never,
+  };
+  const event1: EngineGameEvent = {
+    kind: "action_applied",
+    id: 1,
+    timestamp: "2026-03-08T00:00:01.000Z",
+    action: {} as never,
+    stateAfter: {} as never,
+  };
+  const events = [
+    { sequence: 0, payload: event0 },
+    { sequence: 1, payload: event1 },
+  ];
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.gameEvent.findMany = () => Promise.resolve(events);
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getAllEvents("test-game-id");
+
+  const expected: StoredEvent[] = [
+    { sequence: 0, payload: event0 },
+    { sequence: 1, payload: event1 },
+  ];
+  assertEquals(result, expected);
+});
+
+Deno.test("updateStatus calls game.update with correct data", async () => {
+  let updateArgs: Record<string, unknown> | null = null;
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.update = (args: Record<string, unknown>) => {
+    updateArgs = args;
+    return Promise.resolve();
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  await repo.updateStatus("test-game-id", "completed", 15);
+
+  assertEquals(updateArgs, {
+    where: { id: "test-game-id" },
+    data: { status: "completed", score: 15 },
+  });
+});
+
+Deno.test("updateStatus passes null score correctly", async () => {
+  let updateArgs: Record<string, unknown> | null = null;
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.update = (args: Record<string, unknown>) => {
+    updateArgs = args;
+    return Promise.resolve();
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  await repo.updateStatus("test-game-id", "in_progress", null);
+
+  assertEquals(updateArgs, {
+    where: { id: "test-game-id" },
+    data: { status: "in_progress", score: null },
+  });
+});

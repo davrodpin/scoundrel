@@ -1,0 +1,134 @@
+import type { EventLog, GameEngine } from "@scoundrel/engine";
+import type { GameView } from "./types.ts";
+import type { GameRepository } from "./repository.ts";
+import { toGameView } from "./view.ts";
+
+export type GameService = {
+  createGame(): Promise<GameView>;
+  submitAction(
+    gameId: string,
+    action: unknown,
+  ): Promise<{ ok: true; view: GameView } | { ok: false; error: string }>;
+  getGame(gameId: string): Promise<GameView | null>;
+  getEventLog(gameId: string): Promise<EventLog | null>;
+};
+
+export function createGameService(
+  engine: GameEngine,
+  repository: GameRepository,
+): GameService {
+  return {
+    async createGame(): Promise<GameView> {
+      const { state, eventLog } = engine.createGame();
+      const createdEvent = eventLog.events[0];
+      await repository.createGame(state.gameId, createdEvent);
+      return toGameView(state);
+    },
+
+    async submitAction(
+      gameId: string,
+      action: unknown,
+    ): Promise<{ ok: true; view: GameView } | { ok: false; error: string }> {
+      const latestEvent = await repository.getLatestEvent(gameId);
+      if (!latestEvent) {
+        return { ok: false, error: "Game not found" };
+      }
+
+      // Build a synthetic EventLog from the latest event.
+      // The engine only needs the last event to get current state,
+      // and the events array length for the next event ID.
+      const syntheticEvents = new Array(latestEvent.sequence + 1);
+      syntheticEvents[latestEvent.sequence] = latestEvent.payload;
+      const syntheticLog: EventLog = {
+        gameId,
+        events: syntheticEvents,
+      };
+
+      // Auto-enter room: if action is choose_card and phase is room_ready,
+      // apply enter_room first
+      const currentState = engine.getState(syntheticLog);
+      if (
+        isChooseCardAction(action) &&
+        currentState.phase.kind === "room_ready"
+      ) {
+        const enterResult = engine.submitAction(syntheticLog, {
+          type: "enter_room",
+        });
+        if (!enterResult.ok) {
+          return { ok: false, error: enterResult.error };
+        }
+        await repository.appendEvent(gameId, enterResult.event);
+
+        // Now submit the choose_card against the updated state
+        const chooseResult = engine.submitAction(
+          enterResult.eventLog,
+          action as Parameters<GameEngine["submitAction"]>[1],
+        );
+        if (!chooseResult.ok) {
+          return { ok: false, error: chooseResult.error };
+        }
+        await repository.appendEvent(gameId, chooseResult.event);
+
+        const newState = chooseResult.state;
+        if (newState.phase.kind === "game_over") {
+          const score = engine.getScore(newState);
+          await repository.updateStatus(gameId, "completed", score);
+        }
+
+        return { ok: true, view: toGameView(newState) };
+      }
+
+      // Normal action flow
+      const result = engine.submitAction(
+        syntheticLog,
+        action as Parameters<GameEngine["submitAction"]>[1],
+      );
+      if (!result.ok) {
+        return { ok: false, error: result.error };
+      }
+
+      await repository.appendEvent(gameId, result.event);
+
+      const newState = result.state;
+      if (newState.phase.kind === "game_over") {
+        const score = engine.getScore(newState);
+        await repository.updateStatus(gameId, "completed", score);
+      }
+
+      return { ok: true, view: toGameView(newState) };
+    },
+
+    async getGame(gameId: string): Promise<GameView | null> {
+      const latestEvent = await repository.getLatestEvent(gameId);
+      if (!latestEvent) return null;
+
+      const syntheticEvents = new Array(latestEvent.sequence + 1);
+      syntheticEvents[latestEvent.sequence] = latestEvent.payload;
+      const syntheticLog: EventLog = { gameId, events: syntheticEvents };
+
+      const state = engine.getState(syntheticLog);
+      return toGameView(state);
+    },
+
+    async getEventLog(gameId: string): Promise<EventLog | null> {
+      const storedEvents = await repository.getAllEvents(gameId);
+      if (storedEvents.length === 0) return null;
+
+      return {
+        gameId,
+        events: storedEvents.map((e) => e.payload),
+      };
+    },
+  };
+}
+
+function isChooseCardAction(
+  action: unknown,
+): action is { type: "choose_card" } {
+  return (
+    typeof action === "object" &&
+    action !== null &&
+    "type" in action &&
+    (action as { type: string }).type === "choose_card"
+  );
+}

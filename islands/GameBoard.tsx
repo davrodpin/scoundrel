@@ -1,12 +1,6 @@
-import { useComputed, useSignal } from "@preact/signals";
-import {
-  type Card,
-  createGameEngine,
-  type EventLog,
-  type GameAction,
-  type GameState,
-  getCardType,
-} from "@scoundrel/engine";
+import { useSignal } from "@preact/signals";
+import { type Card, type GameAction, getCardType } from "@scoundrel/engine";
+import type { GameView } from "@scoundrel/game-service";
 import { computeFightOverlayData } from "../components/game/fight_overlay_utils.ts";
 import { computeTooltip } from "../components/game/tooltip_utils.ts";
 import { HealthDisplay } from "../components/game/HealthDisplay.tsx";
@@ -19,57 +13,73 @@ import { GameOverOverlay } from "../components/game/GameOverOverlay.tsx";
 import { RulesPanel } from "../components/game/RulesPanel.tsx";
 import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
 
-const engine = createGameEngine();
-
 export default function GameBoard() {
-  const eventLog = useSignal<EventLog | null>(null);
+  const gameView = useSignal<GameView | null>(null);
   const showRules = useSignal(false);
   const showFightOverlay = useSignal(false);
   const pendingMonsterIndex = useSignal<number | null>(null);
   const damageFlash = useSignal(false);
   const healFlash = useSignal(false);
   const errorMsg = useSignal<string | null>(null);
+  const loading = useSignal(false);
 
-  const gameState = useComputed<GameState | null>(() => {
-    const log = eventLog.value;
-    if (!log) return null;
-    return engine.getState(log);
-  });
-
-  function startNewGame() {
-    const { eventLog: log } = engine.createGame();
-    eventLog.value = log;
-    showFightOverlay.value = false;
-    pendingMonsterIndex.value = null;
-    errorMsg.value = null;
+  async function startNewGame() {
+    loading.value = true;
+    try {
+      const res = await fetch("/api/games", { method: "POST" });
+      const view: GameView = await res.json();
+      gameView.value = view;
+      showFightOverlay.value = false;
+      pendingMonsterIndex.value = null;
+      errorMsg.value = null;
+    } catch {
+      errorMsg.value = "Failed to create game";
+    } finally {
+      loading.value = false;
+    }
   }
 
-  function dispatch(action: GameAction) {
-    const log = eventLog.value;
-    if (!log) return;
+  async function dispatch(action: GameAction) {
+    const view = gameView.value;
+    if (!view) return;
 
-    const prevState = engine.getState(log);
-    const result = engine.submitAction(log, action);
-    if (!result.ok) {
-      errorMsg.value = result.error;
-      return;
-    }
+    const prevHealth = view.health;
+    loading.value = true;
 
-    errorMsg.value = null;
-    eventLog.value = result.eventLog;
+    try {
+      const res = await fetch(`/api/games/${view.gameId}/actions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(action),
+      });
 
-    // Flash animations
-    const newState = result.state;
-    if (newState.health < prevState.health) {
-      damageFlash.value = true;
-      setTimeout(() => {
-        damageFlash.value = false;
-      }, 400);
-    } else if (newState.health > prevState.health) {
-      healFlash.value = true;
-      setTimeout(() => {
-        healFlash.value = false;
-      }, 500);
+      const data = await res.json();
+
+      if (!res.ok) {
+        errorMsg.value = data.error?.message ?? "Action failed";
+        return;
+      }
+
+      errorMsg.value = null;
+      gameView.value = data as GameView;
+
+      // Flash animations
+      const newView = data as GameView;
+      if (newView.health < prevHealth) {
+        damageFlash.value = true;
+        setTimeout(() => {
+          damageFlash.value = false;
+        }, 400);
+      } else if (newView.health > prevHealth) {
+        healFlash.value = true;
+        setTimeout(() => {
+          healFlash.value = false;
+        }, 500);
+      }
+    } catch {
+      errorMsg.value = "Network error";
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -81,39 +91,20 @@ export default function GameBoard() {
     dispatch({ type: "avoid_room" });
   }
 
-  function autoEnterRoom(): boolean {
-    const log = eventLog.value;
-    if (!log) return false;
-    const state = engine.getState(log);
-    if (state.phase.kind !== "room_ready") return true;
-
-    const enterResult = engine.submitAction(log, { type: "enter_room" });
-    if (!enterResult.ok) {
-      errorMsg.value = enterResult.error;
-      return false;
-    }
-    eventLog.value = enterResult.eventLog;
-    errorMsg.value = null;
-    return true;
-  }
-
   function handleCardClick(index: number) {
-    const state = gameState.value;
-    if (!state) return;
+    const view = gameView.value;
+    if (!view) return;
 
-    const card = state.room[index];
+    const card = view.room[index];
     if (!card) return;
 
     const cardType = getCardType(card);
 
     if (cardType === "monster") {
-      // Show fight overlay without entering the room yet.
-      // The room will be entered only when the player confirms the fight.
       pendingMonsterIndex.value = index;
       showFightOverlay.value = true;
     } else {
-      // Weapon or potion — auto-enter room and choose immediately
-      if (!autoEnterRoom()) return;
+      // Weapon or potion — backend auto-enters room
       dispatch({
         type: "choose_card",
         cardIndex: index,
@@ -127,8 +118,7 @@ export default function GameBoard() {
     if (idx === null) return;
     showFightOverlay.value = false;
     pendingMonsterIndex.value = null;
-    // Enter the room now that the player has committed to fighting
-    if (!autoEnterRoom()) return;
+    // Backend auto-enters room when receiving choose_card during room_ready
     dispatch({ type: "choose_card", cardIndex: idx, fightWith });
   }
 
@@ -138,7 +128,7 @@ export default function GameBoard() {
   }
 
   // Initial screen - no game started
-  const state = gameState.value;
+  const state = gameView.value;
   if (!state) {
     return (
       <div class="min-h-screen bg-dungeon-bg flex items-center justify-center">
@@ -151,6 +141,7 @@ export default function GameBoard() {
             type="button"
             class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body text-lg transition-colors duration-200"
             onClick={startNewGame}
+            disabled={loading.value}
           >
             Enter the Dungeon
           </button>
@@ -159,8 +150,8 @@ export default function GameBoard() {
     );
   }
 
-  const isInteractive = state.phase.kind === "room_ready" ||
-    state.phase.kind === "choosing";
+  const isInteractive = (state.phase.kind === "room_ready" ||
+    state.phase.kind === "choosing") && !loading.value;
   const isGameOver = state.phase.kind === "game_over";
   const cardsChosen = state.phase.kind === "choosing"
     ? state.phase.cardsChosen
@@ -211,9 +202,9 @@ export default function GameBoard() {
       <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-start max-w-4xl mx-auto">
         {/* Dungeon pile */}
         <DungeonPile
-          count={state.dungeon.length}
+          count={state.dungeonCount}
           interactive={state.phase.kind === "drawing" &&
-            state.dungeon.length > 0}
+            state.dungeonCount > 0 && !loading.value}
           onClick={handleDrawCard}
         />
 
@@ -228,7 +219,7 @@ export default function GameBoard() {
         />
 
         {/* Discard pile */}
-        <DiscardPile count={state.discard.length} />
+        <DiscardPile count={state.discardCount} />
       </div>
 
       {/* Action Bar */}
@@ -249,11 +240,11 @@ export default function GameBoard() {
       {/* Equipped Weapon */}
       <EquippedWeaponArea weapon={state.equippedWeapon} />
 
-{/* Game Over Overlay */}
+      {/* Game Over Overlay */}
       {isGameOver && state.phase.kind === "game_over" && (
         <GameOverOverlay
           reason={state.phase.reason}
-          score={engine.getScore(state)}
+          score={state.score ?? 0}
           onNewGame={startNewGame}
         />
       )}

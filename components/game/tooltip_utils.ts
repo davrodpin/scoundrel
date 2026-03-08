@@ -1,7 +1,13 @@
-import type { Card, GameState } from "@scoundrel/engine";
+import type { Card, EquippedWeapon, GamePhase } from "@scoundrel/engine";
 import { cardValue, getCardType } from "@scoundrel/engine";
 
-function canWeaponFight(state: GameState, monster: Card): boolean {
+type TooltipState = {
+  equippedWeapon: EquippedWeapon | null;
+  health: number;
+  phase: GamePhase;
+};
+
+function canWeaponFight(state: TooltipState, monster: Card): boolean {
   if (!state.equippedWeapon) return false;
   const { slainMonsters } = state.equippedWeapon;
   if (slainMonsters.length === 0) return true;
@@ -9,7 +15,7 @@ function canWeaponFight(state: GameState, monster: Card): boolean {
   return monster.rank <= lastSlain.rank;
 }
 
-export function computeTooltip(card: Card, state: GameState): string[] {
+export function computeTooltip(card: Card, state: TooltipState): string[] {
   const type = getCardType(card);
   const value = cardValue(card);
 
@@ -27,7 +33,7 @@ export function computeTooltip(card: Card, state: GameState): string[] {
 function computeMonsterTooltip(
   card: Card,
   value: number,
-  state: GameState,
+  state: TooltipState,
 ): string[] {
   if (!state.equippedWeapon) {
     return [`Barehanded: ${value} dmg`];
@@ -50,7 +56,7 @@ function computeMonsterTooltip(
   ];
 }
 
-function computePotionTooltip(value: number, state: GameState): string[] {
+function computePotionTooltip(value: number, state: TooltipState): string[] {
   if (
     state.phase.kind === "choosing" && state.phase.potionUsedThisTurn
   ) {
@@ -65,7 +71,7 @@ function computePotionTooltip(value: number, state: GameState): string[] {
   return [`Heals ${heals} HP`];
 }
 
-function computeWeaponTooltip(value: number, state: GameState): string[] {
+function computeWeaponTooltip(value: number, state: TooltipState): string[] {
   if (!state.equippedWeapon) {
     return [`Equip (rank ${value})`];
   }

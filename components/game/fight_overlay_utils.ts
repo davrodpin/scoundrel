@@ -1,5 +1,11 @@
-import type { Card, GameState } from "@scoundrel/engine";
+import type { Card, EquippedWeapon, GamePhase } from "@scoundrel/engine";
 import { cardValue } from "@scoundrel/engine";
+
+type FightOverlayState = {
+  equippedWeapon: EquippedWeapon | null;
+  health: number;
+  phase: GamePhase;
+};
 
 type FightOverlayData = {
   canUseWeapon: boolean;
@@ -8,7 +14,7 @@ type FightOverlayData = {
 };
 
 export function computeFightOverlayData(
-  state: GameState,
+  state: FightOverlayState,
   monster: Card,
 ): FightOverlayData {
   const barehandedDamage = cardValue(monster);
