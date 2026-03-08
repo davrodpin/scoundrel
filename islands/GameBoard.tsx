@@ -78,34 +78,39 @@ export default function GameBoard() {
     dispatch({ type: "avoid_room" });
   }
 
+  function autoEnterRoom(): boolean {
+    const log = eventLog.value;
+    if (!log) return false;
+    const state = engine.getState(log);
+    if (state.phase.kind !== "room_ready") return true;
+
+    const enterResult = engine.submitAction(log, { type: "enter_room" });
+    if (!enterResult.ok) {
+      errorMsg.value = enterResult.error;
+      return false;
+    }
+    eventLog.value = enterResult.eventLog;
+    errorMsg.value = null;
+    return true;
+  }
+
   function handleCardClick(index: number) {
     const state = gameState.value;
     if (!state) return;
 
-    // Auto-enter room if still in room_ready
-    if (state.phase.kind === "room_ready") {
-      const log = eventLog.value;
-      if (!log) return;
-      const enterResult = engine.submitAction(log, { type: "enter_room" });
-      if (!enterResult.ok) {
-        errorMsg.value = enterResult.error;
-        return;
-      }
-      eventLog.value = enterResult.eventLog;
-      errorMsg.value = null;
-    }
-
-    const currentState = engine.getState(eventLog.value!);
-    const card = currentState.room[index];
+    const card = state.room[index];
     if (!card) return;
 
     const cardType = getCardType(card);
 
     if (cardType === "monster") {
+      // Show fight overlay without entering the room yet.
+      // The room will be entered only when the player confirms the fight.
       pendingMonsterIndex.value = index;
       showFightOverlay.value = true;
     } else {
-      // Weapon or potion — just choose it
+      // Weapon or potion — auto-enter room and choose immediately
+      if (!autoEnterRoom()) return;
       dispatch({
         type: "choose_card",
         cardIndex: index,
@@ -119,6 +124,8 @@ export default function GameBoard() {
     if (idx === null) return;
     showFightOverlay.value = false;
     pendingMonsterIndex.value = null;
+    // Enter the room now that the player has committed to fighting
+    if (!autoEnterRoom()) return;
     dispatch({ type: "choose_card", cardIndex: idx, fightWith });
   }
 
