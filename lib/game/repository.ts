@@ -1,5 +1,6 @@
 import type { GameEvent as EngineGameEvent } from "@scoundrel/engine";
 import type { PrismaClient } from "../generated/prisma/client.ts";
+import type { LeaderboardEntry } from "./types.ts";
 
 export type StoredEvent = {
   sequence: number;
@@ -7,7 +8,11 @@ export type StoredEvent = {
 };
 
 export type GameRepository = {
-  createGame(gameId: string, event: EngineGameEvent): Promise<void>;
+  createGame(
+    gameId: string,
+    playerName: string,
+    event: EngineGameEvent,
+  ): Promise<void>;
   appendEvent(gameId: string, event: EngineGameEvent): Promise<void>;
   getLatestEvent(gameId: string): Promise<StoredEvent | null>;
   getAllEvents(gameId: string): Promise<StoredEvent[]>;
@@ -16,18 +21,25 @@ export type GameRepository = {
     status: string,
     score: number | null,
   ): Promise<void>;
+  getPlayerName(gameId: string): Promise<string | null>;
+  getLeaderboard(limit: number): Promise<LeaderboardEntry[]>;
 };
 
 export function createPrismaGameRepository(
   prisma: PrismaClient,
 ): GameRepository {
   return {
-    async createGame(gameId: string, event: EngineGameEvent): Promise<void> {
+    async createGame(
+      gameId: string,
+      playerName: string,
+      event: EngineGameEvent,
+    ): Promise<void> {
       await prisma.$transaction(async (tx: PrismaClient) => {
         await tx.game.create({
           data: {
             id: gameId,
             status: "in_progress",
+            playerName,
           },
         });
         await tx.gameEvent.create({
@@ -90,6 +102,38 @@ export function createPrismaGameRepository(
         where: { id: gameId },
         data: { status, score },
       });
+    },
+
+    async getPlayerName(gameId: string): Promise<string | null> {
+      const row = await prisma.game.findUnique({
+        where: { id: gameId },
+        select: { playerName: true },
+      });
+      if (!row) return null;
+      return (row as { playerName: string }).playerName;
+    },
+
+    async getLeaderboard(limit: number): Promise<LeaderboardEntry[]> {
+      const rows = await prisma.game.findMany({
+        where: { status: "completed", score: { not: null } },
+        orderBy: { score: "desc" },
+        take: limit,
+        select: { id: true, playerName: true, score: true, updatedAt: true },
+      });
+
+      return rows.map(
+        (row: {
+          id: string;
+          playerName: string;
+          score: number;
+          updatedAt: Date;
+        }) => ({
+          gameId: row.id,
+          playerName: row.playerName,
+          score: row.score,
+          completedAt: row.updatedAt.toISOString(),
+        }),
+      );
     },
   };
 }
