@@ -32,6 +32,15 @@ conflicts.
    ```sh
    cd ../<repo-name>-<branch-name>
    ```
+4. Set up the worktree environment:
+   ```sh
+   cp /path/to/main/repo/.env .
+   deno install --allow-scripts
+   deno task prisma:migrate
+   deno task prisma:generate
+   ```
+
+   The `--allow-scripts` flag is needed because Prisma and esbuild have npm lifecycle scripts (postinstall) that must run to download engines/binaries. Without it, `deno install` skips these scripts and the project won't work.
 
 ## Committing Code
 
