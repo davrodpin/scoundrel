@@ -1,9 +1,17 @@
 import { define } from "@/utils.ts";
 import { AppError } from "@scoundrel/errors";
 import { z } from "zod";
+import { isPlayerNameAllowed } from "@scoundrel/validation";
 
 const createGameSchema = z.object({
-  playerName: z.string().min(1).max(30).trim(),
+  playerName: z
+    .string()
+    .min(1)
+    .max(30)
+    .trim()
+    .refine(isPlayerNameAllowed, {
+      message: "Player name contains inappropriate language",
+    }),
 });
 
 export const handler = define.handlers({
