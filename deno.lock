@@ -43,6 +43,7 @@
     "npm:esbuild-wasm@~0.25.11": "0.25.12",
     "npm:esbuild@0.25.7": "0.25.7",
     "npm:esbuild@~0.25.5": "0.25.12",
+    "npm:obscenity@0.4": "0.4.6",
     "npm:pg@8": "8.18.0",
     "npm:preact-render-to-string@^6.6.3": "6.6.5_preact@10.28.3",
     "npm:preact@^10.27.0": "10.28.3",
@@ -1490,6 +1491,9 @@
       ],
       "bin": true
     },
+    "obscenity@0.4.6": {
+      "integrity": "sha512-pHk7kNN7j3L3zGhhGnwxjvXIGsPpLrcZl2r58fqWh/V/rH6b/dafscj2sMmAY+A/9/wPsocLmimgGk2DKeKsFQ=="
+    },
     "ohash@2.0.11": {
       "integrity": "sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ=="
     },
@@ -1725,6 +1729,7 @@
       "npm:@prisma/adapter-pg@6",
       "npm:@prisma/client@6",
       "npm:@tailwindcss/vite@^4.1.12",
+      "npm:obscenity@0.4",
       "npm:pg@8",
       "npm:preact@^10.27.2",
       "npm:prisma@6",
