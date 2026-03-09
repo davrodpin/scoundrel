@@ -41,6 +41,7 @@
     "npm:@prisma/client@7": "7.3.0_prisma@7.3.0__@types+react@19.2.13__react@19.2.4__react-dom@19.2.4___react@19.2.4_@types+react@19.2.13_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:@tailwindcss/vite@^4.1.12": "4.1.18_vite@7.3.1__@types+node@22.19.9_@types+node@22.19.9",
     "npm:@types/node@22": "22.19.9",
+    "npm:@types/pg@8": "8.18.0",
     "npm:esbuild-wasm@~0.25.11": "0.25.12",
     "npm:esbuild@0.25.7": "0.25.7",
     "npm:esbuild@~0.25.5": "0.25.12",
@@ -1220,6 +1221,14 @@
         "undici-types"
       ]
     },
+    "@types/pg@8.18.0": {
+      "integrity": "sha512-gT+oueVQkqnj6ajGJXblFR4iavIXWsGAFCk3dP4Kki5+a9R4NMt0JARdk6s8cUKcfUoqP5dAtDSLU8xYUTFV+Q==",
+      "dependencies": [
+        "@types/node",
+        "pg-protocol",
+        "pg-types"
+      ]
+    },
     "@types/react@19.2.13": {
       "integrity": "sha512-KkiJeU6VbYbUOp5ITMIc7kBfqlYkKA5KhEHVrGMmUUMt7NeaZg65ojdPk+FtNrBAOXNVM5QM72jnADjM+XVRAQ==",
       "dependencies": [
@@ -2029,6 +2038,7 @@
       "npm:@prisma/client@7",
       "npm:@tailwindcss/vite@^4.1.12",
       "npm:@types/node@22",
+      "npm:@types/pg@8",
       "npm:obscenity@~0.4.6",
       "npm:pg@8",
       "npm:preact@^10.27.2",
