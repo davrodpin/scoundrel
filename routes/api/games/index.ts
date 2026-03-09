@@ -1,4 +1,5 @@
 import { define } from "@/utils.ts";
+import { AppError } from "@scoundrel/errors";
 import { z } from "zod";
 
 const createGameSchema = z.object({
@@ -10,12 +11,7 @@ export const handler = define.handlers({
     const body = await ctx.req.json().catch(() => null);
     const parsed = createGameSchema.safeParse(body);
     if (!parsed.success) {
-      return Response.json(
-        {
-          error: { code: "VALIDATION_ERROR", message: "Invalid request body" },
-        },
-        { status: 422 },
-      );
+      throw new AppError("ValidationError", 422);
     }
     const view = await ctx.state.gameService.createGame(parsed.data.playerName);
     return Response.json(view, { status: 201 });

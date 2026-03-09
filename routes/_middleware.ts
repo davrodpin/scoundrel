@@ -8,7 +8,7 @@ import {
   createPrismaGameRepository,
 } from "@scoundrel/game-service";
 import { define } from "@/utils.ts";
-import { captureRequestBody } from "./_middleware_helpers.ts";
+import { captureRequestBody, toErrorResponse } from "./_middleware_helpers.ts";
 
 const pool = new pg.Pool({ connectionString: Deno.env.get("DATABASE_URL") });
 const adapter = new PrismaPg(pool);
@@ -33,23 +33,19 @@ const errorMiddleware = define.middleware(async (ctx) => {
   try {
     return await ctx.next();
   } catch (error) {
-    if (
-      error !== null &&
-      typeof error === "object" &&
-      "status" in error &&
-      typeof error.status === "number" &&
-      error.status < 500
-    ) {
+    const response = toErrorResponse(error);
+    if (response === null) {
       throw error;
     }
     const method = ctx.req.method;
     const path = ctx.url.pathname;
     const gameId = extractGameId(path);
-    logger.error("Unhandled error", { method, path, error, gameId });
-    return Response.json(
-      { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
-      { status: 500 },
-    );
+    if (response.status >= 500) {
+      logger.error("Unhandled error", { method, path, error, gameId });
+    } else {
+      logger.warn("Application error", { method, path, gameId });
+    }
+    return response;
   }
 });
 

@@ -1,4 +1,5 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
+import { AppError } from "@scoundrel/errors";
 import type {
   ActionAppliedEvent,
   EventLog,
@@ -210,6 +211,19 @@ Deno.test("createGame persists the game event", async () => {
   assertEquals(events?.[0].payload.kind, "game_created");
 });
 
+Deno.test("createGame throws OffensivePlayerNameError for profane names", async () => {
+  const repository = createMockRepository();
+  const engine = createMockEngine();
+  const service = createGameService(engine, repository);
+
+  const error = await assertRejects(
+    () => service.createGame("fuck"),
+    AppError,
+  );
+  assertEquals(error.reason, "OffensivePlayerNameError");
+  assertEquals(error.statusCode, 422);
+});
+
 Deno.test("getGame returns GameView for existing game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
@@ -218,18 +232,23 @@ Deno.test("getGame returns GameView for existing game", async () => {
   const created = await service.createGame("Hero");
   const retrieved = await service.getGame(created.gameId);
 
-  assertEquals(retrieved?.gameId, created.gameId);
-  assertEquals(retrieved?.health, 20);
-  assertEquals(retrieved?.playerName, "Hero");
+  assertEquals(retrieved.gameId, created.gameId);
+  assertEquals(retrieved.health, 20);
+  assertEquals(retrieved.playerName, "Hero");
 });
 
-Deno.test("getGame returns null for non-existent game", async () => {
+Deno.test("getGame throws GameNotFoundError for non-existent game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
   const service = createGameService(engine, repository);
 
-  const result = await service.getGame("non-existent-id");
-  assertEquals(result, null);
+  const error = await assertRejects(
+    () => service.getGame("non-existent-id"),
+    AppError,
+  );
+  assertEquals(error.reason, "GameNotFoundError");
+  assertEquals(error.statusCode, 404);
+  assertEquals(error.data.gameId, "non-existent-id");
 });
 
 Deno.test("submitAction returns updated GameView on success", async () => {
@@ -270,28 +289,24 @@ Deno.test("submitAction returns updated GameView on success", async () => {
     fightWith: "barehanded",
   });
 
-  assertEquals(result.ok, true);
-  if (result.ok) {
-    assertEquals(result.view.room.length, 3);
-  }
+  assertEquals(result.room.length, 3);
 });
 
-Deno.test("submitAction returns error for non-existent game", async () => {
+Deno.test("submitAction throws GameNotFoundError for non-existent game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
   const service = createGameService(engine, repository);
 
-  const result = await service.submitAction("non-existent", {
-    type: "draw_card",
-  });
-
-  assertEquals(result.ok, false);
-  if (!result.ok) {
-    assertEquals(result.error, "Game not found");
-  }
+  const error = await assertRejects(
+    () => service.submitAction("non-existent", { type: "draw_card" }),
+    AppError,
+  );
+  assertEquals(error.reason, "GameNotFoundError");
+  assertEquals(error.statusCode, 404);
+  assertEquals(error.data.gameId, "non-existent");
 });
 
-Deno.test("submitAction returns error for invalid action", async () => {
+Deno.test("submitAction throws InvalidActionError for invalid action", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine({
     submitAction() {
@@ -301,11 +316,12 @@ Deno.test("submitAction returns error for invalid action", async () => {
   const service = createGameService(engine, repository);
 
   const view = await service.createGame("Hero");
-  const result = await service.submitAction(view.gameId, {
-    type: "draw_card",
-  });
-
-  assertEquals(result.ok, false);
+  const error = await assertRejects(
+    () => service.submitAction(view.gameId, { type: "draw_card" }),
+    AppError,
+  );
+  assertEquals(error.reason, "InvalidActionError");
+  assertEquals(error.statusCode, 422);
 });
 
 Deno.test("getEventLog returns events for existing game", async () => {
@@ -316,18 +332,22 @@ Deno.test("getEventLog returns events for existing game", async () => {
   const view = await service.createGame("Hero");
   const eventLog = await service.getEventLog(view.gameId);
 
-  assertEquals(eventLog !== null, true);
-  assertEquals(eventLog?.gameId, view.gameId);
-  assertEquals(eventLog?.events.length, 1);
+  assertEquals(eventLog.gameId, view.gameId);
+  assertEquals(eventLog.events.length, 1);
 });
 
-Deno.test("getEventLog returns null for non-existent game", async () => {
+Deno.test("getEventLog throws GameNotFoundError for non-existent game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
   const service = createGameService(engine, repository);
 
-  const result = await service.getEventLog("non-existent");
-  assertEquals(result, null);
+  const error = await assertRejects(
+    () => service.getEventLog("non-existent"),
+    AppError,
+  );
+  assertEquals(error.reason, "GameNotFoundError");
+  assertEquals(error.statusCode, 404);
+  assertEquals(error.data.gameId, "non-existent");
 });
 
 Deno.test("getLeaderboard delegates to repository with limit 25", async () => {

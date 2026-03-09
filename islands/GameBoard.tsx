@@ -15,6 +15,25 @@ import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
 import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
 import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
 
+const ERROR_MESSAGES: Record<string, string> = {
+  OffensivePlayerNameError: "That name is not allowed. Please choose another.",
+  ValidationError: "Invalid input. Please try again.",
+  GameNotFoundError: "Game not found.",
+  InvalidActionError: "That action is not valid right now.",
+  InvalidJsonError: "Invalid request. Please try again.",
+  InternalError: "Something went wrong. Please try again.",
+};
+
+function getErrorMessage(data: unknown): string {
+  if (data !== null && typeof data === "object" && "error" in data) {
+    const err = (data as { error: { reason?: string } }).error;
+    if (err.reason && err.reason in ERROR_MESSAGES) {
+      return ERROR_MESSAGES[err.reason];
+    }
+  }
+  return "Something went wrong";
+}
+
 export default function GameBoard() {
   const gameView = useSignal<GameView | null>(null);
   const playerName = useSignal("");
@@ -48,7 +67,8 @@ export default function GameBoard() {
         body: JSON.stringify({ playerName: playerName.value.trim() }),
       });
       if (!res.ok) {
-        errorMsg.value = "Failed to create game";
+        const errData = await res.json().catch(() => null);
+        errorMsg.value = getErrorMessage(errData);
         return;
       }
       const view: GameView = await res.json();
@@ -81,7 +101,7 @@ export default function GameBoard() {
       const data = await res.json();
 
       if (!res.ok) {
-        errorMsg.value = data.error?.message ?? "Action failed";
+        errorMsg.value = getErrorMessage(data);
         return;
       }
 
