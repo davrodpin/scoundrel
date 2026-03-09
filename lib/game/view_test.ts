@@ -26,7 +26,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
 
 Deno.test("toGameView strips dungeon to count", () => {
   const state = makeState();
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   assertEquals(view.dungeonCount, 2);
   assertEquals(
     (view as Record<string, unknown>)["dungeon"],
@@ -36,7 +36,7 @@ Deno.test("toGameView strips dungeon to count", () => {
 
 Deno.test("toGameView strips discard to count", () => {
   const state = makeState();
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   assertEquals(view.discardCount, 1);
   assertEquals(
     (view as Record<string, unknown>)["discard"],
@@ -46,7 +46,7 @@ Deno.test("toGameView strips discard to count", () => {
 
 Deno.test("toGameView preserves room cards", () => {
   const state = makeState();
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   assertEquals(view.room, state.room);
 });
 
@@ -56,11 +56,17 @@ Deno.test("toGameView preserves health and game metadata", () => {
     lastRoomAvoided: true,
     turnNumber: 3,
   });
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   assertEquals(view.health, 15);
   assertEquals(view.lastRoomAvoided, true);
   assertEquals(view.turnNumber, 3);
   assertEquals(view.gameId, "test-game-id");
+});
+
+Deno.test("toGameView includes playerName", () => {
+  const state = makeState();
+  const view = toGameView(state, "Aragorn");
+  assertEquals(view.playerName, "Aragorn");
 });
 
 Deno.test("toGameView preserves equipped weapon", () => {
@@ -69,7 +75,7 @@ Deno.test("toGameView preserves equipped weapon", () => {
     slainMonsters: [{ suit: "clubs" as const, rank: 3 as const }],
   };
   const state = makeState({ equippedWeapon: weapon });
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   assertEquals(view.equippedWeapon, weapon);
 });
 
@@ -77,7 +83,7 @@ Deno.test("toGameView preserves phase", () => {
   const state = makeState({
     phase: { kind: "choosing", cardsChosen: 2, potionUsedThisTurn: true },
   });
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   assertEquals(view.phase, {
     kind: "choosing",
     cardsChosen: 2,
@@ -87,7 +93,7 @@ Deno.test("toGameView preserves phase", () => {
 
 Deno.test("toGameView returns null score when game is in progress", () => {
   const state = makeState();
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   assertEquals(view.score, null);
 });
 
@@ -99,7 +105,7 @@ Deno.test("toGameView computes score when player is dead", () => {
     room: [{ suit: "clubs", rank: 5 }],
     discard: [],
   });
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   // Score = health(0) - remaining monsters (10 + 14 + 5 = 29) = -29
   assertEquals(view.score, -29);
 });
@@ -112,7 +118,7 @@ Deno.test("toGameView computes score when dungeon cleared", () => {
     room: [],
     discard: [],
   });
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   assertEquals(view.score, 12);
 });
 
@@ -125,7 +131,7 @@ Deno.test("toGameView computes bonus score when health is 20 and last card was p
     discard: [],
     lastCardPlayed: { suit: "hearts", rank: 7 },
   });
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   // Score = 20 + 7 = 27
   assertEquals(view.score, 27);
 });
@@ -133,6 +139,6 @@ Deno.test("toGameView computes bonus score when health is 20 and last card was p
 Deno.test("toGameView preserves lastCardPlayed", () => {
   const card = { suit: "clubs" as const, rank: 5 as const };
   const state = makeState({ lastCardPlayed: card });
-  const view = toGameView(state);
+  const view = toGameView(state, "Hero");
   assertEquals(view.lastCardPlayed, card);
 });

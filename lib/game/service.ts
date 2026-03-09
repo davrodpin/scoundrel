@@ -1,17 +1,17 @@
 import { getLogger } from "@logtape/logtape";
 import type { EventLog, GameEngine } from "@scoundrel/engine";
-import type { GameView } from "./types.ts";
+import { AppError } from "@scoundrel/errors";
+import { isPlayerNameAllowed } from "@scoundrel/validation";
+import type { GameView, LeaderboardEntry } from "./types.ts";
 import type { GameRepository } from "./repository.ts";
 import { toGameView } from "./view.ts";
 
 export type GameService = {
-  createGame(): Promise<GameView>;
-  submitAction(
-    gameId: string,
-    action: unknown,
-  ): Promise<{ ok: true; view: GameView } | { ok: false; error: string }>;
-  getGame(gameId: string): Promise<GameView | null>;
-  getEventLog(gameId: string): Promise<EventLog | null>;
+  createGame(playerName: string): Promise<GameView>;
+  submitAction(gameId: string, action: unknown): Promise<GameView>;
+  getGame(gameId: string): Promise<GameView>;
+  getEventLog(gameId: string): Promise<EventLog>;
+  getLeaderboard(): Promise<LeaderboardEntry[]>;
 };
 
 export function createGameService(
@@ -21,18 +21,18 @@ export function createGameService(
   const logger = getLogger(["scoundrel", "game"]);
 
   return {
-    async createGame(): Promise<GameView> {
+    async createGame(playerName: string): Promise<GameView> {
+      if (!isPlayerNameAllowed(playerName)) {
+        throw new AppError("OffensivePlayerNameError", 422, { playerName });
+      }
       const { state, eventLog } = engine.createGame();
       const createdEvent = eventLog.events[0];
-      await repository.createGame(state.gameId, createdEvent);
-      logger.info("Game created", { gameId: state.gameId });
-      return toGameView(state);
+      await repository.createGame(state.gameId, playerName, createdEvent);
+      logger.info("Game created", { gameId: state.gameId, playerName });
+      return toGameView(state, playerName);
     },
 
-    async submitAction(
-      gameId: string,
-      action: unknown,
-    ): Promise<{ ok: true; view: GameView } | { ok: false; error: string }> {
+    async submitAction(gameId: string, action: unknown): Promise<GameView> {
       const actionType = typeof action === "object" &&
           action !== null &&
           "type" in action
@@ -41,8 +41,10 @@ export function createGameService(
 
       const latestEvent = await repository.getLatestEvent(gameId);
       if (!latestEvent) {
-        return { ok: false, error: "Game not found" };
+        throw new AppError("GameNotFoundError", 404, { gameId });
       }
+
+      const playerName = await repository.getPlayerName(gameId) ?? "Anonymous";
 
       // Build a synthetic EventLog from the latest event.
       // The engine only needs the last event to get current state,
@@ -65,7 +67,10 @@ export function createGameService(
           type: "enter_room",
         });
         if (!enterResult.ok) {
-          return { ok: false, error: enterResult.error };
+          throw new AppError("InvalidActionError", 422, {
+            gameId,
+            detail: enterResult.error,
+          });
         }
         await repository.appendEvent(gameId, enterResult.event);
 
@@ -75,7 +80,10 @@ export function createGameService(
           action as Parameters<GameEngine["submitAction"]>[1],
         );
         if (!chooseResult.ok) {
-          return { ok: false, error: chooseResult.error };
+          throw new AppError("InvalidActionError", 422, {
+            gameId,
+            detail: chooseResult.error,
+          });
         }
         await repository.appendEvent(gameId, chooseResult.event);
 
@@ -87,7 +95,7 @@ export function createGameService(
         }
 
         logger.info("Action submitted", { gameId, actionType });
-        return { ok: true, view: toGameView(newState) };
+        return toGameView(newState, playerName);
       }
 
       // Normal action flow
@@ -96,7 +104,10 @@ export function createGameService(
         action as Parameters<GameEngine["submitAction"]>[1],
       );
       if (!result.ok) {
-        return { ok: false, error: result.error };
+        throw new AppError("InvalidActionError", 422, {
+          gameId,
+          detail: result.error,
+        });
       }
 
       await repository.appendEvent(gameId, result.event);
@@ -109,29 +120,39 @@ export function createGameService(
       }
 
       logger.info("Action submitted", { gameId, actionType });
-      return { ok: true, view: toGameView(newState) };
+      return toGameView(newState, playerName);
     },
 
-    async getGame(gameId: string): Promise<GameView | null> {
+    async getGame(gameId: string): Promise<GameView> {
       const latestEvent = await repository.getLatestEvent(gameId);
-      if (!latestEvent) return null;
+      if (!latestEvent) {
+        throw new AppError("GameNotFoundError", 404, { gameId });
+      }
+
+      const playerName = await repository.getPlayerName(gameId) ?? "Anonymous";
 
       const syntheticEvents = new Array(latestEvent.sequence + 1);
       syntheticEvents[latestEvent.sequence] = latestEvent.payload;
       const syntheticLog: EventLog = { gameId, events: syntheticEvents };
 
       const state = engine.getState(syntheticLog);
-      return toGameView(state);
+      return toGameView(state, playerName);
     },
 
-    async getEventLog(gameId: string): Promise<EventLog | null> {
+    async getEventLog(gameId: string): Promise<EventLog> {
       const storedEvents = await repository.getAllEvents(gameId);
-      if (storedEvents.length === 0) return null;
+      if (storedEvents.length === 0) {
+        throw new AppError("GameNotFoundError", 404, { gameId });
+      }
 
       return {
         gameId,
         events: storedEvents.map((e) => e.payload),
       };
+    },
+
+    getLeaderboard(): Promise<LeaderboardEntry[]> {
+      return repository.getLeaderboard(25);
     },
   };
 }

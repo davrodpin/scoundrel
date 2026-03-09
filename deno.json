@@ -41,8 +41,11 @@
     "@types/node": "npm:@types/node@^22",
     "@std/assert": "jsr:@std/assert@^1",
     "@scoundrel/engine": "./lib/engine/mod.ts",
+    "@scoundrel/errors": "./lib/errors/mod.ts",
     "@scoundrel/game": "./lib/scoundrel/mod.ts",
-    "@scoundrel/game-service": "./lib/game/mod.ts"
+    "@scoundrel/game-service": "./lib/game/mod.ts",
+    "@scoundrel/validation": "./lib/validation/mod.ts",
+    "obscenity": "npm:obscenity@^0.4.6"
   },
   "compilerOptions": {
     "lib": [

@@ -1,6 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { type Card, type GameAction, getCardType } from "@scoundrel/engine";
-import type { GameView } from "@scoundrel/game-service";
+import type { GameView, LeaderboardEntry } from "@scoundrel/game-service";
 import { computeFightOverlayData } from "../components/game/fight_overlay_utils.ts";
 import { computeTooltip } from "../components/game/tooltip_utils.ts";
 import { HealthDisplay } from "../components/game/HealthDisplay.tsx";
@@ -12,10 +12,34 @@ import { ActionBar } from "../components/game/ActionBar.tsx";
 import { GameOverOverlay } from "../components/game/GameOverOverlay.tsx";
 import { RulesPanel } from "../components/game/RulesPanel.tsx";
 import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
+import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
+import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
+
+const ERROR_MESSAGES: Record<string, string> = {
+  OffensivePlayerNameError: "That name is not allowed. Please choose another.",
+  ValidationError: "Invalid input. Please try again.",
+  GameNotFoundError: "Game not found.",
+  InvalidActionError: "That action is not valid right now.",
+  InvalidJsonError: "Invalid request. Please try again.",
+  InternalError: "Something went wrong. Please try again.",
+};
+
+function getErrorMessage(data: unknown): string {
+  if (data !== null && typeof data === "object" && "error" in data) {
+    const err = (data as { error: { reason?: string } }).error;
+    if (err.reason && err.reason in ERROR_MESSAGES) {
+      return ERROR_MESSAGES[err.reason];
+    }
+  }
+  return "Something went wrong";
+}
 
 export default function GameBoard() {
   const gameView = useSignal<GameView | null>(null);
+  const playerName = useSignal("");
   const showRules = useSignal(false);
+  const showLeaderboard = useSignal(false);
+  const leaderboardEntries = useSignal<LeaderboardEntry[]>([]);
   const showFightOverlay = useSignal(false);
   const pendingMonsterIndex = useSignal<number | null>(null);
   const damageFlash = useSignal(false);
@@ -23,15 +47,36 @@ export default function GameBoard() {
   const errorMsg = useSignal<string | null>(null);
   const loading = useSignal(false);
 
+  async function fetchLeaderboard() {
+    try {
+      const res = await fetch("/api/leaderboard");
+      if (res.ok) {
+        leaderboardEntries.value = await res.json() as LeaderboardEntry[];
+      }
+    } catch {
+      // Non-critical — silently fail
+    }
+  }
+
   async function startNewGame() {
     loading.value = true;
     try {
-      const res = await fetch("/api/games", { method: "POST" });
+      const res = await fetch("/api/games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerName: playerName.value.trim() }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        errorMsg.value = getErrorMessage(errData);
+        return;
+      }
       const view: GameView = await res.json();
       gameView.value = view;
       showFightOverlay.value = false;
       pendingMonsterIndex.value = null;
       errorMsg.value = null;
+      showLeaderboard.value = false;
     } catch {
       errorMsg.value = "Failed to create game";
     } finally {
@@ -56,15 +101,19 @@ export default function GameBoard() {
       const data = await res.json();
 
       if (!res.ok) {
-        errorMsg.value = data.error?.message ?? "Action failed";
+        errorMsg.value = getErrorMessage(data);
         return;
       }
 
       errorMsg.value = null;
-      gameView.value = data as GameView;
+      const newView = data as GameView;
+      gameView.value = newView;
+
+      if (newView.phase.kind === "game_over") {
+        await fetchLeaderboard();
+      }
 
       // Flash animations
-      const newView = data as GameView;
       if (newView.health < prevHealth) {
         damageFlash.value = true;
         setTimeout(() => {
@@ -130,6 +179,7 @@ export default function GameBoard() {
   // Initial screen - no game started
   const state = gameView.value;
   if (!state) {
+    const trimmedName = playerName.value.trim();
     return (
       <div class="min-h-screen bg-dungeon-bg flex items-center justify-center">
         <div class="text-center">
@@ -137,14 +187,31 @@ export default function GameBoard() {
           <p class="text-parchment-dark font-body mb-8">
             A dungeon crawler card game
           </p>
+          <div class="mb-4">
+            <input
+              type="text"
+              placeholder="Enter your name, adventurer..."
+              maxLength={30}
+              value={playerName.value}
+              onInput={(e) => {
+                playerName.value = (e.target as HTMLInputElement).value;
+              }}
+              class="w-64 px-4 py-2 rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment font-body placeholder-parchment-dark/50 focus:outline-none focus:border-torch-amber transition-colors duration-200"
+            />
+          </div>
           <button
             type="button"
-            class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body text-lg transition-colors duration-200"
+            class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body text-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={startNewGame}
-            disabled={loading.value}
+            disabled={loading.value || trimmedName.length === 0}
           >
             Enter the Dungeon
           </button>
+          {errorMsg.value && (
+            <p class="text-blood-bright font-body text-sm mt-3">
+              {errorMsg.value}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -178,10 +245,22 @@ export default function GameBoard() {
 
   function handleToggleRules() {
     showRules.value = !showRules.value;
+    showLeaderboard.value = false;
   }
 
   function handleCloseRules() {
     showRules.value = false;
+  }
+
+  function handleToggleLeaderboard() {
+    showLeaderboard.value = !showLeaderboard.value;
+    showRules.value = false;
+    if (!showLeaderboard.value) return;
+    fetchLeaderboard();
+  }
+
+  function handleCloseLeaderboard() {
+    showLeaderboard.value = false;
   }
 
   return (
@@ -189,6 +268,15 @@ export default function GameBoard() {
       {/* Rules toggle + panel */}
       <RulesToggleButton onClick={handleToggleRules} />
       <RulesPanel open={showRules.value} onClose={handleCloseRules} />
+
+      {/* Leaderboard toggle + panel */}
+      <LeaderboardToggleButton onClick={handleToggleLeaderboard} />
+      <LeaderboardPanel
+        open={showLeaderboard.value}
+        entries={leaderboardEntries.value}
+        currentGameId={state?.gameId ?? null}
+        onClose={handleCloseLeaderboard}
+      />
 
       {/* Health Display */}
       <HealthDisplay
@@ -246,6 +334,8 @@ export default function GameBoard() {
           reason={state.phase.reason}
           score={state.score ?? 0}
           onNewGame={startNewGame}
+          leaderboardEntries={leaderboardEntries.value}
+          currentGameId={state.gameId}
         />
       )}
     </div>

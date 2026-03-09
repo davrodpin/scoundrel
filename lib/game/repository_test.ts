@@ -13,6 +13,8 @@ function makeMockPrismaClient(): MockPrisma {
     game: {
       create: () => Promise.resolve(),
       update: () => Promise.resolve(),
+      findUnique: () => Promise.resolve(null),
+      findMany: () => Promise.resolve([]),
     },
     gameEvent: {
       create: () => Promise.resolve(),
@@ -33,6 +35,8 @@ Deno.test("createPrismaGameRepository returns object with all repository methods
   assertEquals(typeof repo.getLatestEvent, "function");
   assertEquals(typeof repo.getAllEvents, "function");
   assertEquals(typeof repo.updateStatus, "function");
+  assertEquals(typeof repo.getPlayerName, "function");
+  assertEquals(typeof repo.getLeaderboard, "function");
 });
 
 Deno.test("createGame calls $transaction on prisma client", async () => {
@@ -50,7 +54,7 @@ Deno.test("createGame calls $transaction on prisma client", async () => {
     mockPrisma as unknown as PrismaClient,
   );
 
-  await repo.createGame("test-game-id", {
+  await repo.createGame("test-game-id", "TestPlayer", {
     kind: "game_created",
     id: 0,
     timestamp: "2026-03-08T00:00:00.000Z",
@@ -59,6 +63,39 @@ Deno.test("createGame calls $transaction on prisma client", async () => {
   });
 
   assertEquals(transactionCalled, true);
+});
+
+Deno.test("createGame passes playerName to game.create", async () => {
+  let createdData: Record<string, unknown> | null = null;
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.$transaction = async (fn: (tx: MockPrisma) => Promise<void>) => {
+    await fn({
+      game: {
+        create: (args: { data: Record<string, unknown> }) => {
+          createdData = args.data;
+          return Promise.resolve();
+        },
+      },
+      gameEvent: { create: () => Promise.resolve() },
+    });
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+
+  await repo.createGame("test-game-id", "TestPlayer", {
+    kind: "game_created",
+    id: 0,
+    timestamp: "2026-03-08T00:00:00.000Z",
+    gameId: "test-game-id",
+    initialState: {} as never,
+  });
+
+  assertEquals(
+    (createdData as unknown as Record<string, unknown>)?.playerName,
+    "TestPlayer",
+  );
 });
 
 Deno.test("appendEvent calls gameEvent.create with correct data", async () => {
@@ -193,4 +230,70 @@ Deno.test("updateStatus passes null score correctly", async () => {
     where: { id: "test-game-id" },
     data: { status: "in_progress", score: null },
   });
+});
+
+Deno.test("getPlayerName returns null when game not found", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.findUnique = () => Promise.resolve(null);
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getPlayerName("non-existent");
+  assertEquals(result, null);
+});
+
+Deno.test("getPlayerName returns playerName when game found", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.findUnique = () =>
+    Promise.resolve({ playerName: "TestHero" });
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getPlayerName("test-game-id");
+  assertEquals(result, "TestHero");
+});
+
+Deno.test("getLeaderboard returns empty array when no completed games", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.findMany = () => Promise.resolve([]);
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getLeaderboard(25);
+  assertEquals(result, []);
+});
+
+Deno.test("getLeaderboard maps rows to LeaderboardEntry", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.findMany = () =>
+    Promise.resolve([
+      {
+        id: "game-1",
+        playerName: "Alice",
+        score: 20,
+        updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+      },
+      {
+        id: "game-2",
+        playerName: "Bob",
+        score: 10,
+        updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+      },
+    ]);
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getLeaderboard(25);
+
+  assertEquals(result.length, 2);
+  assertEquals(result[0].gameId, "game-1");
+  assertEquals(result[0].playerName, "Alice");
+  assertEquals(result[0].score, 20);
+  assertEquals(result[0].completedAt, "2026-01-01T00:00:00.000Z");
+  assertEquals(result[1].gameId, "game-2");
+  assertEquals(result[1].score, 10);
 });

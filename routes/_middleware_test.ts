@@ -1,5 +1,6 @@
-import { assertEquals } from "@std/assert";
-import { captureRequestBody } from "./_middleware_helpers.ts";
+import { assertEquals, assertStrictEquals } from "@std/assert";
+import { AppError } from "@scoundrel/errors";
+import { captureRequestBody, toErrorResponse } from "./_middleware_helpers.ts";
 
 Deno.test("captureRequestBody - returns null for GET requests", async () => {
   const req = new Request("http://localhost/api/games/123");
@@ -82,3 +83,49 @@ Deno.test(
     assertEquals(originalBody, payload);
   },
 );
+
+Deno.test("toErrorResponse - returns null for Fresh 4xx errors", () => {
+  const freshError = Object.assign(new Error("Not Found"), { status: 404 });
+  const result = toErrorResponse(freshError);
+  assertStrictEquals(result, null);
+});
+
+Deno.test("toErrorResponse - AppError returns correct status and shape", async () => {
+  const err = new AppError("GameNotFoundError", 404, { gameId: "abc" });
+  const response = toErrorResponse(err);
+  assertEquals(response?.status, 404);
+  const body = await response?.json();
+  assertEquals(body, {
+    code: 404,
+    error: { reason: "GameNotFoundError", data: { gameId: "abc" } },
+  });
+});
+
+Deno.test("toErrorResponse - AppError with empty data", async () => {
+  const err = new AppError("ValidationError", 422);
+  const response = toErrorResponse(err);
+  assertEquals(response?.status, 422);
+  const body = await response?.json();
+  assertEquals(body, {
+    code: 422,
+    error: { reason: "ValidationError", data: {} },
+  });
+});
+
+Deno.test("toErrorResponse - unknown error returns 500 InternalError", async () => {
+  const response = toErrorResponse(new Error("oops"));
+  assertEquals(response?.status, 500);
+  const body = await response?.json();
+  assertEquals(body, {
+    code: 500,
+    error: { reason: "InternalError", data: {} },
+  });
+});
+
+Deno.test("toErrorResponse - unknown error (non-Error object) returns 500", async () => {
+  const response = toErrorResponse("something went wrong");
+  assertEquals(response?.status, 500);
+  const body = await response?.json();
+  assertEquals(body.code, 500);
+  assertEquals(body.error.reason, "InternalError");
+});
