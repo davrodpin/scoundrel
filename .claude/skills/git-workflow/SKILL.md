@@ -1,7 +1,6 @@
 ---
 name: git-workflow
 description: How to use git worktrees, commit code, push changes, and create pull requests
-disable-model-invocation: true
 ---
 
 # Git Workflow
