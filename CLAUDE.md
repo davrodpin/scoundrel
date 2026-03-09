@@ -69,3 +69,38 @@ Refer to local `CLAUDE.md` files for specialized instructions:
 - All timestamps in UTC
 - Any dependency should be injected to the application state defined in
   @utils.ts
+
+## Error Handling
+
+Use `AppError` from `@scoundrel/errors` for all typed errors. Never construct
+inline `Response.json` error objects in route handlers or service methods.
+
+- **Service layer**: throw `AppError(reason, statusCode, data)` for business
+  errors (e.g. not-found, invalid action, offensive name). Never return
+  `{ ok, error }` unions.
+- **Route handlers**: throw `AppError` for validation failures; let service
+  errors propagate. Keep handlers thin — validate input, call service, return
+  success response.
+- **Middleware**: `errorMiddleware` in `routes/_middleware.ts` catches all
+  `AppError` throws and returns the standard JSON shape. Unknown errors become
+  `InternalError (500)`. Fresh framework 4xx errors (e.g. 404 page routes) are
+  re-thrown.
+
+**Error response shape**:
+```json
+{ "code": 422, "error": { "reason": "OffensivePlayerNameError", "data": {} } }
+```
+
+**Defined reason slugs** (add new ones to `lib/errors/` and the frontend map):
+
+| Reason | Status | Source |
+|---|---|---|
+| `ValidationError` | 422 | Routes (Zod parse failure) |
+| `InvalidJsonError` | 422 | Routes (JSON parse failure) |
+| `GameNotFoundError` | 404 | Service layer |
+| `InvalidActionError` | 422 | Service layer |
+| `OffensivePlayerNameError` | 422 | Service layer (`createGame`) |
+| `InternalError` | 500 | Middleware catch-all |
+
+**Frontend**: map reason slugs to UI strings in `islands/GameBoard.tsx` via the
+`ERROR_MESSAGES` record. The backend never dictates UI text.
