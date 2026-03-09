@@ -1,5 +1,7 @@
 import { getLogger } from "@logtape/logtape";
 import { PrismaClient } from "../lib/generated/prisma/client.ts";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 import { createGameEngine } from "@scoundrel/engine";
 import {
   createGameService,
@@ -8,7 +10,9 @@ import {
 import { define } from "@/utils.ts";
 import { captureRequestBody } from "./_middleware_helpers.ts";
 
-const prisma = new PrismaClient();
+const pool = new pg.Pool({ connectionString: Deno.env.get("DATABASE_URL") });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 const engine = createGameEngine();
 const repository = createPrismaGameRepository(prisma);
 const gameService = createGameService(engine, repository);
