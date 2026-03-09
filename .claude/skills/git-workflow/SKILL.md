@@ -15,25 +15,44 @@ conflicts.
 - Use `git` to perform any operation on the local repository
 - Use `gh` to perform any operation on the remote repository
 
+## Repository Layout
+
+This project uses a bare repo layout. The bare repository lives in `.bare/` and
+all working directories — including `main` — are git worktrees:
+
+```
+scoundrel/
+├── .bare/              # bare git repository (source of truth)
+├── main/               # worktree for the main branch
+├── feat/some-feature/  # worktree for a feature branch
+└── fix/some-bug/       # worktree for a bugfix branch
+```
+
+`.bare` holds all git objects and refs. Every worktree (including `main/`)
+points back to `.bare` via its `.git` file. There is no traditional clone —
+`main/` is just another worktree.
+
 ## Starting New Work with Worktrees
 
-1. Make sure you are on the `main` branch and it is up to date:
+1. Navigate to `.bare` and fetch the latest refs:
    ```sh
-   git checkout main && git pull origin main
+   cd ../.bare
+   git fetch origin main
    ```
-2. Create a worktree with a descriptive branch name:
+2. Create a worktree based on `origin/main` with a descriptive branch name:
    ```sh
-   git worktree add ../<repo-name>-<branch-name> -b <branch-name>
+   git worktree add ../<branch-name> -b <branch-name> origin/main
    ```
    Branch naming convention: `<type>/<short-description>` (e.g.,
    `feat/deck-shuffle`, `fix/health-overflow`, `refactor/combat-logic`).
-3. Navigate to the worktree directory and work from there:
+   The worktree is created as a sibling directory to `main/` and `.bare/`.
+3. Navigate to the new worktree:
    ```sh
-   cd ../<repo-name>-<branch-name>
+   cd ../<branch-name>
    ```
 4. Set up the worktree environment:
    ```sh
-   cp /path/to/main/repo/.env .
+   cp ../main/.env .
    deno install --allow-scripts
    deno task prisma:migrate
    deno task prisma:generate
@@ -68,11 +87,10 @@ conflicts.
 
 ## Cleaning Up After Merge
 
-Once the PR is merged, clean up the worktree and branch:
+Once the PR is merged, navigate to `.bare` and clean up:
 
 ```sh
-cd /path/to/main/repo
-git worktree remove ../<repo-name>-<branch-name>
+cd ../.bare
+git worktree remove ../<branch-name>
 git branch -d <branch-name>
-git pull origin main
 ```
