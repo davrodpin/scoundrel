@@ -49,8 +49,10 @@ first, dependency injection, etc.).
 
 ## Development Workflow
 
-1. **Create a worktree** — ALWAYS start by following the `git-workflow` skill to
-   create a git worktree and branch. Never implement directly on `main`.
+1. **Create and set up a worktree** — Follow the `git-workflow` skill to create
+   a git worktree and branch, then set up the worktree environment (copy `.env`,
+   install dependencies with `--allow-scripts`, run Prisma migrations, generate
+   Prisma client). Never implement directly on `main`.
 2. **Understand the requirement** — clarify what behavior is expected
 3. **Identify the module** — determine which `lib/<module-name>/` the code
    belongs in (create a new one if needed)
