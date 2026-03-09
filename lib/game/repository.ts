@@ -1,5 +1,5 @@
 import type { GameEvent as EngineGameEvent } from "@scoundrel/engine";
-import type { PrismaClient } from "../generated/prisma/client.ts";
+import { type PrismaClient, Prisma } from "../generated/prisma/client.ts";
 import type { LeaderboardEntry } from "./types.ts";
 
 export type StoredEvent = {
@@ -29,12 +29,8 @@ export function createPrismaGameRepository(
   prisma: PrismaClient,
 ): GameRepository {
   return {
-    async createGame(
-      gameId: string,
-      playerName: string,
-      event: EngineGameEvent,
-    ): Promise<void> {
-      await prisma.$transaction(async (tx: PrismaClient) => {
+    async createGame(gameId: string, event: EngineGameEvent): Promise<void> {
+      await prisma.$transaction(async (tx) => {
         await tx.game.create({
           data: {
             id: gameId,
@@ -46,7 +42,7 @@ export function createPrismaGameRepository(
           data: {
             gameId,
             sequence: event.id,
-            payload: event as unknown as Record<string, unknown>,
+            payload: event as unknown as Prisma.InputJsonValue,
           },
         });
       });
@@ -60,7 +56,7 @@ export function createPrismaGameRepository(
         data: {
           gameId,
           sequence: event.id,
-          payload: event as unknown as Record<string, unknown>,
+          payload: event as unknown as Prisma.InputJsonValue,
         },
       });
     },
