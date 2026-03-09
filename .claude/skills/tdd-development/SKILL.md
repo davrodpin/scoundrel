@@ -1,6 +1,6 @@
 ---
 name: tdd-development
-description: Use when writing, modifying, or reviewing any code — features, bug fixes, refactors, or new modules. Defines the mandatory TDD workflow and test conventions for all code changes.
+description: Use when making any change to the repository — code, tests, documentation, or skill files. Defines the mandatory TDD and commit workflow.
 ---
 
 # TDD Development
@@ -49,6 +49,8 @@ first, dependency injection, etc.).
 
 ## Development Workflow
 
+### Code Changes (steps 1–6)
+
 1. **Create and set up a worktree** — Follow the `git-workflow` skill to create
    a git worktree and branch, then set up the worktree environment (copy `.env`,
    install dependencies with `--allow-scripts`, run Prisma migrations, generate
@@ -61,8 +63,15 @@ first, dependency injection, etc.).
    at a time
 6. **Run full checks** — `deno task check` to verify formatting, linting, and
    type checking all pass
+
+### Every Change (mandatory, no exceptions)
+
+> **MANDATORY FOR ALL CHANGES** — Steps 1–6 apply only to code. Step 7 applies
+> to every change without exception, including documentation and skill updates.
+
 7. **Commit and push** — follow the `git-workflow` skill for committing,
-   pushing, and creating a PR
+   pushing, and creating a PR. This step applies to ALL changes: code,
+   documentation, skill files, configuration. Never leave changes uncommitted.
 
 ## Database Schema Changes
 
