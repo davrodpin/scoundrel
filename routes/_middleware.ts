@@ -37,13 +37,8 @@ const errorMiddleware = define.middleware(async (ctx) => {
     if (response === null) {
       throw error;
     }
-    const method = ctx.req.method;
-    const path = ctx.url.pathname;
-    const gameId = extractGameId(path);
     if (response.status >= 500) {
-      logger.error("Unhandled error", { method, path, error, gameId });
-    } else {
-      logger.warn("Application error", { method, path, gameId });
+      logger.error("Unhandled error", { error });
     }
     return response;
   }
@@ -84,7 +79,7 @@ const diMiddleware = define.middleware((ctx) => {
 });
 
 export const handler = [
-  errorMiddleware,
   requestLoggingMiddleware,
+  errorMiddleware,
   diMiddleware,
 ];

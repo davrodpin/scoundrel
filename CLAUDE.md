@@ -87,20 +87,21 @@ inline `Response.json` error objects in route handlers or service methods.
   re-thrown.
 
 **Error response shape**:
+
 ```json
 { "code": 422, "error": { "reason": "OffensivePlayerNameError", "data": {} } }
 ```
 
 **Defined reason slugs** (add new ones to `lib/errors/` and the frontend map):
 
-| Reason | Status | Source |
-|---|---|---|
-| `ValidationError` | 422 | Routes (Zod parse failure) |
-| `InvalidJsonError` | 422 | Routes (JSON parse failure) |
-| `GameNotFoundError` | 404 | Service layer |
-| `InvalidActionError` | 422 | Service layer |
-| `OffensivePlayerNameError` | 422 | Service layer (`createGame`) |
-| `InternalError` | 500 | Middleware catch-all |
+| Reason                     | Status | Source                       |
+| -------------------------- | ------ | ---------------------------- |
+| `ValidationError`          | 422    | Routes (Zod parse failure)   |
+| `InvalidJsonError`         | 422    | Routes (JSON parse failure)  |
+| `GameNotFoundError`        | 404    | Service layer                |
+| `InvalidActionError`       | 422    | Service layer                |
+| `OffensivePlayerNameError` | 422    | Service layer (`createGame`) |
+| `InternalError`            | 500    | Middleware catch-all         |
 
 **Frontend**: map reason slugs to UI strings in `islands/GameBoard.tsx` via the
 `ERROR_MESSAGES` record. The backend never dictates UI text.
