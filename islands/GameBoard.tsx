@@ -185,15 +185,7 @@ export default function GameBoard() {
         <div class="text-center">
           <h1 class="font-heading text-5xl text-parchment mb-4">Scoundrel</h1>
           <p class="text-parchment-dark font-body mb-8">
-            A Single Player Rogue-like Card Game by{" "}
-            <a
-              href="http://stfj.net/art/2011/Scoundrel.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-torch-amber hover:text-torch-glow underline transition-colors duration-200"
-            >
-              Zach Gage and Kurt Bieg
-            </a>
+            A Single Player Rogue-like Card Game
           </p>
           <div class="mb-4">
             <input
@@ -223,8 +215,17 @@ export default function GameBoard() {
         </div>
         <footer class="absolute bottom-4 text-parchment-dark/50 font-body text-xs text-center px-4 max-w-lg">
           This is an unofficial fan-made implementation. Scoundrel was designed
-          by Zach Gage and Kurt Bieg. This app is not affiliated with, endorsed
-          by, or associated with the original authors in any way.
+          {" "}
+          <a
+            href="http://stfj.net/art/2011/Scoundrel.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-parchment-dark underline transition-colors duration-200"
+          >
+            by Zach Gage and Kurt Bieg
+          </a>
+          . This app is not affiliated with, endorsed by, or associated with the
+          original authors in any way.
         </footer>
       </div>
     );
