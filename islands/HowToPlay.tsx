@@ -241,6 +241,20 @@ export default function HowToPlay() {
         >
           Enter the Dungeon
         </a>
+        <p class="font-body text-parchment-dark/50 text-xs text-center mt-8 px-4">
+          This is an unofficial fan-made implementation. Scoundrel was designed
+          {" "}
+          <a
+            href="http://stfj.net/art/2011/Scoundrel.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-parchment-dark underline transition-colors duration-200"
+          >
+            by Zach Gage and Kurt Bieg
+          </a>
+          . This app is not affiliated with, endorsed by, or associated with the
+          original authors in any way.
+        </p>
       </footer>
     </div>
   );
