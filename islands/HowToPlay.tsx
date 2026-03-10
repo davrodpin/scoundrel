@@ -1,0 +1,247 @@
+import SvgCard from "../components/how-to-play/SvgCard.tsx";
+import SvgCardBack from "../components/how-to-play/SvgCardBack.tsx";
+import CombatDemo from "./demos/CombatDemo.tsx";
+import HealthPotionDemo from "./demos/HealthPotionDemo.tsx";
+import RoomFlowDemo from "./demos/RoomFlowDemo.tsx";
+import WeaponDegradationDemo from "./demos/WeaponDegradationDemo.tsx";
+
+function SectionHeading({ children }: { children: string }) {
+  return (
+    <h2 class="font-heading text-torch-amber text-2xl border-b border-dungeon-border pb-2 mb-4">
+      {children}
+    </h2>
+  );
+}
+
+function Prose({ children }: { children: preact.ComponentChildren }) {
+  return (
+    <p class="font-body text-parchment leading-relaxed text-sm sm:text-base">
+      {children}
+    </p>
+  );
+}
+
+export default function HowToPlay() {
+  return (
+    <div class="min-h-screen bg-dungeon-bg text-parchment">
+      {/* Header */}
+      <header class="border-b border-dungeon-border bg-dungeon-surface px-4 py-6">
+        <div class="max-w-3xl mx-auto">
+          <a
+            href="/play"
+            class="text-xs font-body text-parchment-dark hover:text-torch-amber transition-colors mb-3 inline-block"
+          >
+            &larr; Back to Game
+          </a>
+          <h1 class="font-heading text-torch-amber text-3xl sm:text-4xl">
+            How to Play Scoundrel
+          </h1>
+          <p class="font-body text-parchment-dark text-sm mt-2">
+            A single-player rogue-like card game by Zach Gage and Kurt Bieg
+          </p>
+        </div>
+      </header>
+
+      <main class="max-w-3xl mx-auto px-4 py-8 space-y-12">
+        {/* Overview */}
+        <section>
+          <SectionHeading>Overview</SectionHeading>
+          <Prose>
+            You are a scoundrel delving into a dangerous dungeon. Each turn you
+            face a room of four cards — monsters to slay, weapons to equip, and
+            potions to drink. Choose wisely: survive the entire dungeon for a
+            high score, or die trying and face a penalty for every monster that
+            remains.
+          </Prose>
+        </section>
+
+        {/* Setup */}
+        <section>
+          <SectionHeading>Setup</SectionHeading>
+          <Prose>
+            Scoundrel uses a standard 52-card deck with all Jokers, Red Face
+            Cards (J, Q, K of Hearts and Diamonds), and Red Aces removed. This
+            leaves{" "}
+            <strong class="text-torch-amber">44 cards</strong>: 26 monsters, 9
+            weapons, and 9 potions. Shuffle and place the deck face-down — that
+            is your Dungeon. You start with{" "}
+            <strong class="text-torch-amber">20 Health</strong>.
+          </Prose>
+          <div class="flex gap-3 mt-4 flex-wrap items-end">
+            <SvgCardBack />
+            <span class="font-body text-parchment-dark text-sm self-center">
+              44-card dungeon
+            </span>
+          </div>
+        </section>
+
+        {/* Card Types */}
+        <section>
+          <SectionHeading>Card Types</SectionHeading>
+          <div class="space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="flex gap-2 shrink-0">
+                <SvgCard card={{ suit: "clubs", rank: 8 }} small />
+                <SvgCard card={{ suit: "spades", rank: 13 }} small />
+              </div>
+              <div>
+                <h3 class="font-heading text-blood-red text-lg">
+                  Monsters (Clubs & Spades)
+                </h3>
+                <Prose>
+                  All 13 ranks from both black suits. Their damage equals their
+                  rank value (Ace = 14, King = 13, Jack = 11).
+                </Prose>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4">
+              <div class="flex gap-2 shrink-0">
+                <SvgCard card={{ suit: "diamonds", rank: 7 }} small />
+              </div>
+              <div>
+                <h3 class="font-heading text-weapon-steel text-lg">
+                  Weapons (Diamonds)
+                </h3>
+                <Prose>
+                  Ranks 2–10 only (9 cards). Equipping a weapon discards your
+                  previous one. Weapons reduce monster damage but degrade over
+                  use.
+                </Prose>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4">
+              <div class="flex gap-2 shrink-0">
+                <SvgCard card={{ suit: "hearts", rank: 5 }} small />
+              </div>
+              <div>
+                <h3 class="font-heading text-potion-green text-lg">
+                  Potions (Hearts)
+                </h3>
+                <Prose>
+                  Ranks 2–10 only (9 cards). Heals HP equal to rank, capped at
+                  20. Only one potion may be used per turn.
+                </Prose>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Turn Flow */}
+        <section>
+          <SectionHeading>Turn Flow</SectionHeading>
+          <Prose>
+            Flip four cards face-up to form a Room. You must face{" "}
+            <strong class="text-torch-amber">3 of the 4</strong>{" "}
+            cards. The remaining card stays and becomes part of the next room.
+            You may also avoid an entire room (scooping all 4 to the bottom),
+            but never two rooms in a row.
+          </Prose>
+          <div class="mt-4">
+            <RoomFlowDemo />
+          </div>
+        </section>
+
+        {/* Combat */}
+        <section>
+          <SectionHeading>Combat</SectionHeading>
+          <Prose>
+            When you face a monster you choose how to fight. Barehanded means
+            taking the monster's full value as damage. With a weapon, you
+            subtract the weapon's value — the remainder hits your health. A
+            weapon strong enough to block the monster entirely deals zero
+            damage.
+          </Prose>
+          <div class="mt-4">
+            <CombatDemo />
+          </div>
+        </section>
+
+        {/* Weapon Degradation */}
+        <section>
+          <SectionHeading>Weapon Degradation</SectionHeading>
+          <Prose>
+            Once you use a weapon against a monster, it can only be used against
+            monsters with a{" "}
+            <strong class="text-torch-amber">lower or equal rank</strong>{" "}
+            than the last monster it slew. The weapon stays equipped even when
+            it can no longer be used — it might still be useful for weaker
+            monsters later.
+          </Prose>
+          <div class="mt-4">
+            <WeaponDegradationDemo />
+          </div>
+        </section>
+
+        {/* Health Potions */}
+        <section>
+          <SectionHeading>Health Potions</SectionHeading>
+          <Prose>
+            Potions restore health equal to their rank, but your health can
+            never exceed 20, and you may only use{" "}
+            <strong class="text-torch-amber">one potion per turn</strong>. If
+            you encounter two potions in the same room, the second is simply
+            discarded.
+          </Prose>
+          <div class="mt-4">
+            <HealthPotionDemo />
+          </div>
+        </section>
+
+        {/* Room Avoidance */}
+        <section>
+          <SectionHeading>Room Avoidance</SectionHeading>
+          <Prose>
+            If the room looks dangerous, you may avoid it entirely — scoop all
+            four cards in one motion and place them at the bottom of the
+            Dungeon. However, you{" "}
+            <strong class="text-blood-red">
+              cannot avoid two rooms in a row
+            </strong>. If you avoided the last room, you must face this one.
+          </Prose>
+        </section>
+
+        {/* Scoring */}
+        <section>
+          <SectionHeading>Scoring</SectionHeading>
+          <Prose>
+            If your health reaches zero, the game is over. Find all remaining
+            monsters in the Dungeon and subtract their values from your health —
+            that negative number is your score. If you clear the entire Dungeon,
+            your score is your remaining health (positive). If your last card
+            was a potion and you were already at 20, add its value to your
+            score.
+          </Prose>
+          <div class="mt-3 grid grid-cols-2 gap-3 max-w-xs">
+            <div class="bg-dungeon-surface border border-blood-red rounded-sm p-3 text-center">
+              <div class="font-heading text-blood-red text-xl">-17</div>
+              <div class="font-body text-xs text-parchment-dark mt-1">
+                Died, monsters remain
+              </div>
+            </div>
+            <div class="bg-dungeon-surface border border-potion-green rounded-sm p-3 text-center">
+              <div class="font-heading text-potion-green text-xl">+12</div>
+              <div class="font-body text-xs text-parchment-dark mt-1">
+                Dungeon cleared!
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer CTA */}
+      <footer class="border-t border-dungeon-border bg-dungeon-surface mt-12 py-10 text-center">
+        <p class="font-body text-parchment-dark text-sm mb-4">
+          Ready to face the dungeon?
+        </p>
+        <a
+          href="/play"
+          class="inline-block px-6 py-3 bg-torch-amber text-ink font-heading text-lg rounded-sm hover:bg-torch-glow transition-colors"
+        >
+          Enter the Dungeon
+        </a>
+      </footer>
+    </div>
+  );
+}
