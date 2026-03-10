@@ -207,6 +207,14 @@ export default function GameBoard() {
           >
             Enter the Dungeon
           </button>
+          <div class="mt-4">
+            <a
+              href="/how-to-play"
+              class="px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body text-lg transition-colors duration-200 inline-block"
+            >
+              How to Play
+            </a>
+          </div>
           {errorMsg.value && (
             <p class="text-blood-bright font-body text-sm mt-3">
               {errorMsg.value}
@@ -214,13 +222,6 @@ export default function GameBoard() {
           )}
         </div>
         <footer class="absolute bottom-4 text-parchment-dark/50 font-body text-xs text-center px-4 max-w-lg">
-          <a
-            href="/how-to-play"
-            class="text-parchment-dark hover:text-torch-glow transition-colors duration-200"
-          >
-            How to Play
-          </a>
-          <span class="mx-2">·</span>
           This is an unofficial fan-made implementation. Scoundrel was designed
           {" "}
           <a
