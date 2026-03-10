@@ -82,30 +82,28 @@ export default function SvgCard(
           {symbol}
         </text>
 
-        {/* Bottom-right rank + suit (mirrored) */}
-        <text
-          x="92"
-          y="122"
-          font-size="16"
-          font-weight="bold"
-          font-family="Georgia, serif"
-          text-anchor="end"
-          fill={textColor}
-          transform="rotate(180, 92, 116)"
-        >
-          {label}
-        </text>
-        <text
-          x="92"
-          y="136"
-          font-size="14"
-          font-family="Georgia, serif"
-          text-anchor="end"
-          fill={textColor}
-          transform="rotate(180, 92, 130)"
-        >
-          {symbol}
-        </text>
+        {/* Bottom-right rank + suit (mirrored top-left) */}
+        <g transform="scale(-1,-1) translate(-100,-140)">
+          <text
+            x="8"
+            y="20"
+            font-size="16"
+            font-weight="bold"
+            font-family="Georgia, serif"
+            fill={textColor}
+          >
+            {label}
+          </text>
+          <text
+            x="8"
+            y="36"
+            font-size="14"
+            font-family="Georgia, serif"
+            fill={textColor}
+          >
+            {symbol}
+          </text>
+        </g>
       </svg>
     </div>
   );
