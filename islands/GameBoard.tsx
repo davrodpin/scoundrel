@@ -277,7 +277,7 @@ export default function GameBoard() {
   }
 
   return (
-    <div class="min-h-screen bg-dungeon-bg text-parchment p-4 font-body">
+    <div class="min-h-screen bg-dungeon-bg text-parchment p-4 font-body flex flex-col items-center">
       {/* Rules toggle + panel */}
       <RulesToggleButton onClick={handleToggleRules} />
       <RulesPanel open={showRules.value} onClose={handleCloseRules} />
@@ -300,7 +300,7 @@ export default function GameBoard() {
       />
 
       {/* Main play area */}
-      <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-start max-w-4xl mx-auto">
+      <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-start w-full max-w-6xl">
         {/* Dungeon pile */}
         <DungeonPile
           count={state.dungeonCount}
