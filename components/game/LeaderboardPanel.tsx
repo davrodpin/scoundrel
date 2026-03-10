@@ -1,14 +1,16 @@
 import type { LeaderboardEntry } from "@scoundrel/game-service";
+import { getLeaderboardStatusMessage } from "./leaderboard_panel_utils.ts";
 
 type LeaderboardPanelProps = {
   open: boolean;
+  loading: boolean;
   entries: LeaderboardEntry[];
   currentGameId: string | null;
   onClose: () => void;
 };
 
 export function LeaderboardPanel(
-  { open, entries, currentGameId, onClose }: LeaderboardPanelProps,
+  { open, loading, entries, currentGameId, onClose }: LeaderboardPanelProps,
 ) {
   return (
     <>
@@ -41,10 +43,10 @@ export function LeaderboardPanel(
 
         {/* Scrollable content */}
         <div class="overflow-y-auto h-[calc(100%-3.5rem)] px-5 py-4">
-          {entries.length === 0
+          {getLeaderboardStatusMessage(loading, entries.length) !== null
             ? (
               <p class="text-parchment-dark font-body text-sm text-center mt-8">
-                No completed games yet. Be the first to conquer the dungeon.
+                {getLeaderboardStatusMessage(loading, entries.length)}
               </p>
             )
             : (

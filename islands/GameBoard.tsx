@@ -25,6 +25,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const showRules = useSignal(false);
   const showLeaderboard = useSignal(false);
   const leaderboardEntries = useSignal<LeaderboardEntry[]>([]);
+  const leaderboardLoading = useSignal(false);
   const showFightOverlay = useSignal(false);
   const pendingMonsterIndex = useSignal<number | null>(null);
   const damageFlash = useSignal(false);
@@ -36,6 +37,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const copiedLink = useSignal(false);
 
   async function fetchLeaderboard() {
+    leaderboardLoading.value = true;
     try {
       const res = await fetch("/api/leaderboard");
       if (res.ok) {
@@ -43,6 +45,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       }
     } catch {
       // Non-critical — silently fail
+    } finally {
+      leaderboardLoading.value = false;
     }
   }
 
@@ -348,6 +352,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       <LeaderboardToggleButton onClick={handleToggleLeaderboard} />
       <LeaderboardPanel
         open={showLeaderboard.value}
+        loading={leaderboardLoading.value}
         entries={leaderboardEntries.value}
         currentGameId={state?.gameId ?? null}
         onClose={handleCloseLeaderboard}
