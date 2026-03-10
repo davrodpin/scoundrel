@@ -12,7 +12,9 @@ import type {
 import type { GameRepository, StoredEvent } from "./repository.ts";
 import { createGameService } from "./service.ts";
 
-function makeInitialState(gameId = "test-id"): GameState {
+function makeInitialState(
+  gameId = "00000000-0000-0000-0000-000000000001",
+): GameState {
   return {
     gameId,
     health: 20,
@@ -249,6 +251,26 @@ Deno.test("getGame throws GameNotFoundError for non-existent game", async () => 
   assertEquals(error.reason, "GameNotFoundError");
   assertEquals(error.statusCode, 404);
   assertEquals(error.data.gameId, "non-existent-id");
+});
+
+Deno.test("getGame throws GameNotFoundError for non-uuid id without hitting repository", async () => {
+  const repository: GameRepository = {
+    ...createMockRepository(),
+    getLatestEvent(_gameId: string): Promise<StoredEvent | null> {
+      throw new Error(
+        'invalid input syntax for type uuid: "not-a-uuid"',
+      );
+    },
+  };
+  const engine = createMockEngine();
+  const service = createGameService(engine, repository);
+
+  const error = await assertRejects(
+    () => service.getGame("not-a-uuid"),
+    AppError,
+  );
+  assertEquals(error.reason, "GameNotFoundError");
+  assertEquals(error.statusCode, 404);
 });
 
 Deno.test("submitAction returns updated GameView on success", async () => {
