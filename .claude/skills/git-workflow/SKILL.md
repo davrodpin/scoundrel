@@ -53,6 +53,7 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
 4. Set up the worktree environment:
    ```sh
    cp ../main/.env .
+   cp ../main/.claude/settings.local.json ./.claude/
    deno install --allow-scripts
    deno task prisma:migrate
    deno task prisma:generate
