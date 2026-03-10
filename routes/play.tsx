@@ -12,14 +12,6 @@ export default define.page(function PlayPage() {
       </head>
       <body class="bg-dungeon-bg">
         <GameBoard />
-        <footer class="text-center py-4">
-          <a
-            href="/how-to-play"
-            class="text-parchment-dark hover:text-torch-glow text-sm transition-colors duration-200"
-          >
-            How to Play
-          </a>
-        </footer>
       </body>
     </html>
   );
