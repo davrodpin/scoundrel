@@ -47,6 +47,8 @@
     "npm:esbuild@~0.25.5": "0.25.12",
     "npm:obscenity@~0.4.6": "0.4.6",
     "npm:pg@8": "8.18.0",
+    "npm:preact-render-to-string@*": "6.6.5_preact@10.28.3",
+    "npm:preact-render-to-string@6.6.5": "6.6.5_preact@10.28.3",
     "npm:preact-render-to-string@^6.6.3": "6.6.5_preact@10.28.3",
     "npm:preact@^10.27.0": "10.28.3",
     "npm:preact@^10.27.2": "10.28.3",
@@ -95,7 +97,7 @@
         "npm:@preact/signals@^2.2.1",
         "npm:esbuild-wasm",
         "npm:esbuild@0.25.7",
-        "npm:preact-render-to-string",
+        "npm:preact-render-to-string@^6.6.3",
         "npm:preact@^10.27.0",
         "npm:preact@^10.27.2"
       ]

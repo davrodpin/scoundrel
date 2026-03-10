@@ -21,26 +21,34 @@ function Prose({ children }: { children: preact.ComponentChildren }) {
   );
 }
 
-export default function HowToPlay() {
+type HowToPlayProps = {
+  embedded?: boolean;
+};
+
+export default function HowToPlay({ embedded = false }: HowToPlayProps) {
   return (
-    <div class="min-h-screen bg-dungeon-bg text-parchment">
+    <div
+      class={`${embedded ? "" : "min-h-screen"} bg-dungeon-bg text-parchment`}
+    >
       {/* Header */}
-      <header class="border-b border-dungeon-border bg-dungeon-surface px-4 py-6">
-        <div class="max-w-3xl mx-auto">
-          <a
-            href="/play"
-            class="text-xs font-body text-parchment-dark hover:text-torch-amber transition-colors mb-3 inline-block"
-          >
-            &larr; Back to Game
-          </a>
-          <h1 class="font-heading text-torch-amber text-3xl sm:text-4xl">
-            How to Play Scoundrel
-          </h1>
-          <p class="font-body text-parchment-dark text-sm mt-2">
-            A Single Player Rogue-like Card Game
-          </p>
-        </div>
-      </header>
+      {!embedded && (
+        <header class="border-b border-dungeon-border bg-dungeon-surface px-4 py-6">
+          <div class="max-w-3xl mx-auto">
+            <a
+              href="/play"
+              class="text-xs font-body text-parchment-dark hover:text-torch-amber transition-colors mb-3 inline-block"
+            >
+              &larr; Back to Game
+            </a>
+            <h1 class="font-heading text-torch-amber text-3xl sm:text-4xl">
+              How to Play Scoundrel
+            </h1>
+            <p class="font-body text-parchment-dark text-sm mt-2">
+              A Single Player Rogue-like Card Game
+            </p>
+          </div>
+        </header>
+      )}
 
       <main class="max-w-3xl mx-auto px-4 py-8 space-y-12">
         {/* Overview */}
@@ -217,8 +225,8 @@ export default function HowToPlay() {
               <div>
                 <h3 class="font-heading text-torch-amber text-lg">Rules</h3>
                 <Prose>
-                  Opens a quick-reference rules panel without leaving the game.
-                  Useful when you need a reminder mid-run.
+                  Opens the full rules panel without leaving the game. Useful
+                  when you need a reminder mid-run.
                 </Prose>
               </div>
             </div>
@@ -304,31 +312,33 @@ export default function HowToPlay() {
       </main>
 
       {/* Footer CTA */}
-      <footer class="border-t border-dungeon-border bg-dungeon-surface mt-12 py-10 text-center">
-        <p class="font-body text-parchment-dark text-sm mb-4">
-          Ready to face the dungeon?
-        </p>
-        <a
-          href="/play"
-          class="inline-block px-6 py-3 bg-torch-amber text-ink font-heading text-lg rounded-sm hover:bg-torch-glow transition-colors"
-        >
-          Enter the Dungeon
-        </a>
-        <p class="font-body text-parchment-dark/50 text-xs text-center mt-8 max-w-3xl mx-auto px-4">
-          This is an unofficial fan-made implementation. Scoundrel was designed
-          {" "}
+      {!embedded && (
+        <footer class="border-t border-dungeon-border bg-dungeon-surface mt-12 py-10 text-center">
+          <p class="font-body text-parchment-dark text-sm mb-4">
+            Ready to face the dungeon?
+          </p>
           <a
-            href="http://stfj.net/art/2011/Scoundrel.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-parchment-dark underline transition-colors duration-200"
+            href="/play"
+            class="inline-block px-6 py-3 bg-torch-amber text-ink font-heading text-lg rounded-sm hover:bg-torch-glow transition-colors"
           >
-            by Zach Gage and Kurt Bieg
+            Enter the Dungeon
           </a>
-          . This app is not affiliated with, endorsed by, or associated with the
-          original authors in any way.
-        </p>
-      </footer>
+          <p class="font-body text-parchment-dark/50 text-xs text-center mt-8 max-w-3xl mx-auto px-4">
+            This is an unofficial fan-made implementation. Scoundrel was
+            designed{" "}
+            <a
+              href="http://stfj.net/art/2011/Scoundrel.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-parchment-dark underline transition-colors duration-200"
+            >
+              by Zach Gage and Kurt Bieg
+            </a>
+            . This app is not affiliated with, endorsed by, or associated with
+            the original authors in any way.
+          </p>
+        </footer>
+      )}
     </div>
   );
 }
