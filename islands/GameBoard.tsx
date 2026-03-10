@@ -199,14 +199,22 @@ export default function GameBoard() {
               class="w-64 px-4 py-2 rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment font-body placeholder-parchment-dark/50 focus:outline-none focus:border-torch-amber transition-colors duration-200"
             />
           </div>
-          <button
-            type="button"
-            class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body text-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={startNewGame}
-            disabled={loading.value || trimmedName.length === 0}
-          >
-            Enter the Dungeon
-          </button>
+          <div class="flex gap-3 justify-center">
+            <button
+              type="button"
+              class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body text-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={startNewGame}
+              disabled={loading.value || trimmedName.length === 0}
+            >
+              Enter the Dungeon
+            </button>
+            <a
+              href="/how-to-play"
+              class="px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body text-lg transition-colors duration-200 inline-block"
+            >
+              How to Play
+            </a>
+          </div>
           {errorMsg.value && (
             <p class="text-blood-bright font-body text-sm mt-3">
               {errorMsg.value}
