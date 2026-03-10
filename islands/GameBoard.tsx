@@ -181,11 +181,19 @@ export default function GameBoard() {
   if (!state) {
     const trimmedName = playerName.value.trim();
     return (
-      <div class="min-h-screen bg-dungeon-bg flex items-center justify-center">
+      <div class="min-h-screen bg-dungeon-bg flex flex-col items-center justify-center">
         <div class="text-center">
           <h1 class="font-heading text-5xl text-parchment mb-4">Scoundrel</h1>
           <p class="text-parchment-dark font-body mb-8">
-            A dungeon crawler card game
+            A Single Player Rogue-like Card Game by{" "}
+            <a
+              href="http://stfj.net/art/2011/Scoundrel.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-torch-amber hover:text-torch-glow underline transition-colors duration-200"
+            >
+              Zach Gage and Kurt Bieg
+            </a>
           </p>
           <div class="mb-4">
             <input
@@ -213,6 +221,11 @@ export default function GameBoard() {
             </p>
           )}
         </div>
+        <footer class="absolute bottom-4 text-parchment-dark/50 font-body text-xs text-center px-4 max-w-lg">
+          This is an unofficial fan-made implementation. Scoundrel was designed
+          by Zach Gage and Kurt Bieg. This app is not affiliated with, endorsed
+          by, or associated with the original authors in any way.
+        </footer>
       </div>
     );
   }
