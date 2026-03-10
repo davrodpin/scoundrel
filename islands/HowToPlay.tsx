@@ -241,7 +241,7 @@ export default function HowToPlay() {
         >
           Enter the Dungeon
         </a>
-        <p class="font-body text-parchment-dark/50 text-xs text-center mt-8 px-4">
+        <p class="font-body text-parchment-dark/50 text-xs text-center mt-8 max-w-3xl mx-auto px-4">
           This is an unofficial fan-made implementation. Scoundrel was designed
           {" "}
           <a
