@@ -225,8 +225,8 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
               <div>
                 <h3 class="font-heading text-torch-amber text-lg">Rules</h3>
                 <Prose>
-                  Opens a quick-reference rules panel without leaving the game.
-                  Useful when you need a reminder mid-run.
+                  Opens the full rules panel without leaving the game. Useful
+                  when you need a reminder mid-run.
                 </Prose>
               </div>
             </div>
