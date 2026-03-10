@@ -362,44 +362,51 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       />
 
       {/* Copy link button */}
-      <button
-        type="button"
-        onClick={handleCopyLink}
-        class="fixed top-4 right-24 z-30 w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
-        aria-label={copiedLink.value ? "Link copied!" : "Copy shareable link"}
-        title={copiedLink.value ? "Copied!" : "Copy link"}
-      >
-        {copiedLink.value
-          ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="w-5 h-5 text-torch-amber"
-            >
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
-          )
-          : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="w-5 h-5"
-            >
-              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-            </svg>
-          )}
-      </button>
+      <div class="fixed top-4 right-24 z-30 group">
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
+          aria-label={copiedLink.value ? "Link copied!" : "Copy shareable link"}
+        >
+          {copiedLink.value
+            ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="w-5 h-5 text-torch-amber"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            )
+            : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="w-5 h-5"
+              >
+                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+              </svg>
+            )}
+        </button>
+        <div class="pointer-events-none absolute top-full right-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200">
+          <div class="bg-dungeon-surface border border-dungeon-border text-parchment text-xs font-body px-3 py-1.5 rounded-sm whitespace-nowrap">
+            {copiedLink.value ? "Copied!" : "Copy link"}
+          </div>
+          <div class="absolute bottom-full right-3 border-4 border-transparent border-b-dungeon-border" />
+        </div>
+      </div>
 
       {/* Main play area */}
       <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-start w-full max-w-6xl">
