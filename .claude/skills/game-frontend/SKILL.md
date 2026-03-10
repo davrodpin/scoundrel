@@ -1,3 +1,17 @@
+---
+name: game-frontend
+description: >
+  Game Frontend Design Skill for the Scoundrel dungeon crawler. Use this skill
+  whenever building, modifying, or reviewing any UI component, page, island,
+  layout, or visual element in the Scoundrel web app — including cards, health
+  bars, game board layout, buttons, panels, and animations. Invoke this any time
+  someone touches the frontend: adding a new component, changing a page's look,
+  styling an island, adjusting colors or typography, or wiring up game state to
+  the UI. This skill defines the visual identity, Tailwind color palette,
+  component conventions, and anti-patterns that keep the dungeon crawler
+  aesthetic consistent.
+---
+
 # Game Frontend Design Skill
 
 Use this skill when building or modifying any UI component, page, or layout for
