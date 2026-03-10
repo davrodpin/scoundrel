@@ -50,6 +50,7 @@
     "npm:preact-render-to-string@^6.6.3": "6.6.5_preact@10.28.3",
     "npm:preact@^10.27.0": "10.28.3",
     "npm:preact@^10.27.2": "10.28.3",
+    "npm:prisma@*": "7.3.0_@types+react@19.2.13_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:prisma@7": "7.3.0_@types+react@19.2.13_react@19.2.4_react-dom@19.2.4__react@19.2.4",
     "npm:rollup@^4.50.0": "4.57.1",
     "npm:tailwindcss@^4.1.10": "4.1.18",

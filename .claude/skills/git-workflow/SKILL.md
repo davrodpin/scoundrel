@@ -44,8 +44,8 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
    git worktree add ../<branch-name> -b <branch-name> origin/main
    ```
    Branch naming convention: `<type>/<short-description>` (e.g.,
-   `feat/deck-shuffle`, `fix/health-overflow`, `refactor/combat-logic`).
-   The worktree is created as a sibling directory to `main/` and `.bare/`.
+   `feat/deck-shuffle`, `fix/health-overflow`, `refactor/combat-logic`). The
+   worktree is created as a sibling directory to `main/` and `.bare/`.
 3. Navigate to the new worktree:
    ```sh
    cd ../<branch-name>
@@ -58,7 +58,9 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
    deno task prisma:generate
    ```
 
-   The `--allow-scripts` flag is needed because Prisma and esbuild have npm lifecycle scripts (postinstall) that must run to download engines/binaries. Without it, `deno install` skips these scripts and the project won't work.
+   The `--allow-scripts` flag is needed because Prisma and esbuild have npm
+   lifecycle scripts (postinstall) that must run to download engines/binaries.
+   Without it, `deno install` skips these scripts and the project won't work.
 
 ## Committing Code
 
