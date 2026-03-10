@@ -1,4 +1,5 @@
 import { useSignal } from "@preact/signals";
+import { useEffect } from "preact/hooks";
 import { type Card, type GameAction, getCardType } from "@scoundrel/engine";
 import type { GameView, LeaderboardEntry } from "@scoundrel/game-service";
 import { computeFightOverlayData } from "../components/game/fight_overlay_utils.ts";
@@ -14,27 +15,11 @@ import { RulesPanel } from "../components/game/RulesPanel.tsx";
 import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
 import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
 import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
+import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 
-const ERROR_MESSAGES: Record<string, string> = {
-  OffensivePlayerNameError: "That name is not allowed. Please choose another.",
-  ValidationError: "Invalid input. Please try again.",
-  GameNotFoundError: "Game not found.",
-  InvalidActionError: "That action is not valid right now.",
-  InvalidJsonError: "Invalid request. Please try again.",
-  InternalError: "Something went wrong. Please try again.",
-};
+type GameBoardProps = { gameId?: string };
 
-function getErrorMessage(data: unknown): string {
-  if (data !== null && typeof data === "object" && "error" in data) {
-    const err = (data as { error: { reason?: string } }).error;
-    if (err.reason && err.reason in ERROR_MESSAGES) {
-      return ERROR_MESSAGES[err.reason];
-    }
-  }
-  return "Something went wrong";
-}
-
-export default function GameBoard() {
+export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const gameView = useSignal<GameView | null>(null);
   const playerName = useSignal("");
   const showRules = useSignal(false);
@@ -46,6 +31,9 @@ export default function GameBoard() {
   const healFlash = useSignal(false);
   const errorMsg = useSignal<string | null>(null);
   const loading = useSignal(false);
+  const resumeLoading = useSignal(!!initialGameId);
+  const resumeError = useSignal<string | null>(null);
+  const copiedLink = useSignal(false);
 
   async function fetchLeaderboard() {
     try {
@@ -57,6 +45,34 @@ export default function GameBoard() {
       // Non-critical — silently fail
     }
   }
+
+  async function loadGame(id: string) {
+    resumeLoading.value = true;
+    resumeError.value = null;
+    try {
+      const res = await fetch(`/api/games/${id}`);
+      const data = await res.json().catch(() => null);
+      const errMsg = resolveLoadGameError(res.ok, res.status, data);
+      if (errMsg !== null) {
+        resumeError.value = errMsg;
+        return;
+      }
+      gameView.value = data as GameView;
+      if ((data as GameView).phase.kind === "game_over") {
+        await fetchLeaderboard();
+      }
+    } catch {
+      resumeError.value = "Failed to load game";
+    } finally {
+      resumeLoading.value = false;
+    }
+  }
+
+  useEffect(() => {
+    if (initialGameId) {
+      loadGame(initialGameId);
+    }
+  }, []);
 
   async function startNewGame() {
     loading.value = true;
@@ -73,6 +89,7 @@ export default function GameBoard() {
       }
       const view: GameView = await res.json();
       gameView.value = view;
+      globalThis.history?.replaceState(null, "", `/play/${view.gameId}`);
       showFightOverlay.value = false;
       pendingMonsterIndex.value = null;
       errorMsg.value = null;
@@ -174,6 +191,42 @@ export default function GameBoard() {
   function handleFightCancel() {
     showFightOverlay.value = false;
     pendingMonsterIndex.value = null;
+  }
+
+  function handleCopyLink() {
+    const gameId = gameView.value?.gameId;
+    if (!gameId) return;
+    const url = `${globalThis.location?.origin ?? ""}/play/${gameId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      copiedLink.value = true;
+      setTimeout(() => {
+        copiedLink.value = false;
+      }, 2000);
+    }).catch(() => {});
+  }
+
+  // Resume loading state
+  if (resumeLoading.value) {
+    return (
+      <div class="min-h-screen bg-dungeon-bg flex items-center justify-center">
+        <p class="text-parchment font-body text-xl">Loading game...</p>
+      </div>
+    );
+  }
+
+  // Resume error state
+  if (resumeError.value !== null) {
+    return (
+      <div class="min-h-screen bg-dungeon-bg flex flex-col items-center justify-center gap-4">
+        <p class="text-blood-bright font-body text-xl">{resumeError.value}</p>
+        <a
+          href="/play"
+          class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body text-lg transition-colors duration-200"
+        >
+          Start New Game
+        </a>
+      </div>
+    );
   }
 
   // Initial screen - no game started
@@ -307,6 +360,18 @@ export default function GameBoard() {
         damageFlash={damageFlash.value}
         healFlash={healFlash.value}
       />
+
+      {/* Copy link button */}
+      <div class="absolute top-4 right-16">
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          class="px-3 py-1 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body text-sm transition-colors duration-200"
+          title="Copy shareable link"
+        >
+          {copiedLink.value ? "Copied!" : "Share"}
+        </button>
+      </div>
 
       {/* Main play area */}
       <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-start w-full max-w-6xl">
