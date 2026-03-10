@@ -2,9 +2,12 @@ import { getLogger } from "@logtape/logtape";
 import type { EventLog, GameEngine } from "@scoundrel/engine";
 import { AppError } from "@scoundrel/errors";
 import { isPlayerNameAllowed } from "@scoundrel/validation";
+import { z } from "zod";
 import type { GameView, LeaderboardEntry } from "./types.ts";
 import type { GameRepository } from "./repository.ts";
 import { toGameView } from "./view.ts";
+
+const uuidSchema = z.string().uuid();
 
 export type GameService = {
   createGame(playerName: string): Promise<GameView>;
@@ -124,6 +127,9 @@ export function createGameService(
     },
 
     async getGame(gameId: string): Promise<GameView> {
+      if (!uuidSchema.safeParse(gameId).success) {
+        throw new AppError("GameNotFoundError", 404, { gameId });
+      }
       const latestEvent = await repository.getLatestEvent(gameId);
       if (!latestEvent) {
         throw new AppError("GameNotFoundError", 404, { gameId });
