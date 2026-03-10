@@ -39,9 +39,9 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
    cd ../.bare
    git fetch origin main
    ```
-2. Create a worktree based on `origin/main` with a descriptive branch name:
+2. Create a worktree based with a descriptive branch name:
    ```sh
-   git worktree add ../<branch-name> -b <branch-name> origin/main
+   git worktree add -b <branch-name ../<branch-name>
    ```
    Branch naming convention: `<type>/<short-description>` (e.g.,
    `feat/deck-shuffle`, `fix/health-overflow`, `refactor/combat-logic`). The
@@ -75,9 +75,12 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
 
 ## Creating Pull Requests
 
-- Push your branch and create a PR using `gh`:
+- Push your branch using `git`:
   ```sh
   git push origin <branch-name>
+  ```
+- Create a PR using `gh`:
+  ```sh
   gh pr create --base main --title "<type>: <description>" --body "<summary of changes>"
   ```
 - In the PR description, provide a clear summary of the changes you made, why
