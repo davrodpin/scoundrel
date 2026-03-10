@@ -37,7 +37,7 @@ export default function HowToPlay() {
             How to Play Scoundrel
           </h1>
           <p class="font-body text-parchment-dark text-sm mt-2">
-            A single-player rogue-like card game by Zach Gage and Kurt Bieg
+            A Single Player Rogue-like Card Game
           </p>
         </div>
       </header>
