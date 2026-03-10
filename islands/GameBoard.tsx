@@ -362,16 +362,44 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       />
 
       {/* Copy link button */}
-      <div class="absolute top-4 right-16">
-        <button
-          type="button"
-          onClick={handleCopyLink}
-          class="px-3 py-1 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body text-sm transition-colors duration-200"
-          title="Copy shareable link"
-        >
-          {copiedLink.value ? "Copied!" : "Share"}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={handleCopyLink}
+        class="fixed top-4 right-24 z-30 w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
+        aria-label={copiedLink.value ? "Link copied!" : "Copy shareable link"}
+        title={copiedLink.value ? "Copied!" : "Copy link"}
+      >
+        {copiedLink.value
+          ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="w-5 h-5 text-torch-amber"
+            >
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+          )
+          : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="w-5 h-5"
+            >
+              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+            </svg>
+          )}
+      </button>
 
       {/* Main play area */}
       <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-start w-full max-w-6xl">
