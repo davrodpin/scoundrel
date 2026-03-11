@@ -17,28 +17,40 @@ export function HealthDisplay(
 
   return (
     <div
-      class={`mb-6 p-3 rounded-sm ${
-        damageFlash ? "animate-damage-flash" : ""
-      } ${healFlash ? "animate-heal-glow" : ""}`}
+      class={`mb-6 ${damageFlash ? "animate-damage-flash" : ""} ${
+        healFlash ? "animate-heal-glow" : ""
+      }`}
     >
-      <div class="flex items-center gap-6 justify-center">
-        <div class="text-left">
-          <div class="text-parchment-dark text-xs font-body uppercase tracking-widest mb-0.5">
+      <div class="inline-flex border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
+        {/* Name field */}
+        <div class="px-5 py-3 flex flex-col gap-1.5 min-w-[140px]">
+          <span class="text-parchment-dark/70 text-[10px] font-body uppercase tracking-[0.2em]">
             Adventurer
-          </div>
-          <div class="font-heading text-xl text-parchment">{playerName}</div>
+          </span>
+          <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight">
+            {playerName}
+          </span>
         </div>
-        <div class="text-center">
-          <div class="font-heading text-3xl text-parchment mb-2">
-            {health} / {maxHealth}
+
+        {/* Health field */}
+        <div class="px-5 py-3 flex flex-col gap-1.5">
+          <span class="text-parchment-dark/70 text-[10px] font-body uppercase tracking-[0.2em]">
+            Vitality
+          </span>
+          <div class="flex items-baseline gap-2">
+            <span class="font-heading text-xl text-parchment leading-tight">
+              {health}
+            </span>
+            <span class="text-parchment-dark/50 font-body text-sm">
+              / {maxHealth}
+            </span>
           </div>
-          <div class="w-48 h-3 bg-dungeon-surface rounded-sm border border-dungeon-border overflow-hidden">
+          <div class="w-36 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
             <div
               class={`h-full ${barColor} transition-[width] duration-500`}
               style={`width: ${pct}%`}
             />
           </div>
-          <div class="text-parchment-dark text-sm mt-1 font-body">Health</div>
         </div>
       </div>
     </div>
