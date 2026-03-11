@@ -16,6 +16,7 @@ import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
 import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
 import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
+import { getAllCardImagePaths } from "@scoundrel/game";
 
 type GameBoardProps = { gameId?: string };
 
@@ -75,6 +76,13 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   useEffect(() => {
     if (initialGameId) {
       loadGame(initialGameId);
+    }
+  }, []);
+
+  useEffect(() => {
+    for (const path of getAllCardImagePaths()) {
+      const img = new Image();
+      img.src = path;
     }
   }, []);
 
