@@ -63,6 +63,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         return;
       }
       gameView.value = data as GameView;
+      playerName.value = (data as GameView).playerName;
       if ((data as GameView).phase.kind === "game_over") {
         await fetchLeaderboard();
       }
@@ -472,6 +473,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           onNewGame={startNewGame}
           leaderboardEntries={leaderboardEntries.value}
           currentGameId={state.gameId}
+          errorMessage={errorMsg.value}
+          loading={loading.value}
         />
       )}
     </div>

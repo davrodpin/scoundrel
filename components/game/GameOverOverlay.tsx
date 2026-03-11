@@ -6,11 +6,20 @@ type GameOverOverlayProps = {
   onNewGame: () => void;
   leaderboardEntries: LeaderboardEntry[];
   currentGameId: string;
+  errorMessage?: string | null;
+  loading?: boolean;
 };
 
 export function GameOverOverlay(
-  { reason, score, onNewGame, leaderboardEntries, currentGameId }:
-    GameOverOverlayProps,
+  {
+    reason,
+    score,
+    onNewGame,
+    leaderboardEntries,
+    currentGameId,
+    errorMessage,
+    loading,
+  }: GameOverOverlayProps,
 ) {
   const title = reason === "dead" ? "You Have Fallen" : "Dungeon Cleared";
   const subtitle = reason === "dead"
@@ -86,12 +95,18 @@ export function GameOverOverlay(
           </div>
         )}
 
+        {errorMessage && (
+          <p class="text-blood-bright font-body text-sm mb-3">
+            {errorMessage}
+          </p>
+        )}
         <button
           type="button"
-          class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body transition-colors duration-200"
+          class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={onNewGame}
+          disabled={loading}
         >
-          New Game
+          {loading ? "Starting..." : "New Game"}
         </button>
       </div>
     </div>
