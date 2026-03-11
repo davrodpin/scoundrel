@@ -8,7 +8,12 @@ import {
   createPrismaGameRepository,
 } from "@scoundrel/game-service";
 import { define } from "@/utils.ts";
-import { captureRequestBody, toErrorResponse } from "./_middleware_helpers.ts";
+import {
+  captureRequestBody,
+  checkBodySize,
+  extractClientIp,
+  toErrorResponse,
+} from "./_middleware_helpers.ts";
 
 const pool = new pg.Pool({ connectionString: Deno.env.get("DATABASE_URL") });
 const adapter = new PrismaPg(pool);
@@ -19,6 +24,11 @@ const gameService = createGameService(engine, repository);
 
 const logger = getLogger(["scoundrel", "http"]);
 
+// Request body size limit: 4KB is generous for any game action JSON
+const MAX_BODY_BYTES = 4096;
+
+const APP_ORIGIN = Deno.env.get("APP_ORIGIN") ?? "https://scoundrel.deno.dev";
+
 const GAME_ID_REGEX = /\/api\/games\/([^/]+)/;
 
 function extractGameId(path: string): string | undefined {
@@ -28,6 +38,14 @@ function extractGameId(path: string): string | undefined {
 function isStaticPath(path: string): boolean {
   return path.startsWith("/_fresh/") || path.startsWith("/static/");
 }
+
+const corsMiddleware = define.middleware(async (ctx) => {
+  const response = await ctx.next();
+  response.headers.set("Access-Control-Allow-Origin", APP_ORIGIN);
+  response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+  return response;
+});
 
 const errorMiddleware = define.middleware(async (ctx) => {
   try {
@@ -53,6 +71,9 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   }
 
   const body = await captureRequestBody(ctx.req, method, path);
+  const addr = ctx.info.remoteAddr;
+  const remoteIp = "hostname" in addr ? addr.hostname : undefined;
+  const clientIp = extractClientIp(ctx.req, remoteIp);
 
   const start = Date.now();
   const response = await ctx.next();
@@ -60,7 +81,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   const status = response.status;
   const gameId = extractGameId(path);
 
-  const data = { method, path, status, duration, gameId, body };
+  const data = { method, path, status, duration, gameId, body, clientIp };
 
   if (status >= 500) {
     logger.error("Request", data);
@@ -73,13 +94,26 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   return response;
 });
 
+const bodySizeMiddleware = define.middleware((ctx) => {
+  const { method } = ctx.req;
+  if (
+    (method === "POST" || method === "PUT" || method === "PATCH") &&
+    ctx.url.pathname.startsWith("/api/")
+  ) {
+    checkBodySize(ctx.req, MAX_BODY_BYTES);
+  }
+  return ctx.next();
+});
+
 const diMiddleware = define.middleware((ctx) => {
   ctx.state.gameService = gameService;
   return ctx.next();
 });
 
 export const handler = [
-  requestLoggingMiddleware,
+  corsMiddleware,
   errorMiddleware,
+  bodySizeMiddleware,
+  requestLoggingMiddleware,
   diMiddleware,
 ];

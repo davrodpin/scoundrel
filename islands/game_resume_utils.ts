@@ -5,6 +5,7 @@ export const ERROR_MESSAGES: Record<string, string> = {
   InvalidActionError: "That action is not valid right now.",
   InvalidJsonError: "Invalid request. Please try again.",
   InternalError: "Something went wrong. Please try again.",
+  PayloadTooLargeError: "Request too large. Please try again.",
 };
 
 export function getErrorMessage(data: unknown): string {

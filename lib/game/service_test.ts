@@ -62,6 +62,7 @@ function createMockRepository(
   storedEvents: Map<string, StoredEvent[]> = new Map(),
 ): GameRepository {
   const playerNames = new Map<string, string>();
+  const statuses = new Map<string, string>();
   return {
     createGame(
       gameId: string,
@@ -69,6 +70,7 @@ function createMockRepository(
       event: EngineGameEvent,
     ): Promise<void> {
       playerNames.set(gameId, playerName);
+      statuses.set(gameId, "in_progress");
       storedEvents.set(gameId, [{ sequence: event.id, payload: event }]);
       return Promise.resolve();
     },
@@ -87,14 +89,18 @@ function createMockRepository(
       return Promise.resolve(storedEvents.get(gameId) ?? []);
     },
     updateStatus(
-      _gameId: string,
-      _status: string,
+      gameId: string,
+      status: string,
       _score: number | null,
     ): Promise<void> {
+      statuses.set(gameId, status);
       return Promise.resolve();
     },
     getPlayerName(gameId: string): Promise<string | null> {
       return Promise.resolve(playerNames.get(gameId) ?? null);
+    },
+    getGameStatus(gameId: string): Promise<string | null> {
+      return Promise.resolve(statuses.get(gameId) ?? null);
     },
     getLeaderboard(_limit: number) {
       return Promise.resolve([]);
@@ -346,12 +352,14 @@ Deno.test("submitAction throws InvalidActionError for invalid action", async () 
   assertEquals(error.statusCode, 422);
 });
 
-Deno.test("getEventLog returns events for existing game", async () => {
+Deno.test("getEventLog returns events for completed game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
   const service = createGameService(engine, repository);
 
   const view = await service.createGame("Hero");
+  // Mark as completed
+  await repository.updateStatus(view.gameId, "completed", 10);
   const eventLog = await service.getEventLog(view.gameId);
 
   assertEquals(eventLog.gameId, view.gameId);
@@ -370,6 +378,57 @@ Deno.test("getEventLog throws GameNotFoundError for non-existent game", async ()
   assertEquals(error.reason, "GameNotFoundError");
   assertEquals(error.statusCode, 404);
   assertEquals(error.data.gameId, "non-existent");
+});
+
+Deno.test("getEventLog throws GameNotFoundError for non-UUID id without hitting repository", async () => {
+  const repository: GameRepository = {
+    ...createMockRepository(),
+    getGameStatus(_gameId: string): Promise<string | null> {
+      throw new Error("should not be called");
+    },
+  };
+  const engine = createMockEngine();
+  const service = createGameService(engine, repository);
+
+  const error = await assertRejects(
+    () => service.getEventLog("not-a-uuid"),
+    AppError,
+  );
+  assertEquals(error.reason, "GameNotFoundError");
+  assertEquals(error.statusCode, 404);
+});
+
+Deno.test("getEventLog throws GameNotFoundError for in-progress game", async () => {
+  const repository = createMockRepository();
+  const engine = createMockEngine();
+  const service = createGameService(engine, repository);
+
+  // Game is in_progress by default after createGame
+  const view = await service.createGame("Hero");
+  const error = await assertRejects(
+    () => service.getEventLog(view.gameId),
+    AppError,
+  );
+  assertEquals(error.reason, "GameNotFoundError");
+  assertEquals(error.statusCode, 404);
+});
+
+Deno.test("submitAction throws GameNotFoundError for non-UUID id without hitting repository", async () => {
+  const repository: GameRepository = {
+    ...createMockRepository(),
+    getLatestEvent(_gameId: string): Promise<StoredEvent | null> {
+      throw new Error("should not be called");
+    },
+  };
+  const engine = createMockEngine();
+  const service = createGameService(engine, repository);
+
+  const error = await assertRejects(
+    () => service.submitAction("not-a-uuid", { type: "draw_card" }),
+    AppError,
+  );
+  assertEquals(error.reason, "GameNotFoundError");
+  assertEquals(error.statusCode, 404);
 });
 
 Deno.test("getLeaderboard delegates to repository with limit 25", async () => {

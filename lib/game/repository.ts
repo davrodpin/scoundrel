@@ -22,6 +22,7 @@ export type GameRepository = {
     score: number | null,
   ): Promise<void>;
   getPlayerName(gameId: string): Promise<string | null>;
+  getGameStatus(gameId: string): Promise<string | null>;
   getLeaderboard(limit: number): Promise<LeaderboardEntry[]>;
 };
 
@@ -111,6 +112,15 @@ export function createPrismaGameRepository(
       });
       if (!row) return null;
       return (row as { playerName: string }).playerName;
+    },
+
+    async getGameStatus(gameId: string): Promise<string | null> {
+      const row = await prisma.game.findUnique({
+        where: { id: gameId },
+        select: { status: true },
+      });
+      if (!row) return null;
+      return (row as { status: string }).status;
     },
 
     async getLeaderboard(limit: number): Promise<LeaderboardEntry[]> {

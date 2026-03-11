@@ -36,6 +36,7 @@ Deno.test("createPrismaGameRepository returns object with all repository methods
   assertEquals(typeof repo.getAllEvents, "function");
   assertEquals(typeof repo.updateStatus, "function");
   assertEquals(typeof repo.getPlayerName, "function");
+  assertEquals(typeof repo.getGameStatus, "function");
   assertEquals(typeof repo.getLeaderboard, "function");
 });
 
@@ -264,6 +265,39 @@ Deno.test("getLeaderboard returns empty array when no completed games", async ()
   );
   const result = await repo.getLeaderboard(25);
   assertEquals(result, []);
+});
+
+Deno.test("getGameStatus returns null when game not found", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.findUnique = () => Promise.resolve(null);
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getGameStatus("non-existent");
+  assertEquals(result, null);
+});
+
+Deno.test("getGameStatus returns status when game found", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.findUnique = () => Promise.resolve({ status: "completed" });
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getGameStatus("test-game-id");
+  assertEquals(result, "completed");
+});
+
+Deno.test("getGameStatus returns in_progress status for active game", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.findUnique = () => Promise.resolve({ status: "in_progress" });
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getGameStatus("test-game-id");
+  assertEquals(result, "in_progress");
 });
 
 Deno.test("getLeaderboard maps rows to LeaderboardEntry", async () => {

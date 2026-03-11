@@ -36,6 +36,10 @@ export function createGameService(
     },
 
     async submitAction(gameId: string, action: unknown): Promise<GameView> {
+      if (!uuidSchema.safeParse(gameId).success) {
+        throw new AppError("GameNotFoundError", 404, { gameId });
+      }
+
       const actionType = typeof action === "object" &&
           action !== null &&
           "type" in action
@@ -146,11 +150,16 @@ export function createGameService(
     },
 
     async getEventLog(gameId: string): Promise<EventLog> {
-      const storedEvents = await repository.getAllEvents(gameId);
-      if (storedEvents.length === 0) {
+      if (!uuidSchema.safeParse(gameId).success) {
         throw new AppError("GameNotFoundError", 404, { gameId });
       }
 
+      const status = await repository.getGameStatus(gameId);
+      if (status !== "completed") {
+        throw new AppError("GameNotFoundError", 404, { gameId });
+      }
+
+      const storedEvents = await repository.getAllEvents(gameId);
       return {
         gameId,
         events: storedEvents.map((e) => e.payload),
