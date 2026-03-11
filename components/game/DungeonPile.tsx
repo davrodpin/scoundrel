@@ -1,3 +1,4 @@
+import { useState } from "preact/hooks";
 import { cardBackPath } from "@scoundrel/game";
 
 type DungeonPileProps = {
@@ -9,6 +10,7 @@ type DungeonPileProps = {
 export function DungeonPile(
   { count, interactive = false, onClick }: DungeonPileProps,
 ) {
+  const [loaded, setLoaded] = useState(false);
   const cursorClass = interactive ? "cursor-pointer hover:scale-105" : "";
 
   return (
@@ -27,7 +29,10 @@ export function DungeonPile(
                 src={cardBackPath()}
                 alt="Dungeon pile"
                 draggable={false}
-                class="relative w-full rounded-sm border border-dungeon-border"
+                onLoad={() => setLoaded(true)}
+                class={`relative w-full rounded-sm border border-dungeon-border transition-opacity duration-200 ${
+                  loaded ? "opacity-100" : "opacity-0"
+                }`}
               />
             </>
           )

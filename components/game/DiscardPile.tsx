@@ -1,3 +1,4 @@
+import { useState } from "preact/hooks";
 import { cardBackPath } from "@scoundrel/game";
 
 type DiscardPileProps = {
@@ -5,6 +6,8 @@ type DiscardPileProps = {
 };
 
 export function DiscardPile({ count }: DiscardPileProps) {
+  const [loaded, setLoaded] = useState(false);
+
   return (
     <div class="flex flex-col items-center gap-1">
       <div class="relative w-[clamp(140px,28vw,230px)]">
@@ -16,7 +19,10 @@ export function DiscardPile({ count }: DiscardPileProps) {
                 src={cardBackPath()}
                 alt="Discard pile"
                 draggable={false}
-                class="relative w-full rounded-sm border border-dungeon-border"
+                onLoad={() => setLoaded(true)}
+                class={`relative w-full rounded-sm border border-dungeon-border transition-opacity duration-200 ${
+                  loaded ? "opacity-100" : "opacity-0"
+                }`}
               />
             </>
           )

@@ -1,3 +1,4 @@
+import { useState } from "preact/hooks";
 import type { Card } from "@scoundrel/engine";
 import { cardBackPath, cardImagePath } from "@scoundrel/game";
 
@@ -12,6 +13,7 @@ type CardImageProps = {
 export function CardImage(
   { card, faceDown, onClick, highlighted, disabled }: CardImageProps,
 ) {
+  const [loaded, setLoaded] = useState(false);
   const src = faceDown || !card ? cardBackPath() : cardImagePath(card);
   const alt = faceDown || !card ? "Card back" : `${card.rank} of ${card.suit}`;
 
@@ -22,7 +24,7 @@ export function CardImage(
       type="button"
       onClick={interactive ? onClick : undefined}
       disabled={disabled}
-      class={`w-[clamp(140px,28vw,230px)] aspect-[5/7] overflow-hidden rounded-sm border transition-transform duration-200 ${
+      class={`w-[clamp(140px,28vw,230px)] aspect-[5/7] overflow-hidden rounded-sm border transition-transform duration-200 bg-dungeon-surface/30 ${
         highlighted
           ? "border-torch-glow shadow-[0_0_8px_rgba(230,168,50,0.4)]"
           : "border-dungeon-border"
@@ -36,7 +38,10 @@ export function CardImage(
         src={src}
         alt={alt}
         draggable={false}
-        class="w-full h-full object-cover block"
+        onLoad={() => setLoaded(true)}
+        class={`w-full h-full object-cover block transition-opacity duration-200 ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
       />
     </button>
   );
