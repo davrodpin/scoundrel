@@ -160,6 +160,11 @@ Deno.test("extractClientIp - returns remoteAddr when no X-Forwarded-For header",
   assertEquals(extractClientIp(req, "10.0.0.1"), "10.0.0.1");
 });
 
+Deno.test("extractClientIp - resolves 'localhost' hostname to 127.0.0.1", () => {
+  const req = new Request("http://localhost/api/games");
+  assertEquals(extractClientIp(req, "localhost"), "127.0.0.1");
+});
+
 Deno.test("extractClientIp - X-Forwarded-For takes priority over remoteAddr", () => {
   const req = new Request("http://localhost/api/games", {
     headers: { "x-forwarded-for": "1.2.3.4" },

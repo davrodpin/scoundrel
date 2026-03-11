@@ -7,6 +7,7 @@ export function extractClientIp(req: Request, remoteAddr?: string): string {
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
+  if (remoteAddr === "localhost") return "127.0.0.1";
   return remoteAddr ?? "unknown";
 }
 
