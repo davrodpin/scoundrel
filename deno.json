@@ -9,7 +9,8 @@
     "test": "deno test --allow-all",
     "prisma:generate": "deno run -A --env-file npm:prisma generate",
     "prisma:migrate": "deno run -A --env-file npm:prisma migrate dev",
-    "prisma:studio": "deno run -A --env-file npm:prisma studio"
+    "prisma:studio": "deno run -A --env-file npm:prisma studio",
+    "optimize:cards": "deno run --allow-read --allow-write --allow-env --allow-run --allow-ffi scripts/optimize-cards.ts"
   },
   "lint": {
     "rules": {
@@ -86,7 +87,10 @@
     "allow": [
       "npm:@prisma/client@7.3.0",
       "npm:@prisma/engines@7.3.0",
-      "npm:prisma@7.3.0"
+      "npm:prisma@7.3.0",
+      "npm:sharp@0.33.5",
+      "npm:@img/sharp-darwin-arm64@0.33.5",
+      "npm:@img/sharp-libvips-darwin-arm64@1.0.4"
     ],
     "deny": [
       "npm:esbuild@0.25.12",
