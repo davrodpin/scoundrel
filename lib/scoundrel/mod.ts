@@ -1,1 +1,1 @@
-export { cardBackPath, cardImagePath } from "./cards.ts";
+export { cardBackPath, cardImagePath, getAllCardImagePaths } from "./cards.ts";
