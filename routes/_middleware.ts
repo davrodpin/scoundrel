@@ -94,6 +94,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   }
 
   const body = await captureRequestBody(ctx.req, method, path);
+  const clientIp = extractClientIp(ctx.req);
 
   const start = Date.now();
   const response = await ctx.next();
@@ -101,7 +102,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   const status = response.status;
   const gameId = extractGameId(path);
 
-  const data = { method, path, status, duration, gameId, body };
+  const data = { method, path, status, duration, gameId, body, clientIp };
 
   if (status >= 500) {
     logger.error("Request", data);
