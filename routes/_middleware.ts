@@ -112,8 +112,8 @@ const diMiddleware = define.middleware((ctx) => {
 
 export const handler = [
   corsMiddleware,
-  requestLoggingMiddleware,
   errorMiddleware,
   bodySizeMiddleware,
+  requestLoggingMiddleware,
   diMiddleware,
 ];
