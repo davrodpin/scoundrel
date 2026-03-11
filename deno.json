@@ -48,6 +48,7 @@
     "@scoundrel/game": "./lib/scoundrel/mod.ts",
     "@scoundrel/game-service": "./lib/game/mod.ts",
     "@scoundrel/validation": "./lib/validation/mod.ts",
+    "@scoundrel/rate-limit": "./lib/rate-limit/mod.ts",
     "obscenity": "npm:obscenity@^0.4.6"
   },
   "compilerOptions": {
