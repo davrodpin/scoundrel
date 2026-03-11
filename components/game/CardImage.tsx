@@ -35,6 +35,7 @@ export function CardImage(
       <img
         src={src}
         alt={alt}
+        draggable={false}
         class="w-full h-full object-cover block"
       />
     </button>

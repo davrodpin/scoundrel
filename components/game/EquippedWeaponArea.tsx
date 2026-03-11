@@ -30,6 +30,7 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
             <img
               src={cardImagePath(weapon.card)}
               alt={`Weapon: ${weapon.card.rank} of ${weapon.card.suit}`}
+              draggable={false}
               class="w-full h-full object-cover"
             />
           </div>
@@ -39,6 +40,7 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
                 <img
                   src={cardImagePath(lastSlain)}
                   alt={`Last slain: ${lastSlain.rank} of ${lastSlain.suit}`}
+                  draggable={false}
                   class="w-full h-full object-cover"
                 />
               </div>

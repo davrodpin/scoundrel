@@ -15,6 +15,7 @@ export function DiscardPile({ count }: DiscardPileProps) {
               <img
                 src={cardBackPath()}
                 alt="Discard pile"
+                draggable={false}
                 class="relative w-full rounded-sm border border-dungeon-border"
               />
             </>
