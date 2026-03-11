@@ -26,6 +26,7 @@ export function DungeonPile(
               <img
                 src={cardBackPath()}
                 alt="Dungeon pile"
+                draggable={false}
                 class="relative w-full rounded-sm border border-dungeon-border"
               />
             </>
