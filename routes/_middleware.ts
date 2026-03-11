@@ -76,7 +76,24 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   const clientIp = extractClientIp(ctx.req, remoteIp);
 
   const start = Date.now();
-  const response = await ctx.next();
+  let response: Response;
+  try {
+    response = await ctx.next();
+  } catch (error) {
+    const duration = Date.now() - start;
+    const gameId = extractGameId(path);
+    logger.error("Request", {
+      method,
+      path,
+      status: 0,
+      duration,
+      gameId,
+      body,
+      clientIp,
+      error,
+    });
+    throw error;
+  }
   const duration = Date.now() - start;
   const status = response.status;
   const gameId = extractGameId(path);
