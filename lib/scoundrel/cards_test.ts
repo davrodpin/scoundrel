@@ -61,7 +61,11 @@ Deno.test("getAllCardImagePaths: returns 45 paths (44 cards + 1 card back)", () 
 Deno.test("getAllCardImagePaths: all paths start with /cards/", () => {
   const paths = getAllCardImagePaths();
   for (const path of paths) {
-    assertEquals(path.startsWith("/cards/"), true, `Expected ${path} to start with /cards/`);
+    assertEquals(
+      path.startsWith("/cards/"),
+      true,
+      `Expected ${path} to start with /cards/`,
+    );
   }
 });
 

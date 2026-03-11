@@ -370,6 +370,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       <HealthDisplay
         health={state.health}
         maxHealth={20}
+        playerName={state.playerName}
         damageFlash={damageFlash.value}
         healFlash={healFlash.value}
       />
