@@ -2,12 +2,12 @@ import { AppError } from "@scoundrel/errors";
 
 const BODY_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
-export function extractClientIp(req: Request): string {
+export function extractClientIp(req: Request, remoteAddr?: string): string {
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
-  return "unknown";
+  return remoteAddr ?? "unknown";
 }
 
 export function checkBodySize(req: Request, maxBytes: number): void {

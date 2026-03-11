@@ -94,7 +94,9 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   }
 
   const body = await captureRequestBody(ctx.req, method, path);
-  const clientIp = extractClientIp(ctx.req);
+  const addr = ctx.info.remoteAddr;
+  const remoteIp = "hostname" in addr ? addr.hostname : undefined;
+  const clientIp = extractClientIp(ctx.req, remoteIp);
 
   const start = Date.now();
   const response = await ctx.next();

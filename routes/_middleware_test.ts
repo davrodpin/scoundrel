@@ -155,6 +155,18 @@ Deno.test("extractClientIp - returns 'unknown' when no IP headers present", () =
   assertEquals(extractClientIp(req), "unknown");
 });
 
+Deno.test("extractClientIp - returns remoteAddr when no X-Forwarded-For header", () => {
+  const req = new Request("http://localhost/api/games");
+  assertEquals(extractClientIp(req, "10.0.0.1"), "10.0.0.1");
+});
+
+Deno.test("extractClientIp - X-Forwarded-For takes priority over remoteAddr", () => {
+  const req = new Request("http://localhost/api/games", {
+    headers: { "x-forwarded-for": "1.2.3.4" },
+  });
+  assertEquals(extractClientIp(req, "10.0.0.1"), "1.2.3.4");
+});
+
 // checkBodySize tests
 Deno.test("checkBodySize - passes when content-length is within limit", () => {
   const req = new Request("http://localhost/api/games", {
