@@ -45,7 +45,9 @@ for (const name of entries) {
   totalAfter += after;
 
   const saved = ((before - after) / before * 100).toFixed(0);
-  console.log(`  ${name}: ${formatKB(before)} → ${formatKB(after)} (-${saved}%)`);
+  console.log(
+    `  ${name}: ${formatKB(before)} → ${formatKB(after)} (-${saved}%)`,
+  );
 }
 
 console.log(
