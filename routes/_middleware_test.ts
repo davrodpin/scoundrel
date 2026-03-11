@@ -1,6 +1,11 @@
-import { assertEquals, assertStrictEquals } from "@std/assert";
+import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
 import { AppError } from "@scoundrel/errors";
-import { captureRequestBody, toErrorResponse } from "./_middleware_helpers.ts";
+import {
+  captureRequestBody,
+  checkBodySize,
+  extractClientIp,
+  toErrorResponse,
+} from "./_middleware_helpers.ts";
 
 Deno.test("captureRequestBody - returns null for GET requests", async () => {
   const req = new Request("http://localhost/api/games/123");
@@ -128,4 +133,64 @@ Deno.test("toErrorResponse - unknown error (non-Error object) returns 500", asyn
   const body = await response?.json();
   assertEquals(body.code, 500);
   assertEquals(body.error.reason, "InternalError");
+});
+
+// extractClientIp tests
+Deno.test("extractClientIp - returns first IP from X-Forwarded-For header", () => {
+  const req = new Request("http://localhost/api/games", {
+    headers: { "x-forwarded-for": "1.2.3.4, 5.6.7.8" },
+  });
+  assertEquals(extractClientIp(req), "1.2.3.4");
+});
+
+Deno.test("extractClientIp - returns single IP from X-Forwarded-For header", () => {
+  const req = new Request("http://localhost/api/games", {
+    headers: { "x-forwarded-for": "9.9.9.9" },
+  });
+  assertEquals(extractClientIp(req), "9.9.9.9");
+});
+
+Deno.test("extractClientIp - returns 'unknown' when no IP headers present", () => {
+  const req = new Request("http://localhost/api/games");
+  assertEquals(extractClientIp(req), "unknown");
+});
+
+// checkBodySize tests
+Deno.test("checkBodySize - passes when content-length is within limit", () => {
+  const req = new Request("http://localhost/api/games", {
+    method: "POST",
+    headers: { "content-length": "100" },
+  });
+  checkBodySize(req, 1024);
+});
+
+Deno.test("checkBodySize - passes when content-length header is absent", () => {
+  const req = new Request("http://localhost/api/games", { method: "POST" });
+  checkBodySize(req, 1024);
+});
+
+Deno.test("checkBodySize - throws PayloadTooLargeError when content-length exceeds limit", () => {
+  const req = new Request("http://localhost/api/games", {
+    method: "POST",
+    headers: { "content-length": "5000" },
+  });
+  assertThrows(
+    () => checkBodySize(req, 1024),
+    AppError,
+    "PayloadTooLargeError",
+  );
+});
+
+Deno.test("checkBodySize - throws with status 413", () => {
+  const req = new Request("http://localhost/api/games", {
+    method: "POST",
+    headers: { "content-length": "2048" },
+  });
+  let thrown: AppError | undefined;
+  try {
+    checkBodySize(req, 1024);
+  } catch (e) {
+    thrown = e as AppError;
+  }
+  assertEquals(thrown?.statusCode, 413);
 });
