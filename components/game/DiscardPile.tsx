@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import { cardBackPath } from "@scoundrel/game";
+import { deckLayerOffsets, DUNGEON_MAX_CARDS } from "./deck_volume_utils.ts";
 
 type DiscardPileProps = {
   count: number;
@@ -14,7 +15,13 @@ export function DiscardPile({ count }: DiscardPileProps) {
         {count > 0
           ? (
             <>
-              <div class="absolute top-1 left-1 w-full h-full rounded-sm border border-dungeon-border bg-dungeon-surface" />
+              {deckLayerOffsets(count, DUNGEON_MAX_CARDS).map((offset) => (
+                <div
+                  key={offset}
+                  class="absolute w-full h-full rounded-sm border border-dungeon-border bg-dungeon-surface"
+                  style={`top: ${offset * 2}px; left: ${offset * 2}px;`}
+                />
+              ))}
               <img
                 src={cardBackPath()}
                 alt="Discard pile"
