@@ -18,6 +18,7 @@ jobs:
           deno-version: v2.x
           cache: true
           cache-dependency-path: deno.lock
+      - run: deno task prisma:generate
       - run: deno task check
 
   test:
@@ -30,4 +31,5 @@ jobs:
           deno-version: v2.x
           cache: true
           cache-dependency-path: deno.lock
+      - run: deno task prisma:generate
       - run: deno task test
