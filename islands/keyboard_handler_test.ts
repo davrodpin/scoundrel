@@ -365,7 +365,7 @@ Deno.test("A (uppercase) triggers avoidRoom when enabled", () => {
   );
 });
 
-Deno.test("d triggers drinkPotion when enabled", () => {
+Deno.test("p triggers drinkPotion when enabled", () => {
   const state = makeState({
     actions: {
       fightWithWeapon: false,
@@ -376,12 +376,12 @@ Deno.test("d triggers drinkPotion when enabled", () => {
     },
   });
   assertEquals(
-    handleKeyboardEvent("d", state),
+    handleKeyboardEvent("p", state),
     { type: "action", action: "drinkPotion" },
   );
 });
 
-Deno.test("D (uppercase) triggers drinkPotion when enabled", () => {
+Deno.test("P (uppercase) triggers drinkPotion when enabled", () => {
   const state = makeState({
     actions: {
       fightWithWeapon: false,
@@ -392,7 +392,7 @@ Deno.test("D (uppercase) triggers drinkPotion when enabled", () => {
     },
   });
   assertEquals(
-    handleKeyboardEvent("D", state),
+    handleKeyboardEvent("P", state),
     { type: "action", action: "drinkPotion" },
   );
 });
@@ -443,8 +443,8 @@ Deno.test("a returns none when avoidRoom is disabled", () => {
   assertEquals(handleKeyboardEvent("a", makeState()), { type: "none" });
 });
 
-Deno.test("d returns none when drinkPotion is disabled", () => {
-  assertEquals(handleKeyboardEvent("d", makeState()), { type: "none" });
+Deno.test("p returns none when drinkPotion is disabled", () => {
+  assertEquals(handleKeyboardEvent("p", makeState()), { type: "none" });
 });
 
 Deno.test("e returns none when equipWeapon is disabled", () => {
@@ -496,20 +496,13 @@ Deno.test("d returns none when drawCard disabled and not interactive", () => {
   );
 });
 
-Deno.test("d triggers drinkPotion (not drawCard) when interactive", () => {
+Deno.test("p triggers drinkPotion in interactive state", () => {
   const state = makeState({
     isInteractive: true,
-    actions: {
-      fightWithWeapon: false,
-      avoidRoom: false,
-      drinkPotion: true,
-      fightBarehanded: false,
-      equipWeapon: false,
-      drawCard: false,
-    },
+    actions: { drinkPotion: true },
   });
   assertEquals(
-    handleKeyboardEvent("d", state),
+    handleKeyboardEvent("p", state),
     { type: "action", action: "drinkPotion" },
   );
 });

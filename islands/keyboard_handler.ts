@@ -108,7 +108,7 @@ export function handleKeyboardEvent(
         ? { type: "action", action: "avoidRoom" }
         : NONE;
 
-    case "d":
+    case "p":
       return state.actions.drinkPotion
         ? { type: "action", action: "drinkPotion" }
         : NONE;
