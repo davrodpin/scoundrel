@@ -25,12 +25,12 @@ export function CardImage(
   let borderClass: string;
   if (selected) {
     borderClass =
-      "border-torch-amber ring-2 ring-torch-glow shadow-[0_0_12px_rgba(194,123,26,0.5)] -translate-y-2";
+      "border-torch-amber ring-2 ring-torch-glow shadow-[0_0_16px_rgba(230,168,50,0.7)] -translate-y-2";
   } else if (focused) {
     borderClass =
       "border-dashed border-torch-amber ring-2 ring-torch-amber/40 shadow-[0_0_8px_rgba(194,123,26,0.35)] -translate-y-1";
   } else if (highlighted) {
-    borderClass = "border-torch-glow shadow-[0_0_6px_rgba(194,123,26,0.3)]";
+    borderClass = "border-torch-glow shadow-[0_0_8px_rgba(230,168,50,0.4)]";
   } else {
     borderClass = "border-dungeon-border";
   }
