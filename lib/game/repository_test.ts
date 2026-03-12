@@ -15,11 +15,16 @@ function makeMockPrismaClient(): MockPrisma {
       update: () => Promise.resolve(),
       findUnique: () => Promise.resolve(null),
       findMany: () => Promise.resolve([]),
+      deleteMany: () => Promise.resolve({ count: 0 }),
     },
     gameEvent: {
       create: () => Promise.resolve(),
       findFirst: () => Promise.resolve(null),
       findMany: () => Promise.resolve([]),
+    },
+    leaderboardEntry: {
+      findMany: () => Promise.resolve([]),
+      upsert: () => Promise.resolve(),
     },
   };
 }
@@ -38,6 +43,8 @@ Deno.test("createPrismaGameRepository returns object with all repository methods
   assertEquals(typeof repo.getPlayerName, "function");
   assertEquals(typeof repo.getGameStatus, "function");
   assertEquals(typeof repo.getLeaderboard, "function");
+  assertEquals(typeof repo.createLeaderboardEntry, "function");
+  assertEquals(typeof repo.deleteGamesOlderThan, "function");
 });
 
 Deno.test("createGame calls $transaction on prisma client", async () => {
@@ -256,9 +263,9 @@ Deno.test("getPlayerName returns playerName when game found", async () => {
   assertEquals(result, "TestHero");
 });
 
-Deno.test("getLeaderboard returns empty array when no completed games", async () => {
+Deno.test("getLeaderboard returns empty array when no leaderboard entries", async () => {
   const mockPrisma = makeMockPrismaClient();
-  mockPrisma.game.findMany = () => Promise.resolve([]);
+  mockPrisma.leaderboardEntry.findMany = () => Promise.resolve([]);
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
@@ -300,21 +307,21 @@ Deno.test("getGameStatus returns in_progress status for active game", async () =
   assertEquals(result, "in_progress");
 });
 
-Deno.test("getLeaderboard maps rows to LeaderboardEntry", async () => {
+Deno.test("getLeaderboard maps leaderboard_entries rows to LeaderboardEntry", async () => {
   const mockPrisma = makeMockPrismaClient();
-  mockPrisma.game.findMany = () =>
+  mockPrisma.leaderboardEntry.findMany = () =>
     Promise.resolve([
       {
-        id: "game-1",
+        gameId: "game-1",
         playerName: "Alice",
         score: 20,
-        updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+        completedAt: new Date("2026-01-01T00:00:00.000Z"),
       },
       {
-        id: "game-2",
+        gameId: "game-2",
         playerName: "Bob",
         score: 10,
-        updatedAt: new Date("2026-01-02T00:00:00.000Z"),
+        completedAt: new Date("2026-01-02T00:00:00.000Z"),
       },
     ]);
 

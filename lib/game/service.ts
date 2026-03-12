@@ -106,6 +106,13 @@ export function createGameService(
           const score = engine.getScore(newState);
           await repository.updateStatus(gameId, "completed", score);
           logger.info("Game completed", { gameId, score });
+          await repository.createLeaderboardEntry(
+            gameId,
+            playerName,
+            score,
+            new Date(),
+          );
+          logger.info("Leaderboard entry created", { gameId, score });
         }
 
         logger.info("Action submitted", { gameId, actionType });
@@ -131,6 +138,13 @@ export function createGameService(
         const score = engine.getScore(newState);
         await repository.updateStatus(gameId, "completed", score);
         logger.info("Game completed", { gameId, score });
+        await repository.createLeaderboardEntry(
+          gameId,
+          playerName,
+          score,
+          new Date(),
+        );
+        logger.info("Leaderboard entry created", { gameId, score });
       }
 
       logger.info("Action submitted", { gameId, actionType });

@@ -50,6 +50,7 @@
     "@scoundrel/game": "./lib/scoundrel/mod.ts",
     "@scoundrel/game-service": "./lib/game/mod.ts",
     "@scoundrel/log-format": "./lib/log-format/mod.ts",
+    "@scoundrel/cleanup": "./lib/cleanup/mod.ts",
     "@scoundrel/validation": "./lib/validation/mod.ts",
     "obscenity": "npm:obscenity@^0.4.6"
   },
@@ -58,7 +59,8 @@
       "dom",
       "dom.asynciterable",
       "dom.iterable",
-      "deno.ns"
+      "deno.ns",
+      "deno.unstable"
     ],
     "jsx": "precompile",
     "jsxImportSource": "preact",

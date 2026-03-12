@@ -33,9 +33,21 @@ model GameEvent {
   payload   Json
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  game Game @relation(fields: [gameId], references: [id])
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   @@unique([gameId, sequence])
   @@index([gameId])
   @@map("game_events")
+}
+
+model LeaderboardEntry {
+  id          Int      @id @default(autoincrement())
+  gameId      String   @map("game_id") @db.Uuid
+  playerName  String   @map("player_name")
+  score       Int
+  completedAt DateTime @map("completed_at") @db.Timestamptz
+
+  @@unique([gameId])
+  @@index([score(sort: Desc)])
+  @@map("leaderboard_entries")
 }

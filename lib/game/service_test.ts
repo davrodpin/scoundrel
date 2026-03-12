@@ -110,6 +110,17 @@ function createMockRepository(
     getLeaderboard(_limit: number) {
       return Promise.resolve([]);
     },
+    createLeaderboardEntry(
+      _gameId: string,
+      _playerName: string,
+      _score: number,
+      _completedAt: Date,
+    ): Promise<void> {
+      return Promise.resolve();
+    },
+    deleteGamesOlderThan(_cutoffDate: Date): Promise<number> {
+      return Promise.resolve(0);
+    },
   };
 }
 
@@ -434,6 +445,178 @@ Deno.test("submitAction throws GameNotFoundError for non-UUID id without hitting
   );
   assertEquals(error.reason, "GameNotFoundError");
   assertEquals(error.statusCode, 404);
+});
+
+Deno.test("submitAction calls createLeaderboardEntry on game-over in normal flow", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const gameOverState: GameState = {
+    ...makeInitialState(gameId),
+    phase: { kind: "game_over", reason: "dead" },
+  };
+
+  const createdEvent = makeCreatedEvent(makeInitialState(gameId));
+  const storedEvents = new Map<string, StoredEvent[]>();
+  storedEvents.set(gameId, [{ sequence: 0, payload: createdEvent }]);
+
+  let capturedLeaderboardGameId: string | null = null;
+  let capturedLeaderboardPlayerName: string | null = null;
+  let capturedLeaderboardScore: number | null = null;
+  let capturedLeaderboardDate: Date | null = null;
+
+  const repository: GameRepository = {
+    ...createMockRepository(storedEvents),
+    createLeaderboardEntry(
+      gId: string,
+      pName: string,
+      score: number,
+      completedAt: Date,
+    ): Promise<void> {
+      capturedLeaderboardGameId = gId;
+      capturedLeaderboardPlayerName = pName;
+      capturedLeaderboardScore = score;
+      capturedLeaderboardDate = completedAt;
+      return Promise.resolve();
+    },
+    getPlayerName(_gameId: string): Promise<string | null> {
+      return Promise.resolve("Hero");
+    },
+  };
+
+  const engine = createMockEngine({
+    submitAction(_eventLog: EventLog, _action: GameAction): {
+      ok: true;
+      state: GameState;
+      event: ActionAppliedEvent;
+      eventLog: EventLog;
+    } | { ok: false; error: string } {
+      const event = makeActionAppliedEvent(
+        1,
+        { type: "draw_card" } as GameAction,
+        gameOverState,
+      );
+      return {
+        ok: true,
+        state: gameOverState,
+        event,
+        eventLog: { gameId, events: [createdEvent, event] },
+      };
+    },
+    getScore(_state: GameState): number {
+      return 42;
+    },
+  });
+
+  const service = createGameService(engine, repository, TEST_CONFIG);
+  await service.submitAction(gameId, { type: "draw_card" });
+
+  assertEquals(capturedLeaderboardGameId, gameId);
+  assertEquals(capturedLeaderboardPlayerName, "Hero");
+  assertEquals(capturedLeaderboardScore, 42);
+  assertEquals(capturedLeaderboardDate !== null, true);
+});
+
+Deno.test("submitAction calls createLeaderboardEntry on game-over in auto-enter-room flow", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const roomReadyState: GameState = {
+    ...makeInitialState(gameId),
+    room: [
+      { suit: "diamonds", rank: 3 },
+      { suit: "hearts", rank: 7 },
+      { suit: "clubs", rank: 5 },
+      { suit: "spades", rank: 10 },
+    ],
+    dungeon: [],
+    phase: { kind: "room_ready" },
+  };
+
+  const createdEvent = makeCreatedEvent(roomReadyState);
+  const storedEvents = new Map<string, StoredEvent[]>();
+  storedEvents.set(gameId, [{ sequence: 0, payload: createdEvent }]);
+
+  let capturedLeaderboardGameId: string | null = null;
+  let capturedLeaderboardPlayerName: string | null = null;
+  let capturedLeaderboardScore: number | null = null;
+  let capturedLeaderboardDate: Date | null = null;
+
+  const repository: GameRepository = {
+    ...createMockRepository(storedEvents),
+    createLeaderboardEntry(
+      gId: string,
+      pName: string,
+      score: number,
+      completedAt: Date,
+    ): Promise<void> {
+      capturedLeaderboardGameId = gId;
+      capturedLeaderboardPlayerName = pName;
+      capturedLeaderboardScore = score;
+      capturedLeaderboardDate = completedAt;
+      return Promise.resolve();
+    },
+    getPlayerName(_gameId: string): Promise<string | null> {
+      return Promise.resolve("Hero");
+    },
+  };
+
+  const gameOverState: GameState = {
+    ...roomReadyState,
+    phase: { kind: "game_over", reason: "dead" },
+  };
+  let submitCallCount = 0;
+
+  const engine = createMockEngine({
+    getState(_eventLog: EventLog): GameState {
+      return roomReadyState;
+    },
+    submitAction(_eventLog: EventLog, action: GameAction): {
+      ok: true;
+      state: GameState;
+      event: ActionAppliedEvent;
+      eventLog: EventLog;
+    } | { ok: false; error: string } {
+      submitCallCount++;
+      if (submitCallCount === 1) {
+        // enter_room call
+        const enterState: GameState = {
+          ...roomReadyState,
+          phase: {
+            kind: "choosing",
+            cardsChosen: 0,
+            potionUsedThisTurn: false,
+          },
+        };
+        const event = makeActionAppliedEvent(1, action, enterState);
+        return {
+          ok: true,
+          state: enterState,
+          event,
+          eventLog: { gameId, events: [createdEvent, event] },
+        };
+      }
+      // choose_card call -> game_over
+      const event = makeActionAppliedEvent(2, action, gameOverState);
+      return {
+        ok: true,
+        state: gameOverState,
+        event,
+        eventLog: { gameId, events: [createdEvent, event] },
+      };
+    },
+    getScore(_state: GameState): number {
+      return 99;
+    },
+  });
+
+  const service = createGameService(engine, repository, TEST_CONFIG);
+  await service.submitAction(gameId, {
+    type: "choose_card",
+    cardIndex: 0,
+    fightWith: "barehanded",
+  });
+
+  assertEquals(capturedLeaderboardGameId, gameId);
+  assertEquals(capturedLeaderboardPlayerName, "Hero");
+  assertEquals(capturedLeaderboardScore, 99);
+  assertEquals(capturedLeaderboardDate !== null, true);
 });
 
 Deno.test("getLeaderboard delegates to repository with limit 25", async () => {
