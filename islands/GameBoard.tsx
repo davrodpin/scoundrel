@@ -21,6 +21,7 @@ import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
 import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
+import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
 
 type GameBoardProps = { gameId?: string };
 
@@ -32,6 +33,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const leaderboardEntries = useSignal<LeaderboardEntry[]>([]);
   const leaderboardLoading = useSignal(false);
   const selectedCardIndex = useSignal<number | null>(null);
+  const focusedCardIndex = useSignal<number | null>(null);
   const damageFlash = useSignal(false);
   const healFlash = useSignal(false);
   const errorMsg = useSignal<string | null>(null);
@@ -90,6 +92,120 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     }
   }, []);
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+
+      if (e.key === "Escape") {
+        if (showRules.value) {
+          showRules.value = false;
+          e.preventDefault();
+          return;
+        }
+        if (showLeaderboard.value) {
+          showLeaderboard.value = false;
+          e.preventDefault();
+          return;
+        }
+      }
+
+      const view = gameView.value;
+      if (!view) return;
+
+      const isInteractiveNow = (view.phase.kind === "room_ready" ||
+        view.phase.kind === "choosing") && !loading.value;
+
+      const occupiedSlots = (view.room as (Card | null)[])
+        .map((card, i) => (card != null ? i : null))
+        .filter((i): i is number => i !== null);
+
+      const panelStateNow = computeActionPanel(
+        {
+          phase: view.phase,
+          lastRoomAvoided: view.lastRoomAvoided,
+          room: view.room as Card[],
+          equippedWeapon: view.equippedWeapon,
+          health: view.health,
+        },
+        isInteractiveNow ? selectedCardIndex.value : null,
+      );
+
+      const kbState: KeyboardState = {
+        focusedIndex: focusedCardIndex.value,
+        selectedIndex: selectedCardIndex.value,
+        occupiedSlots,
+        isInteractive: isInteractiveNow,
+        actions: {
+          fightWithWeapon: panelStateNow.fightWithWeapon.enabled &&
+            !loading.value,
+          avoidRoom: panelStateNow.avoidRoom.enabled && !loading.value,
+          drinkPotion: panelStateNow.drinkPotion.enabled && !loading.value,
+          fightBarehanded: panelStateNow.fightBarehanded.enabled &&
+            !loading.value,
+          equipWeapon: panelStateNow.equipWeapon.enabled && !loading.value,
+          drawCard: view.phase.kind === "drawing" &&
+            view.dungeonCount > 0 && !loading.value,
+          openRules: true,
+          copyLink: true,
+          openLeaderboard: true,
+        },
+      };
+
+      const intent = handleKeyboardEvent(e.key, kbState);
+      if (intent.type === "none") return;
+
+      e.preventDefault();
+
+      switch (intent.type) {
+        case "focus_card":
+          focusedCardIndex.value = intent.index;
+          break;
+        case "select_focused":
+          selectedCardIndex.value = focusedCardIndex.value;
+          break;
+        case "deselect":
+          selectedCardIndex.value = null;
+          focusedCardIndex.value = null;
+          break;
+        case "action":
+          switch (intent.action) {
+            case "fightWithWeapon":
+              handleFightWithWeapon();
+              break;
+            case "fightBarehanded":
+              handleFightBarehanded();
+              break;
+            case "avoidRoom":
+              handleAvoidRoom();
+              break;
+            case "drinkPotion":
+              handleDrinkPotion();
+              break;
+            case "equipWeapon":
+              handleEquipWeapon();
+              break;
+            case "drawCard":
+              handleDrawCard();
+              break;
+            case "openRules":
+              handleToggleRules();
+              break;
+            case "copyLink":
+              handleCopyLink();
+              break;
+            case "openLeaderboard":
+              handleToggleLeaderboard();
+              break;
+          }
+          break;
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   async function startNewGame() {
     loading.value = true;
     try {
@@ -141,6 +257,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       const newView = data as GameView;
       gameView.value = newView;
       selectedCardIndex.value = null;
+      focusedCardIndex.value = null;
 
       if (newView.phase.kind === "game_over") {
         await fetchLeaderboard();
@@ -380,6 +497,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       class="min-h-screen bg-dungeon-bg text-parchment p-4 font-body flex flex-col items-center"
       onClick={() => {
         selectedCardIndex.value = null;
+        focusedCardIndex.value = null;
       }}
     >
       {/* Rules toggle + panel */}
@@ -472,6 +590,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             onCardClick={isInteractive ? handleCardClick : undefined}
             interactive={isInteractive}
             selectedIndex={selectedCardIndex.value}
+            focusedIndex={focusedCardIndex.value}
           />
         </GameSection>
 

@@ -6,10 +6,12 @@ type RoomAreaProps = {
   onCardClick?: (index: number) => void;
   interactive: boolean;
   selectedIndex?: number | null;
+  focusedIndex?: number | null;
 };
 
 export function RoomArea(
-  { cards, onCardClick, interactive, selectedIndex }: RoomAreaProps,
+  { cards, onCardClick, interactive, selectedIndex, focusedIndex }:
+    RoomAreaProps,
 ) {
   const slots = Array.from({ length: 4 }, (_, i) => cards[i] ?? null);
 
@@ -26,7 +28,8 @@ export function RoomArea(
         }
 
         const isSelected = selectedIndex === i;
-        const isHighlighted = interactive && !isSelected;
+        const isFocused = focusedIndex === i && !isSelected;
+        const isHighlighted = interactive && !isSelected && !isFocused;
 
         return (
           <CardImage
@@ -36,6 +39,7 @@ export function RoomArea(
               ? () => onCardClick(i)
               : undefined}
             selected={isSelected}
+            focused={isFocused}
             highlighted={isHighlighted}
           />
         );
