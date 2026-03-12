@@ -1,5 +1,5 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
-import { selectFormatter } from "./main.ts";
+import { selectFormatter } from "@scoundrel/log-format";
 
 function makeRecord(
   properties: Record<string, unknown> = {},

@@ -48,6 +48,7 @@
     "@scoundrel/errors": "./lib/errors/mod.ts",
     "@scoundrel/game": "./lib/scoundrel/mod.ts",
     "@scoundrel/game-service": "./lib/game/mod.ts",
+    "@scoundrel/log-format": "./lib/log-format/mod.ts",
     "@scoundrel/validation": "./lib/validation/mod.ts",
     "obscenity": "npm:obscenity@^0.4.6"
   },

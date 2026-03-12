@@ -1,11 +1,7 @@
 import { define } from "@/utils.ts";
+import { createIndexRedirect } from "./_redirect.ts";
 
-export function createIndexRedirect(): Response {
-  return new Response(null, {
-    status: 302,
-    headers: { Location: "/play" },
-  });
-}
+export { createIndexRedirect };
 
 export const handler = define.handlers({
   GET(_ctx) {
