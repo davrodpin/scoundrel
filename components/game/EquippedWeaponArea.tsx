@@ -14,8 +14,13 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
     return (
       <div class="flex justify-center mt-6">
         <div class="flex flex-col items-center gap-1">
-          <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] rounded-sm border border-dungeon-border bg-dungeon-surface/30 flex items-center justify-center">
-            <span class="text-parchment-dark text-xs">No weapon</span>
+          <div class="flex items-start gap-3">
+            <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30 flex items-center justify-center">
+              <span class="text-parchment-dark text-xs">No weapon</span>
+            </div>
+            <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
+              <span class="text-parchment-dark text-xs">No kills yet</span>
+            </div>
           </div>
           <span class="text-weapon-steel text-sm font-body">Weapon</span>
         </div>
@@ -30,7 +35,7 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
     <div class="flex justify-center mt-6">
       <div class="flex flex-col items-center gap-1">
         <div class="flex items-start gap-3">
-          <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] overflow-hidden rounded-sm border border-weapon-steel bg-dungeon-surface/30">
+          <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] overflow-hidden rounded-sm border border-weapon-steel bg-dungeon-surface/30">
             <img
               src={cardImagePath(weapon.card)}
               alt={`Weapon: ${weapon.card.rank} of ${weapon.card.suit}`}
@@ -43,7 +48,7 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
           </div>
           {lastSlain
             ? (
-              <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] overflow-hidden rounded-sm border border-dungeon-border bg-dungeon-surface/30">
+              <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] overflow-hidden rounded-sm border border-dungeon-border bg-dungeon-surface/30">
                 <img
                   src={cardImagePath(lastSlain)}
                   alt={`Last slain: ${lastSlain.rank} of ${lastSlain.suit}`}
@@ -56,7 +61,7 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
               </div>
             )
             : (
-              <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
+              <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
                 <span class="text-parchment-dark text-xs">No kills yet</span>
               </div>
             )}
