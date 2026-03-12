@@ -65,7 +65,11 @@ Deno.test("HealthDisplay - Fight Barehanded shows tooltip text", () => {
       maxHealth={20}
       playerName="Aragorn"
       actions={makeActions({
-        fightBarehanded: { enabled: true, tooltip: "Barehanded: 6 dmg", onClick: noop },
+        fightBarehanded: {
+          enabled: true,
+          tooltip: "Barehanded: 6 dmg",
+          onClick: noop,
+        },
       })}
     />,
   );
@@ -79,7 +83,11 @@ Deno.test("HealthDisplay - Fight w/ Weapon shows tooltip text", () => {
       maxHealth={20}
       playerName="Aragorn"
       actions={makeActions({
-        fightWithWeapon: { enabled: true, tooltip: "Weapon: 3 dmg", onClick: noop },
+        fightWithWeapon: {
+          enabled: true,
+          tooltip: "Weapon: 3 dmg",
+          onClick: noop,
+        },
       })}
     />,
   );
@@ -93,7 +101,11 @@ Deno.test("HealthDisplay - Equip Weapon shows tooltip text", () => {
       maxHealth={20}
       playerName="Aragorn"
       actions={makeActions({
-        equipWeapon: { enabled: true, tooltip: "Equip (rank 5)", onClick: noop },
+        equipWeapon: {
+          enabled: true,
+          tooltip: "Equip (rank 5)",
+          onClick: noop,
+        },
       })}
     />,
   );

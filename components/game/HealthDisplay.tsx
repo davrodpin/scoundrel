@@ -24,7 +24,11 @@ type HealthDisplayProps = {
 type ActionButtonDef = {
   label: string;
   color: string;
-  button: HealthDisplayActionButton | { enabled: boolean; tooltip?: string; onClick: () => void };
+  button: HealthDisplayActionButton | {
+    enabled: boolean;
+    tooltip?: string;
+    onClick: () => void;
+  };
 };
 
 function ActionTooltipButton(

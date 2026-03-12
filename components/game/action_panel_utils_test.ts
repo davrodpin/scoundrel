@@ -10,7 +10,9 @@ type ActionPanelInput = {
   health: number;
 };
 
-function makeState(overrides: Partial<ActionPanelInput> = {}): ActionPanelInput {
+function makeState(
+  overrides: Partial<ActionPanelInput> = {},
+): ActionPanelInput {
   return {
     phase: { kind: "room_ready" },
     lastRoomAvoided: false,
@@ -29,13 +31,19 @@ const potion4: Card = { suit: "hearts", rank: 4 };
 // --- Avoid Room ---
 
 Deno.test("avoidRoom enabled when room_ready and not lastRoomAvoided", () => {
-  const state = makeState({ phase: { kind: "room_ready" }, lastRoomAvoided: false });
+  const state = makeState({
+    phase: { kind: "room_ready" },
+    lastRoomAvoided: false,
+  });
   const result = computeActionPanel(state, null);
   assertEquals(result.avoidRoom.enabled, true);
 });
 
 Deno.test("avoidRoom disabled when lastRoomAvoided is true", () => {
-  const state = makeState({ phase: { kind: "room_ready" }, lastRoomAvoided: true });
+  const state = makeState({
+    phase: { kind: "room_ready" },
+    lastRoomAvoided: true,
+  });
   const result = computeActionPanel(state, null);
   assertEquals(result.avoidRoom.enabled, false);
 });

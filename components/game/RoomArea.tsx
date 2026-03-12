@@ -32,7 +32,9 @@ export function RoomArea(
           <CardImage
             key={`${card.suit}-${card.rank}-${i}`}
             card={card}
-            onClick={interactive && onCardClick ? () => onCardClick(i) : undefined}
+            onClick={interactive && onCardClick
+              ? () => onCardClick(i)
+              : undefined}
             selected={isSelected}
             highlighted={isHighlighted}
           />

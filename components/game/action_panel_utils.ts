@@ -69,7 +69,9 @@ export function computeActionPanel(
     if (weapon) {
       const canFight = canWeaponFight(weapon, card);
       const weaponDmg = Math.max(0, cardValue(card) - cardValue(weapon.card));
-      const tooltip = weaponDmg === 0 ? "Weapon: no damage" : `Weapon: ${weaponDmg} dmg`;
+      const tooltip = weaponDmg === 0
+        ? "Weapon: no damage"
+        : `Weapon: ${weaponDmg} dmg`;
       fightWithWeapon = { enabled: canFight, tooltip };
     }
 
