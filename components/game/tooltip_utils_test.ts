@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { computeTooltip } from "./tooltip_utils.ts";
+import { computeTooltip, computeWeaponCardTooltip } from "./tooltip_utils.ts";
 import type { Card, GameState } from "@scoundrel/engine";
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
@@ -142,4 +142,33 @@ Deno.test("weapon same rank shows same", () => {
     equippedWeapon: { card: currentWeapon, slainMonsters: [] },
   });
   assertEquals(computeTooltip(newWeapon, state), ["Equip (rank 5, same)"]);
+});
+
+// --- Equipped weapon card tooltips ---
+
+Deno.test("equipped weapon with no slain monsters shows can fight any monster", () => {
+  const weapon: Card = { suit: "diamonds", rank: 7 };
+  assertEquals(
+    computeWeaponCardTooltip({ card: weapon, slainMonsters: [] }),
+    ["Can fight any monster"],
+  );
+});
+
+Deno.test("equipped weapon with one slain monster shows max target rank", () => {
+  const weapon: Card = { suit: "diamonds", rank: 5 };
+  const slain: Card = { suit: "spades", rank: 10 };
+  assertEquals(
+    computeWeaponCardTooltip({ card: weapon, slainMonsters: [slain] }),
+    ["Max target rank: 10"],
+  );
+});
+
+Deno.test("equipped weapon shows max target rank of last slain monster", () => {
+  const weapon: Card = { suit: "diamonds", rank: 5 };
+  const first: Card = { suit: "clubs", rank: 12 };
+  const last: Card = { suit: "spades", rank: 6 };
+  assertEquals(
+    computeWeaponCardTooltip({ card: weapon, slainMonsters: [first, last] }),
+    ["Max target rank: 6"],
+  );
 });

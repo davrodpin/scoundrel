@@ -1,5 +1,7 @@
 import type { Card, EquippedWeapon } from "@scoundrel/engine";
 import { CardImage } from "./CardImage.tsx";
+import { CardTooltip } from "./CardTooltip.tsx";
+import { computeWeaponCardTooltip } from "./tooltip_utils.ts";
 
 type EquippedWeaponProps = {
   weapon: EquippedWeapon | null;
@@ -18,7 +20,11 @@ export function EquippedWeaponCard({ weapon }: EquippedWeaponProps) {
     );
   }
 
-  return <CardImage card={weapon.card} />;
+  return (
+    <CardTooltip lines={computeWeaponCardTooltip(weapon)}>
+      <CardImage card={weapon.card} />
+    </CardTooltip>
+  );
 }
 
 export function LastSlainCard({ card }: LastSlainProps) {

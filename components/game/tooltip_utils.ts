@@ -71,6 +71,15 @@ function computePotionTooltip(value: number, state: TooltipState): string[] {
   return [`Heals ${heals} HP`];
 }
 
+export function computeWeaponCardTooltip(weapon: EquippedWeapon): string[] {
+  const { slainMonsters } = weapon;
+  if (slainMonsters.length === 0) {
+    return ["Can fight any monster"];
+  }
+  const lastSlain = slainMonsters[slainMonsters.length - 1];
+  return [`Max target rank: ${cardValue(lastSlain)}`];
+}
+
 function computeWeaponTooltip(value: number, state: TooltipState): string[] {
   if (!state.equippedWeapon) {
     return [`Equip (rank ${value})`];
