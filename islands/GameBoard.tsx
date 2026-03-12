@@ -454,7 +454,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       </div>
 
       {/* Main play area */}
-      <div class="grid grid-cols-[auto_auto_auto] gap-4 items-start">
+      <div class="grid grid-cols-[auto_auto_auto] gap-4 items-stretch">
         {/* Dungeon pile */}
         <GameSection label="Dungeon">
           <DungeonPile
