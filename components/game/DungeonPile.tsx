@@ -17,7 +17,7 @@ export function DungeonPile(
   return (
     <div class="flex flex-col items-center gap-1">
       <div
-        class={`relative w-[clamp(140px,28vw,230px)] transition-transform duration-200 ${cursorClass}`}
+        class={`relative w-[clamp(140px,28vw,230px)] mr-3 mb-3 transition-transform duration-200 ${cursorClass}`}
         onClick={interactive ? onClick : undefined}
         role={interactive ? "button" : undefined}
         tabIndex={interactive ? 0 : undefined}
@@ -28,8 +28,12 @@ export function DungeonPile(
               {deckLayerOffsets(count, DUNGEON_MAX_CARDS).map((offset) => (
                 <div
                   key={offset}
-                  class="absolute w-full h-full rounded-sm border border-dungeon-border bg-dungeon-surface"
-                  style={`top: ${offset * 2}px; left: ${offset * 2}px;`}
+                  class="absolute w-full h-full rounded-sm border border-dungeon-border bg-white"
+                  style={`top: ${offset * 2}px; left: ${
+                    offset * 2
+                  }px; transform: rotate(${
+                    offset * 1.5
+                  }deg); transform-origin: center center;`}
                 />
               ))}
               <img
