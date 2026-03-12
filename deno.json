@@ -10,7 +10,8 @@
     "prisma:generate": "deno run -A --env-file npm:prisma generate",
     "prisma:migrate": "deno run -A --env-file npm:prisma migrate dev",
     "prisma:studio": "deno run -A --env-file npm:prisma studio",
-    "optimize:cards": "deno run --allow-read --allow-write --allow-env --allow-run --allow-ffi scripts/optimize-cards.ts"
+    "optimize:cards": "deno run --allow-read --allow-write --allow-env --allow-run --allow-ffi scripts/optimize-cards.ts",
+    "worktree:cleanup": "deno run --allow-run --allow-read scripts/worktree_cleanup.ts"
   },
   "lint": {
     "rules": {
