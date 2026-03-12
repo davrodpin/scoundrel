@@ -13,16 +13,21 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
   if (!weapon) {
     return (
       <div class="flex justify-center mt-6">
-        <div class="flex flex-col items-center gap-1">
-          <div class="flex items-start gap-3">
+        <div class="flex items-start gap-3">
+          <div class="flex flex-col items-center gap-1">
             <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30 flex items-center justify-center">
               <span class="text-parchment-dark text-xs">No weapon</span>
             </div>
+            <span class="text-parchment-dark text-sm font-body">Weapon</span>
+          </div>
+          <div class="flex flex-col items-center gap-1">
             <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
               <span class="text-parchment-dark text-xs">No kills yet</span>
             </div>
+            <span class="text-parchment-dark text-sm font-body">
+              Last monster slain
+            </span>
           </div>
-          <span class="text-weapon-steel text-sm font-body">Weapon</span>
         </div>
       </div>
     );
@@ -33,8 +38,8 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
 
   return (
     <div class="flex justify-center mt-6">
-      <div class="flex flex-col items-center gap-1">
-        <div class="flex items-start gap-3">
+      <div class="flex items-start gap-3">
+        <div class="flex flex-col items-center gap-1">
           <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] overflow-hidden rounded-sm border border-weapon-steel bg-dungeon-surface/30">
             <img
               src={cardImagePath(weapon.card)}
@@ -46,6 +51,11 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
               }`}
             />
           </div>
+          <span class="text-parchment-dark text-sm font-body">
+            Weapon{slain.length > 0 ? ` (${slain.length} slain)` : ""}
+          </span>
+        </div>
+        <div class="flex flex-col items-center gap-1">
           {lastSlain
             ? (
               <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] overflow-hidden rounded-sm border border-dungeon-border bg-dungeon-surface/30">
@@ -65,10 +75,10 @@ export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
                 <span class="text-parchment-dark text-xs">No kills yet</span>
               </div>
             )}
+          <span class="text-parchment-dark text-sm font-body">
+            Last monster slain
+          </span>
         </div>
-        <span class="text-weapon-steel text-sm font-body">
-          Weapon{slain.length > 0 ? ` (${slain.length} slain)` : ""}
-        </span>
       </div>
     </div>
   );

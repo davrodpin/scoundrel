@@ -475,6 +475,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       <ActionBar
         phase={state.phase}
         cardsChosen={cardsChosen}
+        lastRoomAvoided={state.lastRoomAvoided}
+        cardSelected={selectedCardIndex.value !== null}
+        roomSize={state.room.length}
       />
 
       {/* Error message */}
