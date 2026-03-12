@@ -7,6 +7,8 @@ on:
         description: "Base URL of the deployment to test against"
         required: true
         type: string
+  repository_dispatch:
+    types: [deno_deploy.build.routed]
 
 permissions:
   contents: read
@@ -15,6 +17,9 @@ jobs:
   integration:
     name: Integration Tests
     runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.client_payload.revision.preview_url != null
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v2
@@ -24,4 +29,7 @@ jobs:
           cache-dependency-path: deno.lock
       - run: deno task test:integration
         env:
-          BASE_URL: ${{ inputs.base_url }}
+          BASE_URL: >-
+            ${{ github.event_name == 'workflow_dispatch'
+                && inputs.base_url
+                || github.event.client_payload.revision.preview_url }}
