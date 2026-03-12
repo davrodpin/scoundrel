@@ -17,9 +17,15 @@ export type GameService = {
   getLeaderboard(): Promise<LeaderboardEntry[]>;
 };
 
+export type GameServiceConfig = {
+  defaultPlayerName: string;
+  leaderboardLimit: number;
+};
+
 export function createGameService(
   engine: GameEngine,
   repository: GameRepository,
+  config: GameServiceConfig,
 ): GameService {
   const logger = getLogger(["scoundrel", "game"]);
 
@@ -51,7 +57,8 @@ export function createGameService(
         throw new AppError("GameNotFoundError", 404, { gameId });
       }
 
-      const playerName = await repository.getPlayerName(gameId) ?? "Anonymous";
+      const playerName = await repository.getPlayerName(gameId) ??
+        config.defaultPlayerName;
 
       // Build a synthetic EventLog from the latest event.
       // The engine only needs the last event to get current state,
@@ -139,7 +146,8 @@ export function createGameService(
         throw new AppError("GameNotFoundError", 404, { gameId });
       }
 
-      const playerName = await repository.getPlayerName(gameId) ?? "Anonymous";
+      const playerName = await repository.getPlayerName(gameId) ??
+        config.defaultPlayerName;
 
       const syntheticEvents = new Array(latestEvent.sequence + 1);
       syntheticEvents[latestEvent.sequence] = latestEvent.payload;
@@ -167,7 +175,7 @@ export function createGameService(
     },
 
     getLeaderboard(): Promise<LeaderboardEntry[]> {
-      return repository.getLeaderboard(25);
+      return repository.getLeaderboard(config.leaderboardLimit);
     },
   };
 }

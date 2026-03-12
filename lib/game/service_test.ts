@@ -10,7 +10,12 @@ import type {
   GameState,
 } from "@scoundrel/engine";
 import type { GameRepository, StoredEvent } from "./repository.ts";
-import { createGameService } from "./service.ts";
+import { createGameService, type GameServiceConfig } from "./service.ts";
+
+const TEST_CONFIG: GameServiceConfig = {
+  defaultPlayerName: "Anonymous",
+  leaderboardLimit: 25,
+};
 
 function makeInitialState(
   gameId = "00000000-0000-0000-0000-000000000001",
@@ -191,7 +196,7 @@ function createMockEngine(overrides: Partial<GameEngine> = {}): GameEngine {
 Deno.test("createGame returns a GameView with initial state", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const view = await service.createGame("Hero");
 
@@ -209,7 +214,7 @@ Deno.test("createGame persists the game event", async () => {
   const storedEvents = new Map<string, StoredEvent[]>();
   const repository = createMockRepository(storedEvents);
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const view = await service.createGame("Hero");
 
@@ -222,7 +227,7 @@ Deno.test("createGame persists the game event", async () => {
 Deno.test("createGame throws OffensivePlayerNameError for profane names", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const error = await assertRejects(
     () => service.createGame("fuck"),
@@ -235,7 +240,7 @@ Deno.test("createGame throws OffensivePlayerNameError for profane names", async 
 Deno.test("getGame returns GameView for existing game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const created = await service.createGame("Hero");
   const retrieved = await service.getGame(created.gameId);
@@ -248,7 +253,7 @@ Deno.test("getGame returns GameView for existing game", async () => {
 Deno.test("getGame throws GameNotFoundError for non-existent game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const error = await assertRejects(
     () => service.getGame("non-existent-id"),
@@ -269,7 +274,7 @@ Deno.test("getGame throws GameNotFoundError for non-uuid id without hitting repo
     },
   };
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const error = await assertRejects(
     () => service.getGame("not-a-uuid"),
@@ -307,7 +312,7 @@ Deno.test("submitAction returns updated GameView on success", async () => {
     },
   });
 
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
   const view = await service.createGame("Hero");
 
   // Submit choose_card - should auto-enter room first
@@ -323,7 +328,7 @@ Deno.test("submitAction returns updated GameView on success", async () => {
 Deno.test("submitAction throws GameNotFoundError for non-existent game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const error = await assertRejects(
     () => service.submitAction("non-existent", { type: "draw_card" }),
@@ -341,7 +346,7 @@ Deno.test("submitAction throws InvalidActionError for invalid action", async () 
       return { ok: false, error: "Cannot draw card: phase is not drawing" };
     },
   });
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const view = await service.createGame("Hero");
   const error = await assertRejects(
@@ -355,7 +360,7 @@ Deno.test("submitAction throws InvalidActionError for invalid action", async () 
 Deno.test("getEventLog returns events for completed game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const view = await service.createGame("Hero");
   // Mark as completed
@@ -369,7 +374,7 @@ Deno.test("getEventLog returns events for completed game", async () => {
 Deno.test("getEventLog throws GameNotFoundError for non-existent game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const error = await assertRejects(
     () => service.getEventLog("non-existent"),
@@ -388,7 +393,7 @@ Deno.test("getEventLog throws GameNotFoundError for non-UUID id without hitting 
     },
   };
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const error = await assertRejects(
     () => service.getEventLog("not-a-uuid"),
@@ -401,7 +406,7 @@ Deno.test("getEventLog throws GameNotFoundError for non-UUID id without hitting 
 Deno.test("getEventLog throws GameNotFoundError for in-progress game", async () => {
   const repository = createMockRepository();
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   // Game is in_progress by default after createGame
   const view = await service.createGame("Hero");
@@ -421,7 +426,7 @@ Deno.test("submitAction throws GameNotFoundError for non-UUID id without hitting
     },
   };
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   const error = await assertRejects(
     () => service.submitAction("not-a-uuid", { type: "draw_card" }),
@@ -440,7 +445,7 @@ Deno.test("getLeaderboard delegates to repository with limit 25", async () => {
     return originalGetLeaderboard(limit);
   };
   const engine = createMockEngine();
-  const service = createGameService(engine, repository);
+  const service = createGameService(engine, repository, TEST_CONFIG);
 
   await service.getLeaderboard();
 

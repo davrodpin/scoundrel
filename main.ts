@@ -1,11 +1,12 @@
 import { App, staticFiles } from "fresh";
 import { configure, getConsoleSink } from "@logtape/logtape";
 import { selectFormatter } from "@scoundrel/log-format";
+import { config } from "@scoundrel/config";
 import { type State } from "./utils.ts";
 
 export { selectFormatter };
 
-const formatter = selectFormatter(Deno.env.get("DENO_DEPLOYMENT_ID"));
+const formatter = selectFormatter(config.deploy.id);
 
 await configure({
   sinks: {
