@@ -35,13 +35,15 @@ const cleanupService = createCleanupService(repository, {
   retentionDays: config.cleanup.retentionDays,
 });
 
-Deno.cron("game-data-cleanup", "0 3 * * *", async () => {
-  try {
-    await cleanupService.runCleanup();
-  } catch (error) {
-    logger.error("Scheduled cleanup failed", { error });
-  }
-});
+if (typeof Deno.cron === "function") {
+  Deno.cron("game-data-cleanup", "0 3 * * *", async () => {
+    try {
+      await cleanupService.runCleanup();
+    } catch (error) {
+      logger.error("Scheduled cleanup failed", { error });
+    }
+  });
+}
 
 const GAME_ID_REGEX = /\/api\/games\/([^/]+)/;
 
