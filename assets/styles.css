@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-dungeon-bg: #1a1a1a;
-  --color-dungeon-surface: #2a2520;
-  --color-dungeon-border: #3d3428;
-  --color-parchment: #d4c5a0;
-  --color-parchment-dark: #b8a882;
-  --color-torch-amber: #c8841d;
-  --color-torch-glow: #e6a832;
-  --color-blood-red: #8b1a1a;
-  --color-blood-bright: #c62828;
-  --color-potion-green: #2e6b30;
-  --color-weapon-steel: #7a7d85;
-  --color-ink: #1c1410;
-  --color-shadow: #0d0d0d;
+  --color-dungeon-bg: #e8ddd0;
+  --color-dungeon-surface: #f5efe6;
+  --color-dungeon-border: #c4b49a;
+  --color-parchment: #3d3225;
+  --color-parchment-dark: #7a6e5d;
+  --color-torch-amber: #c27b1a;
+  --color-torch-glow: #d99a2b;
+  --color-blood-red: #9b2c2c;
+  --color-blood-bright: #c53030;
+  --color-potion-green: #38713a;
+  --color-weapon-steel: #697080;
+  --color-ink: #2b2117;
+  --color-shadow: #2b2117;
 
   --font-heading: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --font-body: "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -28,7 +28,7 @@
     background-color: transparent;
   }
   20% {
-    background-color: rgba(198, 40, 40, 0.4);
+    background-color: rgba(197, 48, 48, 0.25);
   }
   100% {
     background-color: transparent;
@@ -40,7 +40,7 @@
     background-color: transparent;
   }
   20% {
-    background-color: rgba(46, 107, 48, 0.3);
+    background-color: rgba(56, 113, 58, 0.2);
   }
   100% {
     background-color: transparent;
