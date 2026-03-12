@@ -12,6 +12,8 @@ import {
   captureRequestBody,
   checkBodySize,
   extractClientIp,
+  extractErrorInfo,
+  extractErrorStatus,
   toErrorResponse,
 } from "./_middleware_helpers.ts";
 
@@ -56,7 +58,7 @@ const errorMiddleware = define.middleware(async (ctx) => {
       throw error;
     }
     if (response.status >= 500) {
-      logger.error("Unhandled error", { error });
+      logger.error("Unhandled error", extractErrorInfo(error));
     }
     return response;
   }
@@ -81,16 +83,17 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     response = await ctx.next();
   } catch (error) {
     const duration = Date.now() - start;
+    const status = extractErrorStatus(error);
     const gameId = extractGameId(path);
     logger.error("Request", {
       method,
       path,
-      status: 0,
+      status,
       duration,
       gameId,
       body,
       clientIp,
-      error,
+      ...extractErrorInfo(error),
     });
     throw error;
   }

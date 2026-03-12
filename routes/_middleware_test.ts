@@ -4,6 +4,8 @@ import {
   captureRequestBody,
   checkBodySize,
   extractClientIp,
+  extractErrorInfo,
+  extractErrorStatus,
   toErrorResponse,
 } from "./_middleware_helpers.ts";
 
@@ -210,4 +212,54 @@ Deno.test("checkBodySize - throws with status 413", () => {
     thrown = e as AppError;
   }
   assertEquals(thrown?.statusCode, 413);
+});
+
+// extractErrorInfo tests
+Deno.test("extractErrorInfo - AppError returns reason as error and stack as errorStack", () => {
+  const err = new AppError("ValidationError", 422);
+  const result = extractErrorInfo(err);
+  assertEquals(result.error, "ValidationError");
+  assertEquals(typeof result.errorStack, "string");
+  assertEquals(result.errorStack.length > 0, true);
+});
+
+Deno.test("extractErrorInfo - standard Error returns name as error and stack as errorStack", () => {
+  const err = new TypeError("bad value");
+  const result = extractErrorInfo(err);
+  assertEquals(result.error, "TypeError");
+  assertEquals(typeof result.errorStack, "string");
+  assertEquals(result.errorStack.length > 0, true);
+});
+
+Deno.test("extractErrorInfo - non-error value returns stringified value and empty errorStack", () => {
+  const result = extractErrorInfo("something went wrong");
+  assertEquals(result.error, "something went wrong");
+  assertEquals(result.errorStack, "");
+});
+
+Deno.test("extractErrorInfo - null returns stringified null and empty errorStack", () => {
+  const result = extractErrorInfo(null);
+  assertEquals(result.error, "null");
+  assertEquals(result.errorStack, "");
+});
+
+// extractErrorStatus tests
+Deno.test("extractErrorStatus - returns status from error object with numeric status property", () => {
+  const err = Object.assign(new Error("Not Found"), { status: 404 });
+  assertEquals(extractErrorStatus(err), 404);
+});
+
+Deno.test("extractErrorStatus - returns AppError statusCode", () => {
+  const err = new AppError("ValidationError", 422);
+  assertEquals(extractErrorStatus(err), 422);
+});
+
+Deno.test("extractErrorStatus - returns 0 for standard Error without status", () => {
+  assertEquals(extractErrorStatus(new Error("oops")), 0);
+});
+
+Deno.test("extractErrorStatus - returns 0 for non-error values", () => {
+  assertEquals(extractErrorStatus("string error"), 0);
+  assertEquals(extractErrorStatus(null), 0);
+  assertEquals(extractErrorStatus(42), 0);
 });
