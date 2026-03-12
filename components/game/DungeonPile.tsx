@@ -37,7 +37,7 @@ export function DungeonPile(
             </>
           )
           : (
-            <div class="w-[clamp(140px,28vw,230px)] aspect-[5/7] rounded-sm border border-dungeon-border bg-dungeon-surface flex items-center justify-center">
+            <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface flex items-center justify-center">
               <span class="text-parchment-dark text-xs">Empty</span>
             </div>
           )}

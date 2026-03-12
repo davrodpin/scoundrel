@@ -129,7 +129,7 @@ export function HealthDisplay(
 
   return (
     <div
-      class={`mb-6 ${damageFlash ? "animate-damage-flash" : ""} ${
+      class={`mb-10 ${damageFlash ? "animate-damage-flash" : ""} ${
         healFlash ? "animate-heal-glow" : ""
       }`}
     >

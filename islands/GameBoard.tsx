@@ -372,7 +372,12 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   }
 
   return (
-    <div class="min-h-screen bg-dungeon-bg text-parchment p-4 font-body flex flex-col items-center">
+    <div
+      class="min-h-screen bg-dungeon-bg text-parchment p-4 font-body flex flex-col items-center"
+      onClick={() => {
+        selectedCardIndex.value = null;
+      }}
+    >
       {/* Rules toggle + panel */}
       <RulesToggleButton onClick={handleToggleRules} />
       <RulesPanel open={showRules.value} onClose={handleCloseRules} />
