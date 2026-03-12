@@ -16,6 +16,9 @@ export const configSchema = z.object({
   deploy: z.object({
     id: z.string().optional(),
   }).default({}),
+  cleanup: z.object({
+    retentionDays: z.number().int().positive().default(30),
+  }).default({}),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;

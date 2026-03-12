@@ -2,6 +2,7 @@ import { getLogger } from "@logtape/logtape";
 import { PrismaClient } from "../lib/generated/prisma/client.ts";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
+import { createCleanupService } from "@scoundrel/cleanup";
 import { createGameEngine } from "@scoundrel/engine";
 import {
   createGameService,
@@ -29,6 +30,18 @@ const gameService = createGameService(engine, repository, {
 });
 
 const logger = getLogger(["scoundrel", "http"]);
+
+const cleanupService = createCleanupService(repository, {
+  retentionDays: config.cleanup.retentionDays,
+});
+
+Deno.cron("game-data-cleanup", "0 3 * * *", async () => {
+  try {
+    await cleanupService.runCleanup();
+  } catch (error) {
+    logger.error("Scheduled cleanup failed", { error });
+  }
+});
 
 const GAME_ID_REGEX = /\/api\/games\/([^/]+)/;
 

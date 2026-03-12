@@ -51,3 +51,36 @@ Deno.test("invalid values (negative numbers) rejected", () => {
     ZodError,
   );
 });
+
+Deno.test("cleanup.retentionDays defaults to 30 when not provided", () => {
+  const cfg = createConfig({ db: { url: "postgres://localhost/test" } });
+  assertEquals(cfg.cleanup.retentionDays, 30);
+});
+
+Deno.test("cleanup.retentionDays can be overridden with a positive integer", () => {
+  const cfg = createConfig({
+    db: { url: "postgres://localhost/test" },
+    cleanup: { retentionDays: 7 },
+  });
+  assertEquals(cfg.cleanup.retentionDays, 7);
+});
+
+Deno.test("cleanup.retentionDays fails validation with a non-positive integer", () => {
+  assertThrows(
+    () =>
+      createConfig({
+        db: { url: "postgres://localhost/test" },
+        cleanup: { retentionDays: 0 },
+      }),
+    ZodError,
+  );
+
+  assertThrows(
+    () =>
+      createConfig({
+        db: { url: "postgres://localhost/test" },
+        cleanup: { retentionDays: -5 },
+      }),
+    ZodError,
+  );
+});

@@ -24,6 +24,13 @@ export type GameRepository = {
   getPlayerName(gameId: string): Promise<string | null>;
   getGameStatus(gameId: string): Promise<string | null>;
   getLeaderboard(limit: number): Promise<LeaderboardEntry[]>;
+  createLeaderboardEntry(
+    gameId: string,
+    playerName: string,
+    score: number,
+    completedAt: Date,
+  ): Promise<void>;
+  deleteGamesOlderThan(cutoffDate: Date): Promise<number>;
 };
 
 export function createPrismaGameRepository(
@@ -124,26 +131,52 @@ export function createPrismaGameRepository(
     },
 
     async getLeaderboard(limit: number): Promise<LeaderboardEntry[]> {
-      const rows = await prisma.game.findMany({
-        where: { status: "completed", score: { not: null } },
+      const rows = await prisma.leaderboardEntry.findMany({
         orderBy: { score: "desc" },
         take: limit,
-        select: { id: true, playerName: true, score: true, updatedAt: true },
+        select: {
+          gameId: true,
+          playerName: true,
+          score: true,
+          completedAt: true,
+        },
       });
 
       return rows.map(
-        (row: {
-          id: string;
-          playerName: string;
-          score: number | null;
-          updatedAt: Date;
-        }) => ({
-          gameId: row.id,
+        (
+          row: {
+            gameId: string;
+            playerName: string;
+            score: number;
+            completedAt: Date;
+          },
+        ) => ({
+          gameId: row.gameId,
           playerName: row.playerName,
-          score: row.score!,
-          completedAt: row.updatedAt.toISOString(),
+          score: row.score,
+          completedAt: row.completedAt.toISOString(),
         }),
       );
+    },
+
+    async createLeaderboardEntry(
+      gameId: string,
+      playerName: string,
+      score: number,
+      completedAt: Date,
+    ): Promise<void> {
+      await prisma.leaderboardEntry.upsert({
+        where: { gameId },
+        create: { gameId, playerName, score, completedAt },
+        update: { playerName, score, completedAt },
+      });
+    },
+
+    async deleteGamesOlderThan(cutoffDate: Date): Promise<number> {
+      const result = await prisma.game.deleteMany({
+        where: { createdAt: { lt: cutoffDate } },
+      });
+      return result.count;
     },
   };
 }
