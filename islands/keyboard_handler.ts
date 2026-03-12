@@ -4,7 +4,10 @@ export type ActionKey =
   | "drinkPotion"
   | "fightBarehanded"
   | "equipWeapon"
-  | "drawCard";
+  | "drawCard"
+  | "openRules"
+  | "copyLink"
+  | "openLeaderboard";
 
 export type KeyboardIntent =
   | { type: "focus_card"; index: number }
@@ -53,6 +56,17 @@ export function handleKeyboardEvent(
   // Draw card works outside card-interactive mode (drawing phase)
   if (lowerKey === "d" && state.actions.drawCard) {
     return { type: "action", action: "drawCard" };
+  }
+
+  // UI panel actions work in any game phase
+  if (lowerKey === "h" && state.actions.openRules) {
+    return { type: "action", action: "openRules" };
+  }
+  if (lowerKey === "c" && state.actions.copyLink) {
+    return { type: "action", action: "copyLink" };
+  }
+  if (lowerKey === "l" && state.actions.openLeaderboard) {
+    return { type: "action", action: "openLeaderboard" };
   }
 
   if (!state.isInteractive) return NONE;

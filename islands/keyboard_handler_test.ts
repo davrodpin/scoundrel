@@ -26,6 +26,9 @@ function makeState(overrides: StateOverrides = {}): KeyboardState {
       fightBarehanded: false,
       equipWeapon: false,
       drawCard: false,
+      openRules: false,
+      copyLink: false,
+      openLeaderboard: false,
       ...actions,
     },
     ...rest,
@@ -509,4 +512,96 @@ Deno.test("d triggers drinkPotion (not drawCard) when interactive", () => {
     handleKeyboardEvent("d", state),
     { type: "action", action: "drinkPotion" },
   );
+});
+
+// ─── UI panel keys (bypass isInteractive) ────────────────────────────────────
+
+Deno.test("h triggers openRules when enabled (interactive)", () => {
+  assertEquals(
+    handleKeyboardEvent("h", makeState({ actions: { openRules: true } })),
+    { type: "action", action: "openRules" },
+  );
+});
+
+Deno.test("H (uppercase) triggers openRules when enabled", () => {
+  assertEquals(
+    handleKeyboardEvent("H", makeState({ actions: { openRules: true } })),
+    { type: "action", action: "openRules" },
+  );
+});
+
+Deno.test("h triggers openRules when enabled in non-interactive state", () => {
+  assertEquals(
+    handleKeyboardEvent(
+      "h",
+      makeState({ isInteractive: false, actions: { openRules: true } }),
+    ),
+    { type: "action", action: "openRules" },
+  );
+});
+
+Deno.test("h returns none when openRules disabled", () => {
+  assertEquals(handleKeyboardEvent("h", makeState()), { type: "none" });
+});
+
+Deno.test("c triggers copyLink when enabled", () => {
+  assertEquals(
+    handleKeyboardEvent("c", makeState({ actions: { copyLink: true } })),
+    { type: "action", action: "copyLink" },
+  );
+});
+
+Deno.test("C (uppercase) triggers copyLink when enabled", () => {
+  assertEquals(
+    handleKeyboardEvent("C", makeState({ actions: { copyLink: true } })),
+    { type: "action", action: "copyLink" },
+  );
+});
+
+Deno.test("c triggers copyLink in non-interactive state", () => {
+  assertEquals(
+    handleKeyboardEvent(
+      "c",
+      makeState({ isInteractive: false, actions: { copyLink: true } }),
+    ),
+    { type: "action", action: "copyLink" },
+  );
+});
+
+Deno.test("c returns none when copyLink disabled", () => {
+  assertEquals(handleKeyboardEvent("c", makeState()), { type: "none" });
+});
+
+Deno.test("l triggers openLeaderboard when enabled", () => {
+  assertEquals(
+    handleKeyboardEvent(
+      "l",
+      makeState({ actions: { openLeaderboard: true } }),
+    ),
+    { type: "action", action: "openLeaderboard" },
+  );
+});
+
+Deno.test("L (uppercase) triggers openLeaderboard when enabled", () => {
+  assertEquals(
+    handleKeyboardEvent(
+      "L",
+      makeState({ actions: { openLeaderboard: true } }),
+    ),
+    { type: "action", action: "openLeaderboard" },
+  );
+});
+
+Deno.test("l triggers openLeaderboard in non-interactive state", () => {
+  assertEquals(
+    handleKeyboardEvent(
+      "l",
+      makeState({ isInteractive: false, actions: { openLeaderboard: true } }),
+    ),
+    { type: "action", action: "openLeaderboard" },
+  );
+});
+
+Deno.test("l returns none when openLeaderboard disabled", () => {
+  assertEquals(handleKeyboardEvent("l", makeState()), { type: "none" });
 });

@@ -146,6 +146,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           equipWeapon: panelStateNow.equipWeapon.enabled && !loading.value,
           drawCard: view.phase.kind === "drawing" &&
             view.dungeonCount > 0 && !loading.value,
+          openRules: true,
+          copyLink: true,
+          openLeaderboard: true,
         },
       };
 
@@ -184,6 +187,15 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
               break;
             case "drawCard":
               handleDrawCard();
+              break;
+            case "openRules":
+              handleToggleRules();
+              break;
+            case "copyLink":
+              handleCopyLink();
+              break;
+            case "openLeaderboard":
+              handleToggleLeaderboard();
               break;
           }
           break;
