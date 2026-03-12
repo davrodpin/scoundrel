@@ -8,11 +8,13 @@ type CardImageProps = {
   onClick?: () => void;
   highlighted?: boolean;
   selected?: boolean;
+  focused?: boolean;
   disabled?: boolean;
 };
 
 export function CardImage(
-  { card, faceDown, onClick, highlighted, selected, disabled }: CardImageProps,
+  { card, faceDown, onClick, highlighted, selected, focused, disabled }:
+    CardImageProps,
 ) {
   const [loaded, setLoaded] = useState(false);
   const src = faceDown || !card ? cardBackPath() : cardImagePath(card);
@@ -24,6 +26,9 @@ export function CardImage(
   if (selected) {
     borderClass =
       "border-torch-amber ring-2 ring-torch-glow shadow-[0_0_16px_rgba(230,168,50,0.7)] -translate-y-2";
+  } else if (focused) {
+    borderClass =
+      "border-dashed border-torch-amber ring-2 ring-torch-amber/40 shadow-[0_0_10px_rgba(200,132,29,0.45)] -translate-y-1";
   } else if (highlighted) {
     borderClass = "border-torch-glow shadow-[0_0_8px_rgba(230,168,50,0.4)]";
   } else {

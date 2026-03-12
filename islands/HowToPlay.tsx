@@ -283,6 +283,50 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
           </div>
         </section>
 
+        {/* Keyboard Shortcuts */}
+        <section>
+          <SectionHeading>Keyboard Shortcuts</SectionHeading>
+          <Prose>
+            You can control the game entirely from the keyboard. Action keys
+            only work when the corresponding action is available.
+          </Prose>
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full font-body text-sm border-collapse">
+              <thead>
+                <tr class="border-b border-dungeon-border">
+                  <th class="text-left text-parchment-dark py-2 pr-6 font-body font-normal">
+                    Key
+                  </th>
+                  <th class="text-left text-parchment-dark py-2 font-body font-normal">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-dungeon-border/50">
+                {[
+                  ["← / →", "Navigate cards in the room"],
+                  ["Enter", "Select focused card"],
+                  ["Escape", "Deselect card / clear focus"],
+                  ["W", "Fight with Weapon"],
+                  ["B", "Fight Barehanded"],
+                  ["A", "Avoid Room"],
+                  ["E", "Equip Weapon"],
+                  ["D", "Drink Potion"],
+                ].map(([key, description]) => (
+                  <tr key={key}>
+                    <td class="py-2 pr-6">
+                      <kbd class="inline-block px-2 py-0.5 bg-dungeon-surface border border-dungeon-border rounded-sm text-torch-amber font-body text-xs">
+                        {key}
+                      </kbd>
+                    </td>
+                    <td class="py-2 text-parchment">{description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         {/* Scoring */}
         <section>
           <SectionHeading>Scoring</SectionHeading>
