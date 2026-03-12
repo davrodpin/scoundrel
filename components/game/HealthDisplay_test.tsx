@@ -125,3 +125,21 @@ Deno.test("HealthDisplay - Drink Potion shows tooltip text", () => {
   );
   assertEquals(html.includes("Heals 4 HP"), true);
 });
+
+Deno.test("HealthDisplay - tooltip uses high-contrast background (bg-ink)", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions({
+        fightBarehanded: {
+          enabled: true,
+          tooltip: "Barehanded: 6 dmg",
+          onClick: noop,
+        },
+      })}
+    />,
+  );
+  assertEquals(html.includes("bg-ink"), true);
+});

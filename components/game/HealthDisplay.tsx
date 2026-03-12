@@ -68,10 +68,10 @@ function ActionTooltipButton(
         {label}
       </button>
       <div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 whitespace-nowrap">
-        <div class="bg-dungeon-surface border border-dungeon-border text-parchment text-xs font-body px-3 py-1.5 rounded-sm text-center">
+        <div class="bg-ink border border-torch-amber text-parchment text-xs font-body px-3 py-1.5 rounded-sm text-center">
           {tooltip}
         </div>
-        <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-dungeon-border" />
+        <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-torch-amber" />
       </div>
     </div>
   );
