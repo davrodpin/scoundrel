@@ -7,6 +7,7 @@ import {
   createGameService,
   createPrismaGameRepository,
 } from "@scoundrel/game-service";
+import { config } from "@scoundrel/config";
 import { define } from "@/utils.ts";
 import {
   captureRequestBody,
@@ -17,19 +18,17 @@ import {
   toErrorResponse,
 } from "./_middleware_helpers.ts";
 
-const pool = new pg.Pool({ connectionString: Deno.env.get("DATABASE_URL") });
+const pool = new pg.Pool({ connectionString: config.db.url });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 const engine = createGameEngine();
 const repository = createPrismaGameRepository(prisma);
-const gameService = createGameService(engine, repository);
+const gameService = createGameService(engine, repository, {
+  defaultPlayerName: config.game.defaultPlayerName,
+  leaderboardLimit: config.game.leaderboardLimit,
+});
 
 const logger = getLogger(["scoundrel", "http"]);
-
-// Request body size limit: 4KB is generous for any game action JSON
-const MAX_BODY_BYTES = 4096;
-
-const APP_ORIGIN = Deno.env.get("APP_ORIGIN") ?? "https://scoundrel.deno.dev";
 
 const GAME_ID_REGEX = /\/api\/games\/([^/]+)/;
 
@@ -43,7 +42,7 @@ function isStaticPath(path: string): boolean {
 
 const corsMiddleware = define.middleware(async (ctx) => {
   const response = await ctx.next();
-  response.headers.set("Access-Control-Allow-Origin", APP_ORIGIN);
+  response.headers.set("Access-Control-Allow-Origin", config.app.origin);
   response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   response.headers.set("Access-Control-Allow-Headers", "Content-Type");
   return response;
@@ -120,12 +119,13 @@ const bodySizeMiddleware = define.middleware((ctx) => {
     (method === "POST" || method === "PUT" || method === "PATCH") &&
     ctx.url.pathname.startsWith("/api/")
   ) {
-    checkBodySize(ctx.req, MAX_BODY_BYTES);
+    checkBodySize(ctx.req, config.app.maxBodyBytes);
   }
   return ctx.next();
 });
 
 const diMiddleware = define.middleware((ctx) => {
+  ctx.state.config = config;
   ctx.state.gameService = gameService;
   return ctx.next();
 });

@@ -44,6 +44,7 @@
     "pg": "npm:pg@^8",
     "@types/node": "npm:@types/node@^22",
     "@std/assert": "jsr:@std/assert@^1",
+    "@scoundrel/config": "./lib/config/mod.ts",
     "@scoundrel/engine": "./lib/engine/mod.ts",
     "@scoundrel/errors": "./lib/errors/mod.ts",
     "@scoundrel/game": "./lib/scoundrel/mod.ts",
