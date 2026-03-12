@@ -7,11 +7,12 @@ type CardImageProps = {
   faceDown?: boolean;
   onClick?: () => void;
   highlighted?: boolean;
+  selected?: boolean;
   disabled?: boolean;
 };
 
 export function CardImage(
-  { card, faceDown, onClick, highlighted, disabled }: CardImageProps,
+  { card, faceDown, onClick, highlighted, selected, disabled }: CardImageProps,
 ) {
   const [loaded, setLoaded] = useState(false);
   const src = faceDown || !card ? cardBackPath() : cardImagePath(card);
@@ -19,16 +20,22 @@ export function CardImage(
 
   const interactive = onClick && !disabled;
 
+  let borderClass: string;
+  if (selected) {
+    borderClass =
+      "border-torch-amber ring-2 ring-torch-glow shadow-[0_0_16px_rgba(230,168,50,0.7)] -translate-y-2";
+  } else if (highlighted) {
+    borderClass = "border-torch-glow shadow-[0_0_8px_rgba(230,168,50,0.4)]";
+  } else {
+    borderClass = "border-dungeon-border";
+  }
+
   return (
     <button
       type="button"
       onClick={interactive ? onClick : undefined}
       disabled={disabled}
-      class={`w-[clamp(140px,28vw,230px)] aspect-[5/7] overflow-hidden rounded-sm border transition-transform duration-200 bg-dungeon-surface/30 ${
-        highlighted
-          ? "border-torch-glow shadow-[0_0_8px_rgba(230,168,50,0.4)]"
-          : "border-dungeon-border"
-      } ${
+      class={`w-[clamp(140px,28vw,230px)] aspect-[5/7] overflow-hidden rounded-sm border transition-transform duration-200 bg-dungeon-surface/30 ${borderClass} ${
         interactive
           ? "cursor-pointer hover:-translate-y-1 hover:border-torch-amber"
           : ""
