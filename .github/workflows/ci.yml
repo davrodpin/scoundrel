@@ -32,4 +32,4 @@ jobs:
           cache: true
           cache-dependency-path: deno.lock
       - run: deno task prisma:generate
-      - run: deno task test
+      - run: deno task test:unit
