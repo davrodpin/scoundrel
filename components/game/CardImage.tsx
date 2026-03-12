@@ -23,7 +23,7 @@ export function CardImage(
   let borderClass: string;
   if (selected) {
     borderClass =
-      "border-[#ffd700] ring-3 ring-[#ffd700]/60 shadow-[0_0_24px_rgba(255,215,0,0.8)] -translate-y-4";
+      "border-torch-amber ring-2 ring-torch-glow shadow-[0_0_16px_rgba(230,168,50,0.7)] -translate-y-2";
   } else if (highlighted) {
     borderClass = "border-torch-glow shadow-[0_0_8px_rgba(230,168,50,0.4)]";
   } else {
