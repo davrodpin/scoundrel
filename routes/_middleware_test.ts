@@ -4,6 +4,7 @@ import {
   captureRequestBody,
   checkBodySize,
   extractClientIp,
+  extractErrorInfo,
   toErrorResponse,
 } from "./_middleware_helpers.ts";
 
@@ -210,4 +211,33 @@ Deno.test("checkBodySize - throws with status 413", () => {
     thrown = e as AppError;
   }
   assertEquals(thrown?.statusCode, 413);
+});
+
+// extractErrorInfo tests
+Deno.test("extractErrorInfo - AppError returns reason as error and stack as errorStack", () => {
+  const err = new AppError("ValidationError", 422);
+  const result = extractErrorInfo(err);
+  assertEquals(result.error, "ValidationError");
+  assertEquals(typeof result.errorStack, "string");
+  assertEquals(result.errorStack.length > 0, true);
+});
+
+Deno.test("extractErrorInfo - standard Error returns name as error and stack as errorStack", () => {
+  const err = new TypeError("bad value");
+  const result = extractErrorInfo(err);
+  assertEquals(result.error, "TypeError");
+  assertEquals(typeof result.errorStack, "string");
+  assertEquals(result.errorStack.length > 0, true);
+});
+
+Deno.test("extractErrorInfo - non-error value returns stringified value and empty errorStack", () => {
+  const result = extractErrorInfo("something went wrong");
+  assertEquals(result.error, "something went wrong");
+  assertEquals(result.errorStack, "");
+});
+
+Deno.test("extractErrorInfo - null returns stringified null and empty errorStack", () => {
+  const result = extractErrorInfo(null);
+  assertEquals(result.error, "null");
+  assertEquals(result.errorStack, "");
 });

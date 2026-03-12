@@ -53,6 +53,18 @@ export function toErrorResponse(error: unknown): Response | null {
   );
 }
 
+export function extractErrorInfo(
+  error: unknown,
+): { error: string; errorStack: string } {
+  if (error instanceof AppError) {
+    return { error: error.reason, errorStack: error.stack ?? "" };
+  }
+  if (error instanceof Error) {
+    return { error: error.name, errorStack: error.stack ?? "" };
+  }
+  return { error: String(error), errorStack: "" };
+}
+
 export async function captureRequestBody(
   req: Request,
   method: string,
