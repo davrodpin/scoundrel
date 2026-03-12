@@ -43,7 +43,7 @@ export function ActionBar(
   const isGameOver = phase.kind === "game_over";
 
   return (
-    <div class="flex justify-center gap-3 mt-4 mb-2">
+    <div class="flex justify-center gap-3 mt-4 mb-4">
       <div
         class={`font-body text-sm self-center ${
           isGameOver ? "text-parchment-dark" : "text-parchment"

@@ -42,9 +42,6 @@ export function DungeonPile(
             </div>
           )}
       </div>
-      <span class="text-parchment-dark text-sm font-body">
-        Dungeon ({count})
-      </span>
     </div>
   );
 }

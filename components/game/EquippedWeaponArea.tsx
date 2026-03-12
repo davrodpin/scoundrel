@@ -1,85 +1,63 @@
 import { useState } from "preact/hooks";
-import type { EquippedWeapon } from "@scoundrel/engine";
+import type { Card, EquippedWeapon } from "@scoundrel/engine";
 import { cardImagePath } from "@scoundrel/game";
 
-type EquippedWeaponAreaProps = {
+type EquippedWeaponProps = {
   weapon: EquippedWeapon | null;
 };
 
-export function EquippedWeaponArea({ weapon }: EquippedWeaponAreaProps) {
-  const [weaponLoaded, setWeaponLoaded] = useState(false);
-  const [lastSlainLoaded, setLastSlainLoaded] = useState(false);
+type LastSlainProps = {
+  card: Card | null;
+};
+
+export function EquippedWeaponCard({ weapon }: EquippedWeaponProps) {
+  const [loaded, setLoaded] = useState(false);
 
   if (!weapon) {
     return (
-      <div class="flex justify-center mt-6">
-        <div class="flex items-start gap-3">
-          <div class="flex flex-col items-center gap-1">
-            <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30 flex items-center justify-center">
-              <span class="text-parchment-dark text-xs">No weapon</span>
-            </div>
-            <span class="text-parchment-dark text-sm font-body">Weapon</span>
-          </div>
-          <div class="flex flex-col items-center gap-1">
-            <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
-              <span class="text-parchment-dark text-xs">No kills yet</span>
-            </div>
-            <span class="text-parchment-dark text-sm font-body">
-              Last monster slain
-            </span>
-          </div>
-        </div>
+      <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30 flex items-center justify-center">
+        <span class="text-parchment-dark text-xs">No weapon</span>
       </div>
     );
   }
 
-  const slain = weapon.slainMonsters;
-  const lastSlain = slain.length > 0 ? slain[slain.length - 1] : null;
+  return (
+    <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] overflow-hidden rounded-sm border border-weapon-steel bg-dungeon-surface/30">
+      <img
+        src={cardImagePath(weapon.card)}
+        alt={`Weapon: ${weapon.card.rank} of ${weapon.card.suit}`}
+        draggable={false}
+        onLoad={() => setLoaded(true)}
+        class={`w-full h-full object-cover transition-opacity duration-200 ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
+      />
+    </div>
+  );
+}
+
+export function LastSlainCard({ card }: LastSlainProps) {
+  const [loaded, setLoaded] = useState(false);
+
+  if (!card) {
+    return (
+      <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
+        <span class="text-parchment-dark text-xs">No kills yet</span>
+      </div>
+    );
+  }
 
   return (
-    <div class="flex justify-center mt-6">
-      <div class="flex items-start gap-3">
-        <div class="flex flex-col items-center gap-1">
-          <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] overflow-hidden rounded-sm border border-weapon-steel bg-dungeon-surface/30">
-            <img
-              src={cardImagePath(weapon.card)}
-              alt={`Weapon: ${weapon.card.rank} of ${weapon.card.suit}`}
-              draggable={false}
-              onLoad={() => setWeaponLoaded(true)}
-              class={`w-full h-full object-cover transition-opacity duration-200 ${
-                weaponLoaded ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          </div>
-          <span class="text-parchment-dark text-sm font-body">
-            Weapon{slain.length > 0 ? ` (${slain.length} slain)` : ""}
-          </span>
-        </div>
-        <div class="flex flex-col items-center gap-1">
-          {lastSlain
-            ? (
-              <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] overflow-hidden rounded-sm border border-dungeon-border bg-dungeon-surface/30">
-                <img
-                  src={cardImagePath(lastSlain)}
-                  alt={`Last slain: ${lastSlain.rank} of ${lastSlain.suit}`}
-                  draggable={false}
-                  onLoad={() => setLastSlainLoaded(true)}
-                  class={`w-full h-full object-cover transition-opacity duration-200 ${
-                    lastSlainLoaded ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-              </div>
-            )
-            : (
-              <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
-                <span class="text-parchment-dark text-xs">No kills yet</span>
-              </div>
-            )}
-          <span class="text-parchment-dark text-sm font-body">
-            Last monster slain
-          </span>
-        </div>
-      </div>
+    <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] overflow-hidden rounded-sm border border-dungeon-border bg-dungeon-surface/30">
+      <img
+        src={cardImagePath(card)}
+        alt={`Last slain: ${card.rank} of ${card.suit}`}
+        draggable={false}
+        onLoad={() => setLoaded(true)}
+        class={`w-full h-full object-cover transition-opacity duration-200 ${
+          loaded ? "opacity-100" : "opacity-0"
+        }`}
+      />
     </div>
   );
 }

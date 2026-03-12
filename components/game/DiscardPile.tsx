@@ -32,9 +32,6 @@ export function DiscardPile({ count }: DiscardPileProps) {
             </div>
           )}
       </div>
-      <span class="text-parchment-dark text-sm font-body">
-        Discard ({count})
-      </span>
     </div>
   );
 }

@@ -8,8 +8,12 @@ import type { HealthDisplayActions } from "../components/game/HealthDisplay.tsx"
 import { DungeonPile } from "../components/game/DungeonPile.tsx";
 import { DiscardPile } from "../components/game/DiscardPile.tsx";
 import { RoomArea } from "../components/game/RoomArea.tsx";
-import { EquippedWeaponArea } from "../components/game/EquippedWeaponArea.tsx";
+import {
+  EquippedWeaponCard,
+  LastSlainCard,
+} from "../components/game/EquippedWeaponArea.tsx";
 import { ActionBar } from "../components/game/ActionBar.tsx";
+import { GameSection } from "../components/game/GameSection.tsx";
 import { GameOverOverlay } from "../components/game/GameOverOverlay.tsx";
 import { RulesPanel } from "../components/game/RulesPanel.tsx";
 import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
@@ -452,23 +456,29 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       {/* Main play area */}
       <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-start w-full max-w-6xl">
         {/* Dungeon pile */}
-        <DungeonPile
-          count={state.dungeonCount}
-          interactive={state.phase.kind === "drawing" &&
-            state.dungeonCount > 0 && !loading.value}
-          onClick={handleDrawCard}
-        />
+        <GameSection label="Dungeon">
+          <DungeonPile
+            count={state.dungeonCount}
+            interactive={state.phase.kind === "drawing" &&
+              state.dungeonCount > 0 && !loading.value}
+            onClick={handleDrawCard}
+          />
+        </GameSection>
 
         {/* Room */}
-        <RoomArea
-          cards={state.room as Card[]}
-          onCardClick={isInteractive ? handleCardClick : undefined}
-          interactive={isInteractive}
-          selectedIndex={selectedCardIndex.value}
-        />
+        <GameSection label="Room">
+          <RoomArea
+            cards={state.room as Card[]}
+            onCardClick={isInteractive ? handleCardClick : undefined}
+            interactive={isInteractive}
+            selectedIndex={selectedCardIndex.value}
+          />
+        </GameSection>
 
         {/* Discard pile */}
-        <DiscardPile count={state.discardCount} />
+        <GameSection label="Discard">
+          <DiscardPile count={state.discardCount} />
+        </GameSection>
       </div>
 
       {/* Action Bar */}
@@ -488,7 +498,16 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       )}
 
       {/* Equipped Weapon */}
-      <EquippedWeaponArea weapon={state.equippedWeapon} />
+      <div class="flex gap-4 justify-center w-full max-w-6xl">
+        <GameSection label="Equipped Weapon">
+          <EquippedWeaponCard weapon={state.equippedWeapon} />
+        </GameSection>
+        <GameSection label="Last Monster Slain">
+          <LastSlainCard
+            card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
+          />
+        </GameSection>
+      </div>
 
       {/* Game Over Overlay */}
       {isGameOver && state.phase.kind === "game_over" && (
