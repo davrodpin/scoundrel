@@ -311,7 +311,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                   ["B", "Fight Barehanded"],
                   ["A", "Avoid Room"],
                   ["E", "Equip Weapon"],
-                  ["D", "Drink Potion"],
+                  ["D", "Draw a Card (drawing phase) / Drink Potion"],
                 ].map(([key, description]) => (
                   <tr key={key}>
                     <td class="py-2 pr-6">

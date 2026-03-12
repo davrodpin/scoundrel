@@ -1,5 +1,6 @@
 import { assertEquals } from "@std/assert";
 import {
+  type ActionKey,
   handleKeyboardEvent,
   type KeyboardIntent,
   type KeyboardState,
@@ -7,7 +8,12 @@ import {
 
 // ─── helpers ───────────────────────────────────────────────────────────────
 
-function makeState(overrides: Partial<KeyboardState> = {}): KeyboardState {
+type StateOverrides =
+  & Partial<Omit<KeyboardState, "actions">>
+  & { actions?: Partial<Record<ActionKey, boolean>> };
+
+function makeState(overrides: StateOverrides = {}): KeyboardState {
+  const { actions, ...rest } = overrides;
   return {
     focusedIndex: null,
     selectedIndex: null,
@@ -19,8 +25,10 @@ function makeState(overrides: Partial<KeyboardState> = {}): KeyboardState {
       drinkPotion: false,
       fightBarehanded: false,
       equipWeapon: false,
+      drawCard: false,
+      ...actions,
     },
-    ...overrides,
+    ...rest,
   };
 }
 
@@ -438,4 +446,67 @@ Deno.test("d returns none when drinkPotion is disabled", () => {
 
 Deno.test("e returns none when equipWeapon is disabled", () => {
   assertEquals(handleKeyboardEvent("e", makeState()), { type: "none" });
+});
+
+// ─── Draw card (D key, non-interactive phase) ────────────────────────────────
+
+Deno.test("d triggers drawCard when enabled in non-interactive state", () => {
+  const state = makeState({
+    isInteractive: false,
+    actions: {
+      fightWithWeapon: false,
+      avoidRoom: false,
+      drinkPotion: false,
+      fightBarehanded: false,
+      equipWeapon: false,
+      drawCard: true,
+    },
+  });
+  assertEquals(
+    handleKeyboardEvent("d", state),
+    { type: "action", action: "drawCard" },
+  );
+});
+
+Deno.test("D (uppercase) triggers drawCard when enabled in non-interactive state", () => {
+  const state = makeState({
+    isInteractive: false,
+    actions: {
+      fightWithWeapon: false,
+      avoidRoom: false,
+      drinkPotion: false,
+      fightBarehanded: false,
+      equipWeapon: false,
+      drawCard: true,
+    },
+  });
+  assertEquals(
+    handleKeyboardEvent("D", state),
+    { type: "action", action: "drawCard" },
+  );
+});
+
+Deno.test("d returns none when drawCard disabled and not interactive", () => {
+  assertEquals(
+    handleKeyboardEvent("d", makeState({ isInteractive: false })),
+    { type: "none" },
+  );
+});
+
+Deno.test("d triggers drinkPotion (not drawCard) when interactive", () => {
+  const state = makeState({
+    isInteractive: true,
+    actions: {
+      fightWithWeapon: false,
+      avoidRoom: false,
+      drinkPotion: true,
+      fightBarehanded: false,
+      equipWeapon: false,
+      drawCard: false,
+    },
+  });
+  assertEquals(
+    handleKeyboardEvent("d", state),
+    { type: "action", action: "drinkPotion" },
+  );
 });

@@ -3,7 +3,8 @@ export type ActionKey =
   | "avoidRoom"
   | "drinkPotion"
   | "fightBarehanded"
-  | "equipWeapon";
+  | "equipWeapon"
+  | "drawCard";
 
 export type KeyboardIntent =
   | { type: "focus_card"; index: number }
@@ -47,9 +48,14 @@ export function handleKeyboardEvent(
   key: string,
   state: KeyboardState,
 ): KeyboardIntent {
-  if (!state.isInteractive) return NONE;
-
   const lowerKey = key.toLowerCase();
+
+  // Draw card works outside card-interactive mode (drawing phase)
+  if (lowerKey === "d" && state.actions.drawCard) {
+    return { type: "action", action: "drawCard" };
+  }
+
+  if (!state.isInteractive) return NONE;
 
   switch (lowerKey) {
     case "arrowright":

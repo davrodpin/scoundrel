@@ -144,6 +144,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           fightBarehanded: panelStateNow.fightBarehanded.enabled &&
             !loading.value,
           equipWeapon: panelStateNow.equipWeapon.enabled && !loading.value,
+          drawCard: view.phase.kind === "drawing" &&
+            view.dungeonCount > 0 && !loading.value,
         },
       };
 
@@ -179,6 +181,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
               break;
             case "equipWeapon":
               handleEquipWeapon();
+              break;
+            case "drawCard":
+              handleDrawCard();
               break;
           }
           break;
