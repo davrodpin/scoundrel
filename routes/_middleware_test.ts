@@ -5,6 +5,7 @@ import {
   checkBodySize,
   extractClientIp,
   extractErrorInfo,
+  extractErrorStatus,
   toErrorResponse,
 } from "./_middleware_helpers.ts";
 
@@ -240,4 +241,25 @@ Deno.test("extractErrorInfo - null returns stringified null and empty errorStack
   const result = extractErrorInfo(null);
   assertEquals(result.error, "null");
   assertEquals(result.errorStack, "");
+});
+
+// extractErrorStatus tests
+Deno.test("extractErrorStatus - returns status from error object with numeric status property", () => {
+  const err = Object.assign(new Error("Not Found"), { status: 404 });
+  assertEquals(extractErrorStatus(err), 404);
+});
+
+Deno.test("extractErrorStatus - returns AppError statusCode", () => {
+  const err = new AppError("ValidationError", 422);
+  assertEquals(extractErrorStatus(err), 422);
+});
+
+Deno.test("extractErrorStatus - returns 0 for standard Error without status", () => {
+  assertEquals(extractErrorStatus(new Error("oops")), 0);
+});
+
+Deno.test("extractErrorStatus - returns 0 for non-error values", () => {
+  assertEquals(extractErrorStatus("string error"), 0);
+  assertEquals(extractErrorStatus(null), 0);
+  assertEquals(extractErrorStatus(42), 0);
 });

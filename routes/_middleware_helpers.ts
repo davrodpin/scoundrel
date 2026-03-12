@@ -53,6 +53,19 @@ export function toErrorResponse(error: unknown): Response | null {
   );
 }
 
+export function extractErrorStatus(error: unknown): number {
+  if (error instanceof AppError) return error.statusCode;
+  if (
+    error !== null &&
+    typeof error === "object" &&
+    "status" in error &&
+    typeof (error as { status: unknown }).status === "number"
+  ) {
+    return (error as { status: number }).status;
+  }
+  return 0;
+}
+
 export function extractErrorInfo(
   error: unknown,
 ): { error: string; errorStack: string } {
