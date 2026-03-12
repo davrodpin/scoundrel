@@ -1,15 +1,19 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
-import { type Card, type GameAction, getCardType } from "@scoundrel/engine";
+import { type Card, type GameAction } from "@scoundrel/engine";
 import type { GameView, LeaderboardEntry } from "@scoundrel/game-service";
-import { computeFightOverlayData } from "../components/game/fight_overlay_utils.ts";
-import { computeTooltip } from "../components/game/tooltip_utils.ts";
+import { computeActionPanel } from "../components/game/action_panel_utils.ts";
 import { HealthDisplay } from "../components/game/HealthDisplay.tsx";
+import type { HealthDisplayActions } from "../components/game/HealthDisplay.tsx";
 import { DungeonPile } from "../components/game/DungeonPile.tsx";
 import { DiscardPile } from "../components/game/DiscardPile.tsx";
 import { RoomArea } from "../components/game/RoomArea.tsx";
-import { EquippedWeaponArea } from "../components/game/EquippedWeaponArea.tsx";
+import {
+  EquippedWeaponCard,
+  LastSlainCard,
+} from "../components/game/EquippedWeaponArea.tsx";
 import { ActionBar } from "../components/game/ActionBar.tsx";
+import { GameSection } from "../components/game/GameSection.tsx";
 import { GameOverOverlay } from "../components/game/GameOverOverlay.tsx";
 import { RulesPanel } from "../components/game/RulesPanel.tsx";
 import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
@@ -27,8 +31,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const showLeaderboard = useSignal(false);
   const leaderboardEntries = useSignal<LeaderboardEntry[]>([]);
   const leaderboardLoading = useSignal(false);
-  const showFightOverlay = useSignal(false);
-  const pendingMonsterIndex = useSignal<number | null>(null);
+  const selectedCardIndex = useSignal<number | null>(null);
   const damageFlash = useSignal(false);
   const healFlash = useSignal(false);
   const errorMsg = useSignal<string | null>(null);
@@ -103,8 +106,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       const view: GameView = await res.json();
       gameView.value = view;
       globalThis.history?.replaceState(null, "", `/play/${view.gameId}`);
-      showFightOverlay.value = false;
-      pendingMonsterIndex.value = null;
+      selectedCardIndex.value = null;
       errorMsg.value = null;
       showLeaderboard.value = false;
     } catch {
@@ -138,6 +140,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       errorMsg.value = null;
       const newView = data as GameView;
       gameView.value = newView;
+      selectedCardIndex.value = null;
 
       if (newView.phase.kind === "game_over") {
         await fetchLeaderboard();
@@ -171,39 +174,40 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   }
 
   function handleCardClick(index: number) {
-    const view = gameView.value;
-    if (!view) return;
-
-    const card = view.room[index];
-    if (!card) return;
-
-    const cardType = getCardType(card);
-
-    if (cardType === "monster") {
-      pendingMonsterIndex.value = index;
-      showFightOverlay.value = true;
+    // Toggle selection: deselect if already selected, otherwise select
+    if (selectedCardIndex.value === index) {
+      selectedCardIndex.value = null;
     } else {
-      // Weapon or potion — backend auto-enters room
-      dispatch({
-        type: "choose_card",
-        cardIndex: index,
-        fightWith: "barehanded",
-      });
+      selectedCardIndex.value = index;
     }
   }
 
-  function handleFightChoice(fightWith: "weapon" | "barehanded") {
-    const idx = pendingMonsterIndex.value;
+  function handleFightWithWeapon() {
+    const idx = selectedCardIndex.value;
     if (idx === null) return;
-    showFightOverlay.value = false;
-    pendingMonsterIndex.value = null;
-    // Backend auto-enters room when receiving choose_card during room_ready
-    dispatch({ type: "choose_card", cardIndex: idx, fightWith });
+    selectedCardIndex.value = null;
+    dispatch({ type: "choose_card", cardIndex: idx, fightWith: "weapon" });
   }
 
-  function handleFightCancel() {
-    showFightOverlay.value = false;
-    pendingMonsterIndex.value = null;
+  function handleFightBarehanded() {
+    const idx = selectedCardIndex.value;
+    if (idx === null) return;
+    selectedCardIndex.value = null;
+    dispatch({ type: "choose_card", cardIndex: idx, fightWith: "barehanded" });
+  }
+
+  function handleEquipWeapon() {
+    const idx = selectedCardIndex.value;
+    if (idx === null) return;
+    selectedCardIndex.value = null;
+    dispatch({ type: "choose_card", cardIndex: idx, fightWith: "barehanded" });
+  }
+
+  function handleDrinkPotion() {
+    const idx = selectedCardIndex.value;
+    if (idx === null) return;
+    selectedCardIndex.value = null;
+    dispatch({ type: "choose_card", cardIndex: idx, fightWith: "barehanded" });
   }
 
   function handleCopyLink() {
@@ -312,24 +316,44 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     ? state.phase.cardsChosen
     : 0;
 
-  const tooltips = isInteractive
-    ? (state.room as Card[]).map((card) => computeTooltip(card, state))
-    : undefined;
+  // Compute action panel state
+  const panelState = computeActionPanel(
+    {
+      phase: state.phase,
+      lastRoomAvoided: state.lastRoomAvoided,
+      room: state.room as Card[],
+      equippedWeapon: state.equippedWeapon,
+      health: state.health,
+    },
+    isInteractive ? selectedCardIndex.value : null,
+  );
 
-  // Compute fight overlay props for inline overlay on monster card
-  const fightOverlayProps =
-    showFightOverlay.value && pendingMonsterIndex.value !== null
-      ? (() => {
-        const monster = state.room[pendingMonsterIndex.value!];
-        if (!monster) return undefined;
-        const data = computeFightOverlayData(state, monster);
-        return {
-          ...data,
-          onChoose: handleFightChoice,
-          onCancel: handleFightCancel,
-        };
-      })()
-      : undefined;
+  const actions: HealthDisplayActions = {
+    avoidRoom: {
+      enabled: panelState.avoidRoom.enabled && !loading.value,
+      onClick: handleAvoidRoom,
+    },
+    fightWithWeapon: {
+      enabled: panelState.fightWithWeapon.enabled && !loading.value,
+      tooltip: panelState.fightWithWeapon.tooltip,
+      onClick: handleFightWithWeapon,
+    },
+    fightBarehanded: {
+      enabled: panelState.fightBarehanded.enabled && !loading.value,
+      tooltip: panelState.fightBarehanded.tooltip,
+      onClick: handleFightBarehanded,
+    },
+    equipWeapon: {
+      enabled: panelState.equipWeapon.enabled && !loading.value,
+      tooltip: panelState.equipWeapon.tooltip,
+      onClick: handleEquipWeapon,
+    },
+    drinkPotion: {
+      enabled: panelState.drinkPotion.enabled && !loading.value,
+      tooltip: panelState.drinkPotion.tooltip,
+      onClick: handleDrinkPotion,
+    },
+  };
 
   function handleToggleRules() {
     showRules.value = !showRules.value;
@@ -352,7 +376,12 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   }
 
   return (
-    <div class="min-h-screen bg-dungeon-bg text-parchment p-4 font-body flex flex-col items-center">
+    <div
+      class="min-h-screen bg-dungeon-bg text-parchment p-4 font-body flex flex-col items-center"
+      onClick={() => {
+        selectedCardIndex.value = null;
+      }}
+    >
       {/* Rules toggle + panel */}
       <RulesToggleButton onClick={handleToggleRules} />
       <RulesPanel open={showRules.value} onClose={handleCloseRules} />
@@ -374,9 +403,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         playerName={state.playerName}
         damageFlash={damageFlash.value}
         healFlash={healFlash.value}
-        onAvoidRoom={handleAvoidRoom}
-        avoidEnabled={state.phase.kind === "room_ready" &&
-          !state.lastRoomAvoided}
+        actions={actions}
       />
 
       {/* Copy link button */}
@@ -429,31 +456,38 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       {/* Main play area */}
       <div class="grid grid-cols-[auto_1fr_auto] gap-4 items-start w-full max-w-6xl">
         {/* Dungeon pile */}
-        <DungeonPile
-          count={state.dungeonCount}
-          interactive={state.phase.kind === "drawing" &&
-            state.dungeonCount > 0 && !loading.value}
-          onClick={handleDrawCard}
-        />
+        <GameSection label="Dungeon">
+          <DungeonPile
+            count={state.dungeonCount}
+            interactive={state.phase.kind === "drawing" &&
+              state.dungeonCount > 0 && !loading.value}
+            onClick={handleDrawCard}
+          />
+        </GameSection>
 
         {/* Room */}
-        <RoomArea
-          cards={state.room as Card[]}
-          onCardClick={handleCardClick}
-          interactive={isInteractive}
-          tooltips={tooltips}
-          fightIndex={pendingMonsterIndex.value}
-          fightProps={fightOverlayProps}
-        />
+        <GameSection label="Room">
+          <RoomArea
+            cards={state.room as Card[]}
+            onCardClick={isInteractive ? handleCardClick : undefined}
+            interactive={isInteractive}
+            selectedIndex={selectedCardIndex.value}
+          />
+        </GameSection>
 
         {/* Discard pile */}
-        <DiscardPile count={state.discardCount} />
+        <GameSection label="Discard">
+          <DiscardPile count={state.discardCount} />
+        </GameSection>
       </div>
 
       {/* Action Bar */}
       <ActionBar
         phase={state.phase}
         cardsChosen={cardsChosen}
+        lastRoomAvoided={state.lastRoomAvoided}
+        cardSelected={selectedCardIndex.value !== null}
+        roomSize={state.room.length}
       />
 
       {/* Error message */}
@@ -464,7 +498,16 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       )}
 
       {/* Equipped Weapon */}
-      <EquippedWeaponArea weapon={state.equippedWeapon} />
+      <div class="flex gap-4 justify-center w-full max-w-6xl">
+        <GameSection label="Equipped Weapon">
+          <EquippedWeaponCard weapon={state.equippedWeapon} />
+        </GameSection>
+        <GameSection label="Last Monster Slain">
+          <LastSlainCard
+            card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
+          />
+        </GameSection>
+      </div>
 
       {/* Game Over Overlay */}
       {isGameOver && state.phase.kind === "game_over" && (

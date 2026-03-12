@@ -7,11 +7,12 @@ type CardImageProps = {
   faceDown?: boolean;
   onClick?: () => void;
   highlighted?: boolean;
+  selected?: boolean;
   disabled?: boolean;
 };
 
 export function CardImage(
-  { card, faceDown, onClick, highlighted, disabled }: CardImageProps,
+  { card, faceDown, onClick, highlighted, selected, disabled }: CardImageProps,
 ) {
   const [loaded, setLoaded] = useState(false);
   const src = faceDown || !card ? cardBackPath() : cardImagePath(card);
@@ -19,16 +20,27 @@ export function CardImage(
 
   const interactive = onClick && !disabled;
 
+  let borderClass: string;
+  if (selected) {
+    borderClass =
+      "border-[#ffd700] ring-3 ring-[#ffd700]/60 shadow-[0_0_24px_rgba(255,215,0,0.8)] -translate-y-4";
+  } else if (highlighted) {
+    borderClass = "border-torch-glow shadow-[0_0_8px_rgba(230,168,50,0.4)]";
+  } else {
+    borderClass = "border-dungeon-border";
+  }
+
   return (
     <button
       type="button"
-      onClick={interactive ? onClick : undefined}
+      onClick={interactive
+        ? (e: MouseEvent) => {
+          e.stopPropagation();
+          onClick!();
+        }
+        : undefined}
       disabled={disabled}
-      class={`w-[clamp(140px,28vw,230px)] aspect-[5/7] overflow-hidden rounded-sm border transition-transform duration-200 bg-dungeon-surface/30 ${
-        highlighted
-          ? "border-torch-glow shadow-[0_0_8px_rgba(230,168,50,0.4)]"
-          : "border-dungeon-border"
-      } ${
+      class={`w-[clamp(140px,28vw,230px)] rounded-sm border transition-transform duration-200 bg-dungeon-surface/30 ${borderClass} ${
         interactive
           ? "cursor-pointer hover:-translate-y-1 hover:border-torch-amber"
           : ""
@@ -39,7 +51,7 @@ export function CardImage(
         alt={alt}
         draggable={false}
         onLoad={() => setLoaded(true)}
-        class={`w-full h-full object-cover block transition-opacity duration-200 ${
+        class={`w-full block transition-opacity duration-200 ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
       />
