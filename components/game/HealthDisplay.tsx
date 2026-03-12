@@ -4,10 +4,20 @@ type HealthDisplayProps = {
   playerName: string;
   damageFlash?: boolean;
   healFlash?: boolean;
+  onAvoidRoom?: () => void;
+  avoidEnabled?: boolean;
 };
 
 export function HealthDisplay(
-  { health, maxHealth, playerName, damageFlash, healFlash }: HealthDisplayProps,
+  {
+    health,
+    maxHealth,
+    playerName,
+    damageFlash,
+    healFlash,
+    onAvoidRoom,
+    avoidEnabled,
+  }: HealthDisplayProps,
 ) {
   const pct = Math.max(0, (health / maxHealth) * 100);
 
@@ -52,6 +62,25 @@ export function HealthDisplay(
             />
           </div>
         </div>
+
+        {/* Actions field */}
+        {onAvoidRoom !== undefined && (
+          <div class="px-5 py-3 flex flex-col gap-1.5">
+            <span class="text-parchment-dark/70 text-[10px] font-body uppercase tracking-[0.2em]">
+              Actions
+            </span>
+            <button
+              type="button"
+              class={avoidEnabled
+                ? "px-4 py-1.5 rounded-sm border font-body text-sm transition-colors duration-200 bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow"
+                : "px-4 py-1.5 rounded-sm border font-body text-sm transition-colors duration-200 bg-dungeon-surface text-parchment-dark border-dungeon-border opacity-50 cursor-not-allowed"}
+              onClick={avoidEnabled ? onAvoidRoom : undefined}
+              disabled={!avoidEnabled}
+            >
+              Avoid Room
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

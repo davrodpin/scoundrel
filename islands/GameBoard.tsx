@@ -374,6 +374,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         playerName={state.playerName}
         damageFlash={damageFlash.value}
         healFlash={healFlash.value}
+        onAvoidRoom={handleAvoidRoom}
+        avoidEnabled={state.phase.kind === "room_ready" &&
+          !state.lastRoomAvoided}
       />
 
       {/* Copy link button */}
@@ -450,8 +453,6 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       {/* Action Bar */}
       <ActionBar
         phase={state.phase}
-        lastRoomAvoided={state.lastRoomAvoided}
-        onAvoidRoom={handleAvoidRoom}
         cardsChosen={cardsChosen}
       />
 
