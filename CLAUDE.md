@@ -108,6 +108,6 @@ inline `Response.json` error objects in route handlers or service methods.
 
 # CLI Rules
 
-  - Never chain shell commands with `&&`, `||`, or `;`
-  - Execute each command as a separate Bash tool call
-  - Use parallel tool calls for independent commands instead of chaining
+- Never chain shell commands with `&&`, `||`, or `;`
+- Execute each command as a separate Bash tool call
+- Use parallel tool calls for independent commands instead of chaining
