@@ -59,7 +59,7 @@ export function handleKeyboardEvent(
   }
 
   // UI panel actions work in any game phase
-  if (lowerKey === "h" && state.actions.openRules) {
+  if (key === "?" && state.actions.openRules) {
     return { type: "action", action: "openRules" };
   }
   if (lowerKey === "c" && state.actions.copyLink) {

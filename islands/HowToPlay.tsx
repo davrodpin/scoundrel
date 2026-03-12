@@ -312,7 +312,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                   ["A", "Avoid Room"],
                   ["E", "Equip Weapon"],
                   ["D", "Draw a Card (drawing phase) / Drink Potion"],
-                  ["H", "Open / close Rules"],
+                  ["?", "Open / close Rules"],
                   ["L", "Open / close Leaderboard"],
                   ["C", "Copy game link"],
                 ].map(([key, description]) => (

@@ -516,32 +516,25 @@ Deno.test("d triggers drinkPotion (not drawCard) when interactive", () => {
 
 // ─── UI panel keys (bypass isInteractive) ────────────────────────────────────
 
-Deno.test("h triggers openRules when enabled (interactive)", () => {
+Deno.test("? triggers openRules when enabled (interactive)", () => {
   assertEquals(
-    handleKeyboardEvent("h", makeState({ actions: { openRules: true } })),
+    handleKeyboardEvent("?", makeState({ actions: { openRules: true } })),
     { type: "action", action: "openRules" },
   );
 });
 
-Deno.test("H (uppercase) triggers openRules when enabled", () => {
-  assertEquals(
-    handleKeyboardEvent("H", makeState({ actions: { openRules: true } })),
-    { type: "action", action: "openRules" },
-  );
-});
-
-Deno.test("h triggers openRules when enabled in non-interactive state", () => {
+Deno.test("? triggers openRules when enabled in non-interactive state", () => {
   assertEquals(
     handleKeyboardEvent(
-      "h",
+      "?",
       makeState({ isInteractive: false, actions: { openRules: true } }),
     ),
     { type: "action", action: "openRules" },
   );
 });
 
-Deno.test("h returns none when openRules disabled", () => {
-  assertEquals(handleKeyboardEvent("h", makeState()), { type: "none" });
+Deno.test("? returns none when openRules disabled", () => {
+  assertEquals(handleKeyboardEvent("?", makeState()), { type: "none" });
 });
 
 Deno.test("c triggers copyLink when enabled", () => {
