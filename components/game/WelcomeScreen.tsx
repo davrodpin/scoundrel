@@ -48,16 +48,17 @@ export function WelcomeScreen(
           >
             Enter the Dungeon
           </button>
-          <div class="flex gap-3 mt-3">
+          <div class="flex items-center justify-center gap-2 mt-4">
             <a
               href="/how-to-play"
-              class="flex-1 px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body text-lg transition-colors duration-200 inline-block text-center"
+              class="text-sm font-body text-parchment-dark hover:text-torch-amber transition-colors duration-200"
             >
               How to Play
             </a>
+            <span class="text-parchment-dark/50 text-sm">·</span>
             <button
               type="button"
-              class="flex-1 px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body text-lg transition-colors duration-200"
+              class="text-sm font-body text-parchment-dark hover:text-torch-amber transition-colors duration-200"
               onClick={onLeaderboardClick}
             >
               Leaderboard
