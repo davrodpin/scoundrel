@@ -6,7 +6,7 @@ on:
 
 jobs:
   integration:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'repository_dispatch'
     name: Integration Tests
     runs-on: ubuntu-latest
     env:
@@ -40,5 +40,5 @@ jobs:
           echo "DEPLOY_URL: $DEPLOY_URL"
           deno task test:integration
         env:
-          BASE_URL: github.event.client_payload.revision.preview_url
+          BASE_URL: ${{ github.event.client_payload.revision.preview_url }}
           DATABASE_URL: ${{ env.PREVIEW_DATABASE_URL }}
