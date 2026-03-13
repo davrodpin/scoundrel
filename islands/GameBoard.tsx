@@ -607,6 +607,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         lastRoomAvoided={state.lastRoomAvoided}
         cardSelected={selectedCardIndex.value !== null}
         roomSize={state.room.length}
+        panelState={panelState}
       />
 
       {/* Error message */}
