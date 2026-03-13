@@ -37,3 +37,9 @@ Deno.test("CardImage - default uses dungeon border when not selected or highligh
   assertEquals(html.includes("border-dungeon-border"), true);
   assertEquals(html.includes("ring-2"), false);
 });
+
+Deno.test("CardImage - uses responsive mobile width class", () => {
+  const html = render(<CardImage card={card} />);
+  assertEquals(html.includes("w-[clamp(90px,30vw,120px)]"), true);
+  assertEquals(html.includes("md:w-[clamp(140px,28vw,230px)]"), true);
+});

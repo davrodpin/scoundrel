@@ -130,62 +130,85 @@ export function HealthDisplay(
 
   return (
     <div
-      class={`mb-10 ${damageFlash ? "animate-damage-flash" : ""} ${
-        healFlash ? "animate-heal-glow" : ""
-      }`}
+      class={`mb-4 md:mb-10 w-full ${
+        damageFlash ? "animate-damage-flash" : ""
+      } ${healFlash ? "animate-heal-glow" : ""}`}
     >
-      <div class="inline-flex border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
-        {/* Name field */}
-        <div class="px-5 py-3 flex flex-col gap-1.5 min-w-[140px]">
-          <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-            Adventurer
-          </span>
-          <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight">
-            {playerName}
-          </span>
+      {/* Mobile compact health bar */}
+      <div class="flex md:hidden items-center gap-2 bg-dungeon-surface border border-dungeon-border rounded-sm px-3 py-2 w-full">
+        <span class="font-heading text-parchment text-base truncate max-w-[120px] leading-tight">
+          {playerName}
+        </span>
+        <span class="text-parchment-dark/50 text-xs font-body mx-1">|</span>
+        <span class="font-heading text-parchment text-base leading-tight">
+          {health}
+        </span>
+        <span class="text-parchment-dark/50 font-body text-xs">
+          /{maxHealth}
+        </span>
+        <div class="flex-1 ml-2 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
+          <div
+            class={`h-full ${barColor} transition-[width] duration-500`}
+            style={`width: ${pct}%`}
+          />
         </div>
+      </div>
 
-        {/* Health field */}
-        <div class="px-5 py-3 flex flex-col gap-1.5">
-          <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-            Vitality
-          </span>
-          <div class="flex items-baseline gap-2">
-            <span class="font-heading text-xl text-parchment leading-tight">
-              {health}
+      {/* Desktop full health bar */}
+      <div class="hidden md:block">
+        <div class="inline-flex border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
+          {/* Name field */}
+          <div class="px-5 py-3 flex flex-col gap-1.5 min-w-[140px]">
+            <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
+              Adventurer
             </span>
-            <span class="text-parchment-dark/50 font-body text-sm">
-              / {maxHealth}
+            <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight">
+              {playerName}
             </span>
           </div>
-          <div class="w-36 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
-            <div
-              class={`h-full ${barColor} transition-[width] duration-500`}
-              style={`width: ${pct}%`}
-            />
-          </div>
-        </div>
 
-        {/* Actions field */}
-        {actions && (
+          {/* Health field */}
           <div class="px-5 py-3 flex flex-col gap-1.5">
             <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-              Actions
+              Vitality
             </span>
-            <div class="flex flex-wrap gap-1.5">
-              {buttonDefs.map(({ label, color, button }) => (
-                <ActionTooltipButton
-                  key={label}
-                  label={label}
-                  color={color}
-                  enabled={button.enabled}
-                  tooltip={"tooltip" in button ? button.tooltip : ""}
-                  onClick={button.onClick}
-                />
-              ))}
+            <div class="flex items-baseline gap-2">
+              <span class="font-heading text-xl text-parchment leading-tight">
+                {health}
+              </span>
+              <span class="text-parchment-dark/50 font-body text-sm">
+                / {maxHealth}
+              </span>
+            </div>
+            <div class="w-36 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
+              <div
+                class={`h-full ${barColor} transition-[width] duration-500`}
+                style={`width: ${pct}%`}
+              />
             </div>
           </div>
-        )}
+
+          {/* Actions field */}
+          {actions && (
+            <div class="px-5 py-3 flex flex-col gap-1.5">
+              <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
+                Actions
+              </span>
+              <div class="flex flex-wrap gap-1.5">
+                {buttonDefs.map(({ label, color, button }) => (
+                  <ActionTooltipButton
+                    key={label}
+                    label={label}
+                    color={color}
+                    enabled={button.enabled}
+                    tooltip={"tooltip" in button ? button.tooltip : ""}
+                    onClick={button.onClick}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

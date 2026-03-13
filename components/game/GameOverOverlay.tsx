@@ -30,8 +30,10 @@ export function GameOverOverlay(
 
   return (
     <div class="fixed inset-0 bg-shadow/90 flex items-center justify-center z-50 overflow-y-auto py-4">
-      <div class="bg-dungeon-surface border border-dungeon-border rounded-sm p-8 max-w-md w-full mx-4 text-center">
-        <h2 class="font-heading text-3xl text-parchment mb-2">{title}</h2>
+      <div class="bg-dungeon-surface border border-dungeon-border rounded-sm p-4 md:p-8 max-w-md w-full mx-4 text-center">
+        <h2 class="font-heading text-2xl md:text-3xl text-parchment mb-2">
+          {title}
+        </h2>
         <p class="text-parchment-dark font-body mb-6">{subtitle}</p>
 
         <div class="mb-6">

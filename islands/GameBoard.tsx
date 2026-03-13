@@ -20,6 +20,9 @@ import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
 import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
 import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
 import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
+import { MobileDungeonButton } from "../components/game/MobileDungeonButton.tsx";
+import { MobileWeaponBar } from "../components/game/MobileWeaponBar.tsx";
+import { MobileActionPanel } from "../components/game/MobileActionPanel.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
 import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
@@ -484,9 +487,15 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     showLeaderboard.value = false;
   }
 
+  const isDrawPhase = state.phase.kind === "drawing";
+  const isDungeonInteractive = isDrawPhase && state.dungeonCount > 0 &&
+    !isLoading;
+  const isDungeonPending = isDrawPhase &&
+    pendingAction.value.kind === "draw_card";
+
   return (
     <div
-      class="min-h-screen bg-dungeon-bg text-parchment p-4 font-body flex flex-col items-center"
+      class="min-h-screen bg-dungeon-bg text-parchment p-2 md:p-4 font-body flex flex-col items-center"
       onClick={() => {
         selectedCardIndex.value = null;
         focusedCardIndex.value = null;
@@ -506,18 +515,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         onClose={handleCloseLeaderboard}
       />
 
-      {/* Health Display */}
-      <HealthDisplay
-        health={state.health}
-        maxHealth={20}
-        playerName={state.playerName}
-        damageFlash={damageFlash.value}
-        healFlash={healFlash.value}
-        actions={actions}
-      />
-
       {/* Copy link button */}
-      <div class="fixed top-4 right-24 z-30 group">
+      <div class="fixed top-2 right-20 md:top-4 md:right-24 z-30 group">
         <button
           type="button"
           onClick={handleCopyLink}
@@ -563,19 +562,92 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         </div>
       </div>
 
-      {/* Main play area */}
-      <div class="grid grid-cols-[auto_auto_auto] gap-4 items-stretch">
-        {/* Dungeon pile */}
-        <GameSection label="Dungeon">
-          <DungeonPile
-            count={state.dungeonCount}
-            interactive={state.phase.kind === "drawing" &&
-              state.dungeonCount > 0 && !isLoading}
-            onClick={handleDrawCard}
-            pending={state.phase.kind === "drawing" &&
-              pendingAction.value.kind === "draw_card"}
-          />
-        </GameSection>
+      {/* ── DESKTOP LAYOUT (hidden on mobile) ── */}
+      <div class="hidden md:flex md:flex-col md:items-center w-full">
+        {/* Health Display */}
+        <HealthDisplay
+          health={state.health}
+          maxHealth={20}
+          playerName={state.playerName}
+          damageFlash={damageFlash.value}
+          healFlash={healFlash.value}
+          actions={actions}
+        />
+
+        {/* Main play area */}
+        <div class="grid grid-cols-[auto_auto_auto] gap-4 items-stretch">
+          {/* Dungeon pile */}
+          <GameSection label="Dungeon">
+            <DungeonPile
+              count={state.dungeonCount}
+              interactive={isDungeonInteractive}
+              onClick={handleDrawCard}
+              pending={isDungeonPending}
+            />
+          </GameSection>
+
+          {/* Room */}
+          <GameSection label="Room">
+            <RoomArea
+              cards={state.room as Card[]}
+              onCardClick={isInteractive ? handleCardClick : undefined}
+              interactive={isInteractive}
+              selectedIndex={selectedCardIndex.value}
+              focusedIndex={focusedCardIndex.value}
+              pendingAction={pendingAction.value}
+            />
+          </GameSection>
+
+          {/* Discard pile */}
+          <GameSection label="Discard">
+            <DiscardPile count={state.discardCount} />
+          </GameSection>
+        </div>
+
+        {/* Action Bar */}
+        <ActionBar
+          phase={state.phase}
+          cardsChosen={cardsChosen}
+          lastRoomAvoided={state.lastRoomAvoided}
+          cardSelected={selectedCardIndex.value !== null}
+          roomSize={state.room.length}
+          panelState={panelState}
+          pendingAction={pendingAction.value}
+        />
+
+        {/* Error message */}
+        {errorMsg.value && (
+          <div class="text-center text-blood-bright text-sm mt-2 font-body">
+            {errorMsg.value}
+          </div>
+        )}
+
+        {/* Equipped Weapon */}
+        <div class="flex gap-4 justify-center w-full max-w-6xl">
+          <GameSection label="Equipped Weapon">
+            <EquippedWeaponCard weapon={state.equippedWeapon} />
+          </GameSection>
+          <GameSection label="Last Monster Slain">
+            <LastSlainCard
+              card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
+            />
+          </GameSection>
+        </div>
+      </div>
+
+      {/* ── MOBILE LAYOUT (hidden on desktop) ── */}
+      <div class="flex md:hidden flex-col w-full gap-2">
+        {/* Health Display (mobile compact variant) */}
+        <HealthDisplay
+          health={state.health}
+          maxHealth={20}
+          playerName={state.playerName}
+          damageFlash={damageFlash.value}
+          healFlash={healFlash.value}
+        />
+
+        {/* Weapon bar */}
+        <MobileWeaponBar weapon={state.equippedWeapon} />
 
         {/* Room */}
         <GameSection label="Room">
@@ -589,40 +661,37 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           />
         </GameSection>
 
-        {/* Discard pile */}
-        <GameSection label="Discard">
-          <DiscardPile count={state.discardCount} />
-        </GameSection>
-      </div>
+        {/* Draw button (during draw phase) or hint text */}
+        {isDrawPhase
+          ? (
+            <MobileDungeonButton
+              isEmpty={state.dungeonCount === 0}
+              interactive={isDungeonInteractive}
+              onClick={handleDrawCard}
+              pending={isDungeonPending}
+            />
+          )
+          : (
+            <ActionBar
+              phase={state.phase}
+              cardsChosen={cardsChosen}
+              lastRoomAvoided={state.lastRoomAvoided}
+              cardSelected={selectedCardIndex.value !== null}
+              roomSize={state.room.length}
+              panelState={panelState}
+              pendingAction={pendingAction.value}
+            />
+          )}
 
-      {/* Action Bar */}
-      <ActionBar
-        phase={state.phase}
-        cardsChosen={cardsChosen}
-        lastRoomAvoided={state.lastRoomAvoided}
-        cardSelected={selectedCardIndex.value !== null}
-        roomSize={state.room.length}
-        panelState={panelState}
-        pendingAction={pendingAction.value}
-      />
+        {/* Error message */}
+        {errorMsg.value && (
+          <div class="text-center text-blood-bright text-sm font-body">
+            {errorMsg.value}
+          </div>
+        )}
 
-      {/* Error message */}
-      {errorMsg.value && (
-        <div class="text-center text-blood-bright text-sm mt-2 font-body">
-          {errorMsg.value}
-        </div>
-      )}
-
-      {/* Equipped Weapon */}
-      <div class="flex gap-4 justify-center w-full max-w-6xl">
-        <GameSection label="Equipped Weapon">
-          <EquippedWeaponCard weapon={state.equippedWeapon} />
-        </GameSection>
-        <GameSection label="Last Monster Slain">
-          <LastSlainCard
-            card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
-          />
-        </GameSection>
+        {/* Action buttons */}
+        <MobileActionPanel actions={actions} />
       </div>
 
       {/* Game Over Overlay */}

@@ -27,7 +27,7 @@ export function WelcomeScreen(
         <p class="text-parchment-dark font-body mb-8">
           A Single Player Rogue-like Card Game
         </p>
-        <div class="w-64 mx-auto">
+        <div class="w-full max-w-xs mx-auto px-4">
           <div class="mb-4">
             <input
               type="text"

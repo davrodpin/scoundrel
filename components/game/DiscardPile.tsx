@@ -10,7 +10,7 @@ export function DiscardPile({ count }: DiscardPileProps) {
   const [loaded, setLoaded] = useState(false);
 
   return (
-    <div class="flex flex-col items-center gap-1">
+    <div class="hidden md:flex flex-col items-center gap-1">
       <div class="relative w-[clamp(140px,28vw,230px)] mr-3 mb-3">
         {count > 0
           ? (
