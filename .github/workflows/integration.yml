@@ -6,7 +6,6 @@ on:
 
 jobs:
   integration:
-    if: github.event_name == 'repository_dispatch'
     name: Integration Tests
     runs-on: ubuntu-latest
     env:
@@ -16,29 +15,36 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.client_payload.revision.branch }}
+
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+
       - name: Cache Deno dependencies
-        uses: actions/cachev4
+        uses: actions/cache@v4
         with:
-          patch: |
+          path: |
             ~/.cache/deno
             node_modules
           key: deno-${{ runner.os }}-${{ hashFiles('deno.lock') }}
-          restore-keys: deno-${{ runner.os }}-
+          restore-keys: |
+            deno-${{ runner.os }}-
+
       - name: Generate Prisma client
         run: deno task prisma:generate
+
       - name: Install dependencies
         run: deno install
+
       - name: Run migrations on preview database
         run: deno task prisma:migrate
         env:
           DATABASE_URL: ${{ env.PREVIEW_DATABASE_URL }}
+
       - name: Run integrations tests
         run: |
-          echo "DEPLOY_URL: $DEPLOY_URL"
+          echo "DEPLOY_URL: $BASE_URL"
           deno task test:integration
         env:
-          BASE_URL: ${{ github.event.client_payload.revision.preview_url }}
+          BASE_URL: ${{ github.event.client_payload.deployment.url }}
           DATABASE_URL: ${{ env.PREVIEW_DATABASE_URL }}
