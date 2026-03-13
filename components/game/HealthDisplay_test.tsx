@@ -143,3 +143,91 @@ Deno.test("HealthDisplay - tooltip uses high-contrast background (bg-ink)", () =
   );
   assertEquals(html.includes("bg-ink"), true);
 });
+
+Deno.test("HealthDisplay - tooltip text uses text-white for contrast", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions({
+        fightBarehanded: {
+          enabled: true,
+          tooltip: "Barehanded: 6 dmg",
+          onClick: noop,
+        },
+      })}
+    />,
+  );
+  assertEquals(html.includes("text-white"), true);
+});
+
+Deno.test("HealthDisplay - enabled Avoid Room button uses text-white", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions({
+        avoidRoom: { enabled: true, onClick: noop },
+      })}
+    />,
+  );
+  assertEquals(html.includes("text-white"), true);
+});
+
+Deno.test("HealthDisplay - enabled Fight w/ Weapon button uses text-white", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions({
+        fightWithWeapon: { enabled: true, tooltip: "", onClick: noop },
+      })}
+    />,
+  );
+  assertEquals(html.includes("text-white"), true);
+});
+
+Deno.test("HealthDisplay - enabled Fight Barehanded button uses text-white", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions({
+        fightBarehanded: { enabled: true, tooltip: "", onClick: noop },
+      })}
+    />,
+  );
+  assertEquals(html.includes("text-white"), true);
+});
+
+Deno.test("HealthDisplay - enabled Equip Weapon button uses text-white", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions({
+        equipWeapon: { enabled: true, tooltip: "", onClick: noop },
+      })}
+    />,
+  );
+  assertEquals(html.includes("text-white"), true);
+});
+
+Deno.test("HealthDisplay - enabled Drink Potion button uses text-white", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions({
+        drinkPotion: { enabled: true, tooltip: "", onClick: noop },
+      })}
+    />,
+  );
+  assertEquals(html.includes("text-white"), true);
+});

@@ -68,7 +68,7 @@ function ActionTooltipButton(
         {label}
       </button>
       <div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 whitespace-nowrap">
-        <div class="bg-ink border border-torch-amber text-parchment text-xs font-body px-3 py-1.5 rounded-sm text-center">
+        <div class="bg-ink border border-torch-amber text-white text-xs font-body px-3 py-1.5 rounded-sm text-center">
           {tooltip}
         </div>
         <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-torch-amber" />
@@ -97,31 +97,32 @@ export function HealthDisplay(
     ? [
       {
         label: "Avoid Room",
-        color: "bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow",
+        color:
+          "bg-torch-amber text-white border-torch-amber hover:bg-torch-glow",
         button: { ...actions.avoidRoom, tooltip: "" },
       },
       {
         label: "Fight w/ Weapon",
         color:
-          "bg-weapon-steel text-parchment border-weapon-steel hover:border-torch-amber",
+          "bg-weapon-steel text-white border-weapon-steel hover:border-torch-amber",
         button: actions.fightWithWeapon,
       },
       {
         label: "Fight Barehanded",
         color:
-          "bg-blood-red text-parchment border-blood-red hover:border-blood-bright",
+          "bg-blood-red text-white border-blood-red hover:border-blood-bright",
         button: actions.fightBarehanded,
       },
       {
         label: "Equip Weapon",
         color:
-          "bg-parchment-dark text-ink border-parchment-dark hover:bg-parchment",
+          "bg-parchment-dark text-white border-parchment-dark hover:bg-parchment",
         button: actions.equipWeapon,
       },
       {
         label: "Drink Potion",
         color:
-          "bg-potion-green text-parchment border-potion-green hover:border-torch-amber",
+          "bg-potion-green text-white border-potion-green hover:border-torch-amber",
         button: actions.drinkPotion,
       },
     ]
