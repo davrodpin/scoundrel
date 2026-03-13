@@ -12,15 +12,36 @@ const cards: Card[] = [
   { suit: "hearts", rank: 3 },
 ];
 
-Deno.test("RoomArea - uses responsive 2x2 grid on mobile", () => {
+Deno.test("RoomArea - uses flex row layout on all breakpoints", () => {
   const html = render(
     <RoomArea
       cards={cards}
       interactive={false}
     />,
   );
-  assertEquals(html.includes("grid-cols-2"), true);
-  assertEquals(html.includes("md:flex"), true);
+  assertEquals(html.includes("flex justify-center"), true);
+  assertEquals(html.includes("grid-cols-2"), false);
+});
+
+Deno.test("RoomArea - non-first slots have overlap class on mobile", () => {
+  const html = render(
+    <RoomArea
+      cards={cards}
+      interactive={false}
+    />,
+  );
+  assertEquals(html.includes("-ml-10"), true);
+});
+
+Deno.test("RoomArea - selected card wrapper gets z-50", () => {
+  const html = render(
+    <RoomArea
+      cards={cards}
+      interactive
+      selectedIndex={1}
+    />,
+  );
+  assertEquals(html.includes("z-index:50"), true);
 });
 
 Deno.test("RoomArea - empty slots use responsive width", () => {
