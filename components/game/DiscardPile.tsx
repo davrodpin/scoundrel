@@ -18,7 +18,7 @@ export function DiscardPile({ count }: DiscardPileProps) {
               {deckLayerOffsets(count, DUNGEON_MAX_CARDS).map((offset) => (
                 <div
                   key={offset}
-                  class="absolute w-full h-full rounded-sm border border-dungeon-border bg-dungeon-border"
+                  class="absolute w-full h-full rounded-sm border border-stone-800 bg-amber-50"
                   style={`top: ${offset * 2}px; left: ${
                     offset * 2
                   }px; transform: rotate(${
