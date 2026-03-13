@@ -9,7 +9,7 @@ const VALID_RAW = {
     maxBodyBytes: 1024,
     maxPlayerNameLength: 20,
   },
-  game: { defaultPlayerName: "Hero", leaderboardLimit: 10 },
+  game: { defaultPlayerName: "Hero" },
   deploy: { id: "abc123" },
 };
 
@@ -20,7 +20,6 @@ Deno.test("valid config parses successfully", () => {
   assertEquals(cfg.app.maxBodyBytes, 1024);
   assertEquals(cfg.app.maxPlayerNameLength, 20);
   assertEquals(cfg.game.defaultPlayerName, "Hero");
-  assertEquals(cfg.game.leaderboardLimit, 10);
   assertEquals(cfg.deploy.id, "abc123");
 });
 
@@ -37,7 +36,6 @@ Deno.test("defaults applied for optional fields", () => {
   assertEquals(cfg.app.maxBodyBytes, 4096);
   assertEquals(cfg.app.maxPlayerNameLength, 30);
   assertEquals(cfg.game.defaultPlayerName, "Anonymous");
-  assertEquals(cfg.game.leaderboardLimit, 25);
   assertEquals(cfg.deploy.id, undefined);
 });
 

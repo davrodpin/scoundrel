@@ -23,7 +23,7 @@ export type GameRepository = {
   ): Promise<void>;
   getPlayerName(gameId: string): Promise<string | null>;
   getGameStatus(gameId: string): Promise<string | null>;
-  getLeaderboard(limit: number): Promise<LeaderboardEntry[]>;
+  getLeaderboard(): Promise<LeaderboardEntry[]>;
   createLeaderboardEntry(
     gameId: string,
     playerName: string,
@@ -130,10 +130,9 @@ export function createPrismaGameRepository(
       return (row as { status: string }).status;
     },
 
-    async getLeaderboard(limit: number): Promise<LeaderboardEntry[]> {
+    async getLeaderboard(): Promise<LeaderboardEntry[]> {
       const rows = await prisma.leaderboardEntry.findMany({
         orderBy: { score: "desc" },
-        take: limit,
         select: {
           gameId: true,
           playerName: true,

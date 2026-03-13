@@ -14,7 +14,6 @@ import { createGameService, type GameServiceConfig } from "./service.ts";
 
 const TEST_CONFIG: GameServiceConfig = {
   defaultPlayerName: "Anonymous",
-  leaderboardLimit: 25,
 };
 
 function makeInitialState(
@@ -107,7 +106,7 @@ function createMockRepository(
     getGameStatus(gameId: string): Promise<string | null> {
       return Promise.resolve(statuses.get(gameId) ?? null);
     },
-    getLeaderboard(_limit: number) {
+    getLeaderboard() {
       return Promise.resolve([]);
     },
     createLeaderboardEntry(
@@ -619,18 +618,18 @@ Deno.test("submitAction calls createLeaderboardEntry on game-over in auto-enter-
   assertEquals(capturedLeaderboardDate !== null, true);
 });
 
-Deno.test("getLeaderboard delegates to repository with limit 25", async () => {
-  let capturedLimit: number | null = null;
+Deno.test("getLeaderboard delegates to repository", async () => {
+  let called = false;
   const repository = createMockRepository();
   const originalGetLeaderboard = repository.getLeaderboard.bind(repository);
-  repository.getLeaderboard = (limit: number) => {
-    capturedLimit = limit;
-    return originalGetLeaderboard(limit);
+  repository.getLeaderboard = () => {
+    called = true;
+    return originalGetLeaderboard();
   };
   const engine = createMockEngine();
   const service = createGameService(engine, repository, TEST_CONFIG);
 
   await service.getLeaderboard();
 
-  assertEquals(capturedLimit, 25);
+  assertEquals(called, true);
 });

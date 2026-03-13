@@ -19,7 +19,6 @@ export type GameService = {
 
 export type GameServiceConfig = {
   defaultPlayerName: string;
-  leaderboardLimit: number;
 };
 
 export function createGameService(
@@ -189,7 +188,7 @@ export function createGameService(
     },
 
     getLeaderboard(): Promise<LeaderboardEntry[]> {
-      return repository.getLeaderboard(config.leaderboardLimit);
+      return repository.getLeaderboard();
     },
   };
 }

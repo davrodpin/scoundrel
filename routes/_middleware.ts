@@ -26,7 +26,6 @@ const engine = createGameEngine();
 const repository = createPrismaGameRepository(prisma);
 const gameService = createGameService(engine, repository, {
   defaultPlayerName: config.game.defaultPlayerName,
-  leaderboardLimit: config.game.leaderboardLimit,
 });
 
 const logger = getLogger(["scoundrel", "http"]);

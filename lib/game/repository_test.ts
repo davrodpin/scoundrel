@@ -270,7 +270,7 @@ Deno.test("getLeaderboard returns empty array when no leaderboard entries", asyn
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
   );
-  const result = await repo.getLeaderboard(25);
+  const result = await repo.getLeaderboard();
   assertEquals(result, []);
 });
 
@@ -328,7 +328,7 @@ Deno.test("getLeaderboard maps leaderboard_entries rows to LeaderboardEntry", as
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
   );
-  const result = await repo.getLeaderboard(25);
+  const result = await repo.getLeaderboard();
 
   assertEquals(result.length, 2);
   assertEquals(result[0].gameId, "game-1");
