@@ -1,5 +1,10 @@
 import type { GamePhase } from "@scoundrel/engine";
 import type { ActionPanelState } from "./action_panel_utils.ts";
+import {
+  isPending,
+  type PendingAction,
+  pendingActionLabel,
+} from "../../islands/pending_action.ts";
 
 type ActionBarProps = {
   phase: GamePhase;
@@ -8,6 +13,7 @@ type ActionBarProps = {
   cardSelected: boolean;
   roomSize: number;
   panelState?: ActionPanelState;
+  pendingAction?: PendingAction;
 };
 
 export function getActionBarHint(
@@ -74,10 +80,13 @@ export function getActionBarHint(
 }
 
 export function ActionBar(
-  { phase, lastRoomAvoided, cardSelected, roomSize, panelState }:
+  { phase, lastRoomAvoided, cardSelected, roomSize, panelState, pendingAction }:
     ActionBarProps,
 ) {
-  const hint = getActionBarHint(
+  const pendingLabel = pendingAction && isPending(pendingAction)
+    ? pendingActionLabel(pendingAction)
+    : null;
+  const hint = pendingLabel ?? getActionBarHint(
     phase,
     lastRoomAvoided,
     cardSelected,
