@@ -16,6 +16,15 @@ Deno.test("GameSection - uses responsive padding classes", () => {
   assertEquals(html.includes("md:py-5"), true);
 });
 
+Deno.test("GameSection - centers content with items-center", () => {
+  const html = render(
+    <GameSection label="Room">
+      <div>content</div>
+    </GameSection>,
+  );
+  assertEquals(html.includes("items-center"), true);
+});
+
 Deno.test("GameSection - uses responsive label text size", () => {
   const html = render(
     <GameSection label="Room">
