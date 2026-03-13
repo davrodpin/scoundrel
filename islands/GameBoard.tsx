@@ -704,6 +704,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
               roomSize={state.room.length}
               panelState={panelState}
               pendingAction={pendingAction.value}
+              showShortcuts={false}
             />
           )}
 

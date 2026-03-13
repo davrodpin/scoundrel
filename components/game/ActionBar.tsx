@@ -14,6 +14,7 @@ type ActionBarProps = {
   roomSize: number;
   panelState?: ActionPanelState;
   pendingAction?: PendingAction;
+  showShortcuts?: boolean;
 };
 
 export function getActionBarHint(
@@ -22,6 +23,7 @@ export function getActionBarHint(
   cardSelected: boolean,
   roomSize: number,
   panelState?: ActionPanelState,
+  showShortcuts = true,
 ): string {
   if (
     cardSelected &&
@@ -29,31 +31,47 @@ export function getActionBarHint(
   ) {
     if (panelState) {
       const actions: string[] = [];
-      if (panelState.avoidRoom.enabled) actions.push("Avoid Room (A)");
+      if (panelState.avoidRoom.enabled) {
+        actions.push(showShortcuts ? "Avoid Room (A)" : "Avoid Room");
+      }
       if (panelState.fightWithWeapon.enabled) {
         const dmg = panelState.fightWithWeapon.tooltip.replace("Weapon: ", "");
-        actions.push(`Fight w/ Weapon (W): ${dmg}`);
+        actions.push(
+          showShortcuts
+            ? `Fight w/ Weapon (W): ${dmg}`
+            : `Fight w/ Weapon: ${dmg}`,
+        );
         if (panelState.fightBarehanded.enabled) {
           const bdmg = panelState.fightBarehanded.tooltip.replace(
             "Barehanded: ",
             "",
           );
-          actions.push(`Barehanded (B): ${bdmg}`);
+          actions.push(
+            showShortcuts ? `Barehanded (B): ${bdmg}` : `Barehanded: ${bdmg}`,
+          );
         }
       } else if (panelState.fightBarehanded.enabled) {
         const bdmg = panelState.fightBarehanded.tooltip.replace(
           "Barehanded: ",
           "",
         );
-        actions.push(`Fight Barehanded (B): ${bdmg}`);
+        actions.push(
+          showShortcuts
+            ? `Fight Barehanded (B): ${bdmg}`
+            : `Fight Barehanded: ${bdmg}`,
+        );
       }
-      if (panelState.equipWeapon.enabled) actions.push("Equip Weapon (E)");
+      if (panelState.equipWeapon.enabled) {
+        actions.push(showShortcuts ? "Equip Weapon (E)" : "Equip Weapon");
+      }
       if (panelState.drinkPotion.enabled) {
         const healMatch = panelState.drinkPotion.tooltip.match(
           /Heals (\d+) HP/,
         );
         const heal = healMatch ? `+${healMatch[1]} HP` : "0 HP";
-        actions.push(`Drink Potion (P): ${heal}`);
+        actions.push(
+          showShortcuts ? `Drink Potion (P): ${heal}` : `Drink Potion: ${heal}`,
+        );
       }
 
       if (actions.length === 1) {
@@ -66,22 +84,37 @@ export function getActionBarHint(
   switch (phase.kind) {
     case "drawing":
       return roomSize > 0
-        ? "Draw another card (D)"
-        : "Draw a card from the Dungeon (D)";
+        ? showShortcuts ? "Draw another card (D)" : "Draw another card"
+        : showShortcuts
+        ? "Draw a card from the Dungeon (D)"
+        : "Draw a card from the Dungeon";
     case "room_ready":
       return lastRoomAvoided
-        ? "Select a card to play (←→ ↩︎)"
-        : "Select a card to play (←→ ↩︎) or Avoid Room (A)";
+        ? showShortcuts
+          ? "Select a card to play (←→ ↩︎)"
+          : "Select a card to play"
+        : showShortcuts
+        ? "Select a card to play (←→ ↩︎) or Avoid Room (A)"
+        : "Select a card to play or Avoid Room";
     case "choosing":
-      return "Select a card to play (←→ ↩︎)";
+      return showShortcuts
+        ? "Select a card to play (←→ ↩︎)"
+        : "Select a card to play";
     case "game_over":
       return "Game Over";
   }
 }
 
 export function ActionBar(
-  { phase, lastRoomAvoided, cardSelected, roomSize, panelState, pendingAction }:
-    ActionBarProps,
+  {
+    phase,
+    lastRoomAvoided,
+    cardSelected,
+    roomSize,
+    panelState,
+    pendingAction,
+    showShortcuts = true,
+  }: ActionBarProps,
 ) {
   const pendingLabel = pendingAction && isPending(pendingAction)
     ? pendingActionLabel(pendingAction)
@@ -92,6 +125,7 @@ export function ActionBar(
     cardSelected,
     roomSize,
     panelState,
+    showShortcuts,
   );
   const isGameOver = phase.kind === "game_over";
 
