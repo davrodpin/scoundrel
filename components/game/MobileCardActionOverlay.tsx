@@ -58,9 +58,10 @@ export function MobileCardActionOverlay(
 
   return (
     <div
-      class="fixed inset-0 z-40 bg-shadow/80 flex flex-col items-center justify-center overflow-y-auto md:hidden"
+      class="fixed inset-0 z-40 overflow-y-auto md:hidden"
       onClick={onCancel}
     >
+      <div class="flex min-h-full items-center justify-center p-4 bg-shadow/80">
       <div
         class="flex flex-col items-center gap-3 px-6 py-4"
         onClick={(e: MouseEvent) => e.stopPropagation()}
@@ -74,9 +75,7 @@ export function MobileCardActionOverlay(
             <button
               key={label}
               type="button"
-              class={`px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 ${
-                tooltip ? "text-left" : "text-center"
-              } ${color}`}
+              class={`px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 text-center ${color}`}
               onClick={onClick}
             >
               <span class="block leading-tight">{label}</span>
@@ -97,6 +96,7 @@ export function MobileCardActionOverlay(
         >
           Cancel
         </button>
+      </div>
       </div>
     </div>
   );

@@ -84,7 +84,7 @@ Deno.test("MobileCardActionOverlay - button without tooltip uses text-center", (
   assertEquals(html.includes("text-center"), true);
 });
 
-Deno.test("MobileCardActionOverlay - button with tooltip uses text-left", () => {
+Deno.test("MobileCardActionOverlay - button with tooltip uses text-center", () => {
   const html = render(
     <MobileCardActionOverlay
       card={monsterCard}
@@ -98,7 +98,8 @@ Deno.test("MobileCardActionOverlay - button with tooltip uses text-left", () => 
       onCancel={noop}
     />,
   );
-  assertEquals(html.includes("text-left"), true);
+  assertEquals(html.includes("text-center"), true);
+  assertEquals(html.includes("text-left"), false);
 });
 
 Deno.test("MobileCardActionOverlay - has backdrop class bg-shadow/80", () => {
@@ -133,6 +134,9 @@ Deno.test("MobileCardActionOverlay - overlay is vertically centered", () => {
       onCancel={noop}
     />,
   );
-  assertEquals(html.includes("justify-center"), true);
+  // Scroll container: outer div handles overflow, inner wrapper handles centering
   assertEquals(html.includes("overflow-y-auto"), true);
+  assertEquals(html.includes("min-h-full"), true);
+  assertEquals(html.includes("items-center"), true);
+  assertEquals(html.includes("justify-center"), true);
 });
