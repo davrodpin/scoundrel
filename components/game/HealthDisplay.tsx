@@ -130,30 +130,10 @@ export function HealthDisplay(
 
   return (
     <div
-      class={`mb-4 md:mb-10 w-full ${
+      class={`hidden md:block mb-10 ${
         damageFlash ? "animate-damage-flash" : ""
       } ${healFlash ? "animate-heal-glow" : ""}`}
     >
-      {/* Mobile compact health bar */}
-      <div class="flex md:hidden items-center gap-2 bg-dungeon-surface border border-dungeon-border rounded-sm px-3 py-2 w-full">
-        <span class="font-heading text-parchment text-base truncate max-w-[120px] leading-tight">
-          {playerName}
-        </span>
-        <span class="text-parchment-dark/50 text-xs font-body mx-1">|</span>
-        <span class="font-heading text-parchment text-base leading-tight">
-          {health}
-        </span>
-        <span class="text-parchment-dark/50 font-body text-xs">
-          /{maxHealth}
-        </span>
-        <div class="flex-1 ml-2 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
-          <div
-            class={`h-full ${barColor} transition-[width] duration-500`}
-            style={`width: ${pct}%`}
-          />
-        </div>
-      </div>
-
       {/* Desktop full health bar */}
       <div class="hidden md:flex md:justify-center">
         <div class="inline-flex border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">

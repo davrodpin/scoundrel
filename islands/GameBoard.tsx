@@ -22,6 +22,7 @@ import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleBut
 import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
 import { MobileDungeonButton } from "../components/game/MobileDungeonButton.tsx";
 import { MobileActionPanel } from "../components/game/MobileActionPanel.tsx";
+import { MobileTopBar } from "../components/game/MobileTopBar.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
 import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
@@ -501,11 +502,15 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       }}
     >
       {/* Rules toggle + panel */}
-      <RulesToggleButton onClick={handleToggleRules} />
+      <div class="hidden md:block">
+        <RulesToggleButton onClick={handleToggleRules} />
+      </div>
       <RulesPanel open={showRules.value} onClose={handleCloseRules} />
 
       {/* Leaderboard toggle + panel */}
-      <LeaderboardToggleButton onClick={handleToggleLeaderboard} />
+      <div class="hidden md:block">
+        <LeaderboardToggleButton onClick={handleToggleLeaderboard} />
+      </div>
       <LeaderboardPanel
         open={showLeaderboard.value}
         loading={leaderboardLoading.value}
@@ -514,8 +519,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         onClose={handleCloseLeaderboard}
       />
 
-      {/* Copy link button */}
-      <div class="fixed top-2 right-20 md:top-4 md:right-24 z-30 group">
+      {/* Copy link button — desktop only */}
+      <div class="hidden md:block fixed top-2 right-20 md:top-4 md:right-24 z-30 group">
         <button
           type="button"
           onClick={handleCopyLink}
@@ -636,13 +641,17 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
 
       {/* ── MOBILE LAYOUT (hidden on desktop) ── */}
       <div class="flex md:hidden flex-col w-full gap-2">
-        {/* Health Display (mobile compact variant) */}
-        <HealthDisplay
+        {/* Top bar: health + icon buttons */}
+        <MobileTopBar
           health={state.health}
           maxHealth={20}
           playerName={state.playerName}
           damageFlash={damageFlash.value}
           healFlash={healFlash.value}
+          onRulesClick={handleToggleRules}
+          onLeaderboardClick={handleToggleLeaderboard}
+          onCopyLinkClick={handleCopyLink}
+          copiedLink={copiedLink.value}
         />
 
         {/* Weapon / Last Slain */}
