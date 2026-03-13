@@ -155,7 +155,7 @@ export function HealthDisplay(
       </div>
 
       {/* Desktop full health bar */}
-      <div class="hidden md:block">
+      <div class="hidden md:flex md:justify-center">
         <div class="inline-flex border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
           {/* Name field */}
           <div class="px-5 py-3 flex flex-col gap-1.5 min-w-[140px]">

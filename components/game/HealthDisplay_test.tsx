@@ -151,11 +151,12 @@ Deno.test("HealthDisplay - has mobile compact variant with md:hidden", () => {
   assertEquals(html.includes("md:hidden"), true);
 });
 
-Deno.test("HealthDisplay - has desktop variant with hidden md:block", () => {
+Deno.test("HealthDisplay - has desktop variant with hidden md:flex md:justify-center", () => {
   const html = render(
     <HealthDisplay health={14} maxHealth={20} playerName="Aragorn" />,
   );
-  assertEquals(html.includes("hidden md:block"), true);
+  assertEquals(html.includes("hidden md:flex"), true);
+  assertEquals(html.includes("md:justify-center"), true);
 });
 
 Deno.test("HealthDisplay - tooltip text uses text-white for contrast", () => {
