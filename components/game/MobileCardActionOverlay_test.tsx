@@ -71,6 +71,34 @@ Deno.test("MobileCardActionOverlay - has Cancel button", () => {
   assertEquals(html.includes("Cancel"), true);
 });
 
+Deno.test("MobileCardActionOverlay - button without tooltip uses text-center", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions({ avoidRoom: { enabled: true, onClick: noop } })}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("text-center"), true);
+});
+
+Deno.test("MobileCardActionOverlay - button with tooltip uses text-left", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions({
+        fightBarehanded: {
+          enabled: true,
+          tooltip: "Barehanded: 6 dmg",
+          onClick: noop,
+        },
+      })}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("text-left"), true);
+});
+
 Deno.test("MobileCardActionOverlay - has backdrop class bg-shadow/80", () => {
   const html = render(
     <MobileCardActionOverlay

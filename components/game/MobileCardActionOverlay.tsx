@@ -81,7 +81,9 @@ export function MobileCardActionOverlay(
             <button
               key={label}
               type="button"
-              class={`min-h-[48px] px-4 py-2 text-sm rounded-sm border font-body transition-colors duration-200 text-left ${color}`}
+              class={`min-h-[48px] px-4 py-2 text-sm rounded-sm border font-body transition-colors duration-200 ${
+                tooltip ? "text-left" : "text-center"
+              } ${color}`}
               onClick={onClick}
             >
               <span class="block leading-tight">{label}</span>
