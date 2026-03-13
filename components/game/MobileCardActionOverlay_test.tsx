@@ -1,0 +1,83 @@
+/** @jsxImportSource preact */
+/// <reference lib="dom" />
+import { assertEquals } from "@std/assert";
+import { render } from "npm:preact-render-to-string@6.6.5";
+import { MobileCardActionOverlay } from "./MobileCardActionOverlay.tsx";
+import type { Card } from "@scoundrel/engine";
+import type { HealthDisplayActions } from "./HealthDisplay.tsx";
+
+const noop = () => {};
+
+const monsterCard: Card = { suit: "clubs", rank: 10 };
+
+function makeActions(
+  overrides: Partial<HealthDisplayActions> = {},
+): HealthDisplayActions {
+  return {
+    avoidRoom: { enabled: false, onClick: noop },
+    fightWithWeapon: { enabled: false, tooltip: "", onClick: noop },
+    fightBarehanded: { enabled: false, tooltip: "", onClick: noop },
+    equipWeapon: { enabled: false, tooltip: "", onClick: noop },
+    drinkPotion: { enabled: false, tooltip: "", onClick: noop },
+    ...overrides,
+  };
+}
+
+Deno.test("MobileCardActionOverlay - renders with md:hidden", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("md:hidden"), true);
+});
+
+Deno.test("MobileCardActionOverlay - renders selected card image", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("clubs_10.jpg"), true);
+});
+
+Deno.test("MobileCardActionOverlay - renders enabled action button labels", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions({
+        fightBarehanded: { enabled: true, tooltip: "", onClick: noop },
+        fightWithWeapon: { enabled: true, tooltip: "", onClick: noop },
+      })}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("Fight Barehanded"), true);
+  assertEquals(html.includes("Fight w/ Weapon"), true);
+});
+
+Deno.test("MobileCardActionOverlay - has Cancel button", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("Cancel"), true);
+});
+
+Deno.test("MobileCardActionOverlay - has backdrop class bg-shadow/80", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("bg-shadow/80"), true);
+});

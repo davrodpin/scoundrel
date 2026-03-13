@@ -21,7 +21,7 @@ import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
 import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
 import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
 import { MobileDungeonButton } from "../components/game/MobileDungeonButton.tsx";
-import { MobileActionPanel } from "../components/game/MobileActionPanel.tsx";
+import { MobileCardActionOverlay } from "../components/game/MobileCardActionOverlay.tsx";
 import { MobileTopBar } from "../components/game/MobileTopBar.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
@@ -710,10 +710,20 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             {errorMsg.value}
           </div>
         )}
-
-        {/* Action buttons */}
-        <MobileActionPanel actions={actions} />
       </div>
+
+      {/* Mobile action overlay — shown when a card is selected */}
+      {selectedCardIndex.value !== null &&
+        (state.room as Card[])[selectedCardIndex.value] && (
+        <MobileCardActionOverlay
+          card={(state.room as Card[])[selectedCardIndex.value]!}
+          actions={actions}
+          onCancel={() => {
+            selectedCardIndex.value = null;
+            focusedCardIndex.value = null;
+          }}
+        />
+      )}
 
       {/* Game Over Overlay */}
       {isGameOver && state.phase.kind === "game_over" && (
