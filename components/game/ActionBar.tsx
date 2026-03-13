@@ -1,4 +1,5 @@
 import type { GamePhase } from "@scoundrel/engine";
+import type { ActionPanelState } from "./action_panel_utils.ts";
 
 type ActionBarProps = {
   phase: GamePhase;
@@ -6,6 +7,7 @@ type ActionBarProps = {
   lastRoomAvoided: boolean;
   cardSelected: boolean;
   roomSize: number;
+  panelState?: ActionPanelState;
 };
 
 export function getActionBarHint(
@@ -13,33 +15,75 @@ export function getActionBarHint(
   lastRoomAvoided: boolean,
   cardSelected: boolean,
   roomSize: number,
+  panelState?: ActionPanelState,
 ): string {
   if (
     cardSelected &&
     (phase.kind === "room_ready" || phase.kind === "choosing")
   ) {
+    if (panelState) {
+      const actions: string[] = [];
+      if (panelState.avoidRoom.enabled) actions.push("Avoid Room (A)");
+      if (panelState.fightWithWeapon.enabled) {
+        const dmg = panelState.fightWithWeapon.tooltip.replace("Weapon: ", "");
+        actions.push(`Fight w/ Weapon (W): ${dmg}`);
+        if (panelState.fightBarehanded.enabled) {
+          const bdmg = panelState.fightBarehanded.tooltip.replace(
+            "Barehanded: ",
+            "",
+          );
+          actions.push(`Barehanded (B): ${bdmg}`);
+        }
+      } else if (panelState.fightBarehanded.enabled) {
+        const bdmg = panelState.fightBarehanded.tooltip.replace(
+          "Barehanded: ",
+          "",
+        );
+        actions.push(`Fight Barehanded (B): ${bdmg}`);
+      }
+      if (panelState.equipWeapon.enabled) actions.push("Equip Weapon (E)");
+      if (panelState.drinkPotion.enabled) {
+        const healMatch = panelState.drinkPotion.tooltip.match(
+          /Heals (\d+) HP/,
+        );
+        const heal = healMatch ? `+${healMatch[1]} HP` : "0 HP";
+        actions.push(`Drink Potion (P): ${heal}`);
+      }
+
+      if (actions.length === 1) {
+        return `Card selected. ${actions[0]} or select another card`;
+      }
+      return `Card selected. ${actions.join(", ")}, or select another card`;
+    }
     return "Card selected. Take an action or select another card";
   }
   switch (phase.kind) {
     case "drawing":
       return roomSize > 0
-        ? "Draw another card from the Dungeon"
-        : "Draw a card from the Dungeon";
+        ? "Draw another card (D)"
+        : "Draw a card from the Dungeon (D)";
     case "room_ready":
       return lastRoomAvoided
-        ? "Select a card to play"
-        : "Select a card to play — or Avoid Room";
+        ? "Select a card to play (←→ ↩︎)"
+        : "Select a card to play (←→ ↩︎) or Avoid Room (A)";
     case "choosing":
-      return `Select a card to play (${phase.cardsChosen} of 3 chosen)`;
+      return "Select a card to play (←→ ↩︎)";
     case "game_over":
       return "Game Over";
   }
 }
 
 export function ActionBar(
-  { phase, lastRoomAvoided, cardSelected, roomSize }: ActionBarProps,
+  { phase, lastRoomAvoided, cardSelected, roomSize, panelState }:
+    ActionBarProps,
 ) {
-  const hint = getActionBarHint(phase, lastRoomAvoided, cardSelected, roomSize);
+  const hint = getActionBarHint(
+    phase,
+    lastRoomAvoided,
+    cardSelected,
+    roomSize,
+    panelState,
+  );
   const isGameOver = phase.kind === "game_over";
 
   return (
