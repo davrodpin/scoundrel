@@ -1,10 +1,14 @@
+import type { Card } from "@scoundrel/engine";
+import { CardImage } from "./CardImage.tsx";
 import type { HealthDisplayActions } from "./HealthDisplay.tsx";
 
-type MobileActionPanelProps = {
+type MobileCardActionOverlayProps = {
+  card: Card;
   actions: HealthDisplayActions;
+  onCancel: () => void;
 };
 
-type MobileButtonDef = {
+type OverlayButtonDef = {
   label: string;
   color: string;
   enabled: boolean;
@@ -12,8 +16,10 @@ type MobileButtonDef = {
   onClick: () => void;
 };
 
-export function MobileActionPanel({ actions }: MobileActionPanelProps) {
-  const buttonDefs: MobileButtonDef[] = [
+export function MobileCardActionOverlay(
+  { card, actions, onCancel }: MobileCardActionOverlayProps,
+) {
+  const buttonDefs: OverlayButtonDef[] = [
     {
       label: "Avoid Room",
       color: "bg-torch-amber text-white border-torch-amber hover:bg-torch-glow",
@@ -55,31 +61,47 @@ export function MobileActionPanel({ actions }: MobileActionPanelProps) {
     },
   ];
 
-  return (
-    <div class="flex md:hidden flex-col gap-2 w-full mt-2">
-      <div class="grid grid-cols-2 gap-2">
-        {buttonDefs.map(({ label, color, enabled, tooltip, onClick }) => {
-          const btnClass = enabled
-            ? `min-h-[48px] px-3 py-2 text-sm rounded-sm border font-body transition-colors duration-200 text-left ${color}`
-            : "min-h-[48px] px-3 py-2 text-sm rounded-sm border font-body transition-colors duration-200 text-left bg-dungeon-surface text-parchment-dark border-dungeon-border opacity-40 cursor-not-allowed";
+  const enabledButtons = buttonDefs.filter((b) => b.enabled);
 
-          return (
+  return (
+    <div
+      class="fixed inset-0 z-40 bg-shadow/80 flex flex-col items-center justify-center md:hidden"
+      onClick={onCancel}
+    >
+      <div
+        class="flex flex-col items-center gap-4 px-6 py-6"
+        onClick={(e: MouseEvent) => e.stopPropagation()}
+      >
+        {/* Selected card */}
+        <CardImage card={card} />
+
+        {/* Enabled action buttons */}
+        <div class="flex flex-col gap-2 w-full">
+          {enabledButtons.map(({ label, color, tooltip, onClick }) => (
             <button
               key={label}
               type="button"
-              class={btnClass}
-              onClick={enabled ? onClick : undefined}
-              disabled={!enabled}
+              class={`min-h-[48px] px-4 py-2 text-sm rounded-sm border font-body transition-colors duration-200 text-left ${color}`}
+              onClick={onClick}
             >
               <span class="block leading-tight">{label}</span>
-              {enabled && tooltip && (
+              {tooltip && (
                 <span class="block text-xs opacity-80 leading-tight mt-0.5">
                   {tooltip}
                 </span>
               )}
             </button>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Cancel */}
+        <button
+          type="button"
+          class="w-full min-h-[44px] px-4 py-2 text-sm rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface border-dungeon-border text-parchment hover:border-torch-amber"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
