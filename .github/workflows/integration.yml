@@ -22,7 +22,7 @@ jobs:
       - name: Cache Deno dependencies
         uses: actions/cachev4
         with:
-          patch: | 
+          patch: |
             ~/.cache/deno
             node_modules
           key: deno-${{ runner.os }}-${{ hashFiles('deno.lock') }}
@@ -42,4 +42,3 @@ jobs:
         env:
           BASE_URL: github.event.client_payload.revision.preview_url
           DATABASE_URL: ${{ env.PREVIEW_DATABASE_URL }}
-
