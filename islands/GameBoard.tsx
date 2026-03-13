@@ -21,7 +21,6 @@ import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
 import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
 import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
 import { MobileDungeonButton } from "../components/game/MobileDungeonButton.tsx";
-import { MobileWeaponBar } from "../components/game/MobileWeaponBar.tsx";
 import { MobileActionPanel } from "../components/game/MobileActionPanel.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
@@ -646,8 +645,21 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           healFlash={healFlash.value}
         />
 
-        {/* Weapon bar */}
-        <MobileWeaponBar weapon={state.equippedWeapon} />
+        {/* Weapon / Last Slain */}
+        <div class="flex gap-2 w-full">
+          <div class="flex-1">
+            <GameSection label="Equipped Weapon">
+              <EquippedWeaponCard weapon={state.equippedWeapon} />
+            </GameSection>
+          </div>
+          <div class="flex-1">
+            <GameSection label="Last Monster Slain">
+              <LastSlainCard
+                card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
+              />
+            </GameSection>
+          </div>
+        </div>
 
         {/* Room */}
         <GameSection label="Room">

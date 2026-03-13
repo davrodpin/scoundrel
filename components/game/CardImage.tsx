@@ -54,7 +54,7 @@ export function CardImage(
         }
         : undefined}
       disabled={disabled}
-      class={`w-[clamp(90px,30vw,120px)] md:w-[clamp(140px,28vw,230px)] rounded-sm border transition-transform duration-200 bg-dungeon-surface/30 ${borderClass} ${
+      class={`w-[clamp(70px,22vw,100px)] md:w-[clamp(140px,28vw,230px)] rounded-sm border transition-transform duration-200 bg-dungeon-surface/30 ${borderClass} ${
         interactive
           ? "cursor-pointer hover:-translate-y-1 hover:border-torch-amber"
           : ""

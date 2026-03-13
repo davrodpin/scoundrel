@@ -38,7 +38,7 @@ export function RoomArea(
           return (
             <div
               key={`empty-${i}`}
-              class="w-[clamp(90px,30vw,120px)] md:w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30"
+              class="w-[clamp(70px,22vw,100px)] md:w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30"
             />
           );
         }

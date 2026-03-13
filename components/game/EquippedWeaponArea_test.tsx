@@ -34,3 +34,15 @@ Deno.test("LastSlainCard - renders no kills placeholder when null", () => {
   assertEquals(html.includes("No kills yet"), true);
   assertEquals(html.includes("<button"), false);
 });
+
+Deno.test("EquippedWeaponCard - placeholder uses responsive mobile width", () => {
+  const html = render(<EquippedWeaponCard weapon={null} />);
+  assertEquals(html.includes("w-[clamp(70px,22vw,100px)]"), true);
+  assertEquals(html.includes("md:w-[clamp(140px,28vw,230px)]"), true);
+});
+
+Deno.test("LastSlainCard - placeholder uses responsive mobile width", () => {
+  const html = render(<LastSlainCard card={null} />);
+  assertEquals(html.includes("w-[clamp(70px,22vw,100px)]"), true);
+  assertEquals(html.includes("md:w-[clamp(140px,28vw,230px)]"), true);
+});
