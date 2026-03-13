@@ -572,7 +572,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             interactive={state.phase.kind === "drawing" &&
               state.dungeonCount > 0 && !isLoading}
             onClick={handleDrawCard}
-            pending={state.phase.kind === "drawing" && pendingAction.value.kind === "draw_card"}
+            pending={state.phase.kind === "drawing" &&
+              pendingAction.value.kind === "draw_card"}
           />
         </GameSection>
 

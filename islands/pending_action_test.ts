@@ -4,9 +4,9 @@ import {
   isPendingAvoidRoom,
   isPendingDraw,
   isPendingOnCard,
+  type PendingAction,
   pendingActionLabel,
   pendingCardAnimation,
-  type PendingAction,
 } from "./pending_action.ts";
 
 // isPending

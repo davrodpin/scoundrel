@@ -2,8 +2,8 @@ import type { GamePhase } from "@scoundrel/engine";
 import type { ActionPanelState } from "./action_panel_utils.ts";
 import {
   isPending,
-  pendingActionLabel,
   type PendingAction,
+  pendingActionLabel,
 } from "../../islands/pending_action.ts";
 
 type ActionBarProps = {

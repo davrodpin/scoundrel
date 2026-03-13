@@ -3,8 +3,8 @@ import { CardImage } from "./CardImage.tsx";
 import {
   isPendingAvoidRoom,
   isPendingOnCard,
-  pendingCardAnimation,
   type PendingAction,
+  pendingCardAnimation,
 } from "../../islands/pending_action.ts";
 
 type RoomAreaProps = {
@@ -17,11 +17,19 @@ type RoomAreaProps = {
 };
 
 export function RoomArea(
-  { cards, onCardClick, interactive, selectedIndex, focusedIndex, pendingAction }:
-    RoomAreaProps,
+  {
+    cards,
+    onCardClick,
+    interactive,
+    selectedIndex,
+    focusedIndex,
+    pendingAction,
+  }: RoomAreaProps,
 ) {
   const slots = Array.from({ length: 4 }, (_, i) => cards[i] ?? null);
-  const avoidPending = pendingAction ? isPendingAvoidRoom(pendingAction) : false;
+  const avoidPending = pendingAction
+    ? isPendingAvoidRoom(pendingAction)
+    : false;
 
   return (
     <div class="flex justify-center gap-3">
