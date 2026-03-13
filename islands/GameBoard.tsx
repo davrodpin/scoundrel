@@ -19,6 +19,7 @@ import { RulesPanel } from "../components/game/RulesPanel.tsx";
 import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
 import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
 import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
+import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
 import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
@@ -366,63 +367,33 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   // Initial screen - no game started
   const state = gameView.value;
   if (!state) {
-    const trimmedName = playerName.value.trim();
+    const handleLeaderboardClick = () => {
+      showLeaderboard.value = !showLeaderboard.value;
+      if (showLeaderboard.value) fetchLeaderboard();
+    };
+
     return (
-      <div class="min-h-screen bg-dungeon-bg flex flex-col items-center justify-center">
-        <div class="text-center">
-          <h1 class="font-heading text-5xl text-parchment mb-4">Scoundrel</h1>
-          <p class="text-parchment-dark font-body mb-8">
-            A Single Player Rogue-like Card Game
-          </p>
-          <div class="mb-4">
-            <input
-              type="text"
-              placeholder="Enter your name, adventurer..."
-              maxLength={30}
-              value={playerName.value}
-              onInput={(e) => {
-                playerName.value = (e.target as HTMLInputElement).value;
-              }}
-              class="w-64 px-4 py-2 rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment font-body placeholder-parchment-dark/50 focus:outline-none focus:border-torch-amber transition-colors duration-200"
-            />
-          </div>
-          <div class="flex gap-3 justify-center">
-            <button
-              type="button"
-              class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body text-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={startNewGame}
-              disabled={loading.value || trimmedName.length === 0}
-            >
-              Enter the Dungeon
-            </button>
-            <a
-              href="/how-to-play"
-              class="px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body text-lg transition-colors duration-200 inline-block"
-            >
-              How to Play
-            </a>
-          </div>
-          {errorMsg.value && (
-            <p class="text-blood-bright font-body text-sm mt-3">
-              {errorMsg.value}
-            </p>
-          )}
-        </div>
-        <footer class="absolute bottom-4 text-parchment-dark/50 font-body text-xs text-center px-4 max-w-lg">
-          This is an unofficial fan-made implementation. Scoundrel was designed
-          {" "}
-          <a
-            href="http://stfj.net/art/2011/Scoundrel.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-parchment-dark underline transition-colors duration-200"
-          >
-            by Zach Gage and Kurt Bieg
-          </a>
-          . This app is not affiliated with, endorsed by, or associated with the
-          original authors in any way.
-        </footer>
-      </div>
+      <>
+        <WelcomeScreen
+          playerName={playerName.value}
+          onPlayerNameChange={(name) => {
+            playerName.value = name;
+          }}
+          onStartGame={startNewGame}
+          onLeaderboardClick={handleLeaderboardClick}
+          loading={loading.value}
+          errorMsg={errorMsg.value}
+        />
+        <LeaderboardPanel
+          open={showLeaderboard.value}
+          loading={leaderboardLoading.value}
+          entries={leaderboardEntries.value}
+          currentGameId={null}
+          onClose={() => {
+            showLeaderboard.value = false;
+          }}
+        />
+      </>
     );
   }
 
