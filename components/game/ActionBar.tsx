@@ -14,7 +14,7 @@ type ActionBarProps = {
   roomSize: number;
   panelState?: ActionPanelState;
   pendingAction?: PendingAction;
-  showShortcuts?: boolean;
+  mobileMode?: boolean;
 };
 
 export function getActionBarHint(
@@ -23,55 +23,44 @@ export function getActionBarHint(
   cardSelected: boolean,
   roomSize: number,
   panelState?: ActionPanelState,
-  showShortcuts = true,
+  mobileMode = false,
 ): string {
   if (
+    !mobileMode &&
     cardSelected &&
     (phase.kind === "room_ready" || phase.kind === "choosing")
   ) {
     if (panelState) {
       const actions: string[] = [];
       if (panelState.avoidRoom.enabled) {
-        actions.push(showShortcuts ? "Avoid Room (A)" : "Avoid Room");
+        actions.push("Avoid Room (A)");
       }
       if (panelState.fightWithWeapon.enabled) {
         const dmg = panelState.fightWithWeapon.tooltip.replace("Weapon: ", "");
-        actions.push(
-          showShortcuts
-            ? `Fight w/ Weapon (W): ${dmg}`
-            : `Fight w/ Weapon: ${dmg}`,
-        );
+        actions.push(`Fight w/ Weapon (W): ${dmg}`);
         if (panelState.fightBarehanded.enabled) {
           const bdmg = panelState.fightBarehanded.tooltip.replace(
             "Barehanded: ",
             "",
           );
-          actions.push(
-            showShortcuts ? `Barehanded (B): ${bdmg}` : `Barehanded: ${bdmg}`,
-          );
+          actions.push(`Barehanded (B): ${bdmg}`);
         }
       } else if (panelState.fightBarehanded.enabled) {
         const bdmg = panelState.fightBarehanded.tooltip.replace(
           "Barehanded: ",
           "",
         );
-        actions.push(
-          showShortcuts
-            ? `Fight Barehanded (B): ${bdmg}`
-            : `Fight Barehanded: ${bdmg}`,
-        );
+        actions.push(`Fight Barehanded (B): ${bdmg}`);
       }
       if (panelState.equipWeapon.enabled) {
-        actions.push(showShortcuts ? "Equip Weapon (E)" : "Equip Weapon");
+        actions.push("Equip Weapon (E)");
       }
       if (panelState.drinkPotion.enabled) {
         const healMatch = panelState.drinkPotion.tooltip.match(
           /Heals (\d+) HP/,
         );
         const heal = healMatch ? `+${healMatch[1]} HP` : "0 HP";
-        actions.push(
-          showShortcuts ? `Drink Potion (P): ${heal}` : `Drink Potion: ${heal}`,
-        );
+        actions.push(`Drink Potion (P): ${heal}`);
       }
 
       if (actions.length === 1) {
@@ -84,22 +73,18 @@ export function getActionBarHint(
   switch (phase.kind) {
     case "drawing":
       return roomSize > 0
-        ? showShortcuts ? "Draw another card (D)" : "Draw another card"
-        : showShortcuts
-        ? "Draw a card from the Dungeon (D)"
-        : "Draw a card from the Dungeon";
+        ? mobileMode ? "Draw another card" : "Draw another card (D)"
+        : mobileMode
+        ? "Draw a card from the Dungeon"
+        : "Draw a card from the Dungeon (D)";
     case "room_ready":
-      return lastRoomAvoided
-        ? showShortcuts
-          ? "Select a card to play (←→ ↩︎)"
-          : "Select a card to play"
-        : showShortcuts
-        ? "Select a card to play (←→ ↩︎) or Avoid Room (A)"
-        : "Select a card to play or Avoid Room";
+      return lastRoomAvoided || mobileMode
+        ? mobileMode ? "Select a card to play" : "Select a card to play (←→ ↩︎)"
+        : "Select a card to play (←→ ↩︎) or Avoid Room (A)";
     case "choosing":
-      return showShortcuts
-        ? "Select a card to play (←→ ↩︎)"
-        : "Select a card to play";
+      return mobileMode
+        ? "Select a card to play"
+        : "Select a card to play (←→ ↩︎)";
     case "game_over":
       return "Game Over";
   }
@@ -113,7 +98,7 @@ export function ActionBar(
     roomSize,
     panelState,
     pendingAction,
-    showShortcuts = true,
+    mobileMode = false,
   }: ActionBarProps,
 ) {
   const pendingLabel = pendingAction && isPending(pendingAction)
@@ -125,7 +110,7 @@ export function ActionBar(
     cardSelected,
     roomSize,
     panelState,
-    showShortcuts,
+    mobileMode,
   );
   const isGameOver = phase.kind === "game_over";
 

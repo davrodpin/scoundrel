@@ -21,13 +21,6 @@ export function MobileCardActionOverlay(
 ) {
   const buttonDefs: OverlayButtonDef[] = [
     {
-      label: "Avoid Room",
-      color: "bg-torch-amber text-white border-torch-amber hover:bg-torch-glow",
-      enabled: actions.avoidRoom.enabled,
-      tooltip: "",
-      onClick: actions.avoidRoom.onClick,
-    },
-    {
       label: "Fight w/ Weapon",
       color:
         "bg-weapon-steel text-white border-weapon-steel hover:border-torch-amber",

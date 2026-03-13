@@ -23,10 +23,15 @@ import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
 import { MobileDungeonButton } from "../components/game/MobileDungeonButton.tsx";
 import { MobileCardActionOverlay } from "../components/game/MobileCardActionOverlay.tsx";
 import { MobileTopBar } from "../components/game/MobileTopBar.tsx";
+import { MobileAvoidRoomButton } from "../components/game/MobileAvoidRoomButton.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
 import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
-import { isPending, type PendingAction } from "./pending_action.ts";
+import {
+  isPending,
+  isPendingAvoidRoom,
+  type PendingAction,
+} from "./pending_action.ts";
 
 type GameBoardProps = { gameId?: string };
 
@@ -685,6 +690,13 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           />
         </GameSection>
 
+        {/* Avoid Room button — shown below Room cards when available */}
+        <MobileAvoidRoomButton
+          enabled={actions.avoidRoom.enabled}
+          onClick={handleAvoidRoom}
+          pending={isPendingAvoidRoom(pendingAction.value)}
+        />
+
         {/* Draw button (during draw phase) or hint text */}
         {isDrawPhase
           ? (
@@ -704,7 +716,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
               roomSize={state.room.length}
               panelState={panelState}
               pendingAction={pendingAction.value}
-              showShortcuts={false}
+              mobileMode
             />
           )}
 

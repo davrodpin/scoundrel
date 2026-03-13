@@ -253,52 +253,40 @@ Deno.test("getActionBarHint - game_over phase", () => {
   );
 });
 
-// showShortcuts: false — keyboard shortcut parentheticals omitted
-Deno.test("getActionBarHint - drawing phase empty room, no shortcuts", () => {
+// mobileMode: true — simplified hints only, no card-selected action details, no "or Avoid Room"
+Deno.test("getActionBarHint - mobileMode, drawing phase empty room", () => {
   const phase: GamePhase = { kind: "drawing" };
   assertEquals(
-    getActionBarHint(phase, false, false, 0, undefined, false),
+    getActionBarHint(phase, false, false, 0, undefined, true),
     "Draw a card from the Dungeon",
   );
 });
 
-Deno.test("getActionBarHint - drawing phase with cards, no shortcuts", () => {
+Deno.test("getActionBarHint - mobileMode, drawing phase with cards in room", () => {
   const phase: GamePhase = { kind: "drawing" };
   assertEquals(
-    getActionBarHint(phase, false, false, 2, undefined, false),
+    getActionBarHint(phase, false, false, 2, undefined, true),
     "Draw another card",
   );
 });
 
-Deno.test("getActionBarHint - room_ready, can avoid, no shortcuts", () => {
+Deno.test("getActionBarHint - mobileMode, room_ready, not lastRoomAvoided — no Avoid Room suffix", () => {
   const phase: GamePhase = { kind: "room_ready" };
   assertEquals(
-    getActionBarHint(phase, false, false, 0, undefined, false),
-    "Select a card to play or Avoid Room",
-  );
-});
-
-Deno.test("getActionBarHint - room_ready, lastRoomAvoided, no shortcuts", () => {
-  const phase: GamePhase = { kind: "room_ready" };
-  assertEquals(
-    getActionBarHint(phase, true, false, 0, undefined, false),
+    getActionBarHint(phase, false, false, 0, undefined, true),
     "Select a card to play",
   );
 });
 
-Deno.test("getActionBarHint - choosing phase no card selected, no shortcuts", () => {
-  const phase: GamePhase = {
-    kind: "choosing",
-    cardsChosen: 1,
-    potionUsedThisTurn: false,
-  };
+Deno.test("getActionBarHint - mobileMode, room_ready, lastRoomAvoided", () => {
+  const phase: GamePhase = { kind: "room_ready" };
   assertEquals(
-    getActionBarHint(phase, false, false, 0, undefined, false),
+    getActionBarHint(phase, true, false, 0, undefined, true),
     "Select a card to play",
   );
 });
 
-Deno.test("getActionBarHint - monster selected, weapon+bare+avoid, no shortcuts", () => {
+Deno.test("getActionBarHint - mobileMode, card selected with full panelState — returns select hint not action details", () => {
   const phase: GamePhase = { kind: "room_ready" };
   const panelState = panelWith({
     avoidRoom: { enabled: true },
@@ -306,30 +294,19 @@ Deno.test("getActionBarHint - monster selected, weapon+bare+avoid, no shortcuts"
     fightBarehanded: { enabled: true, tooltip: "Barehanded: 8 dmg" },
   });
   assertEquals(
-    getActionBarHint(phase, false, true, 0, panelState, false),
-    "Card selected. Avoid Room, Fight w/ Weapon: 4 dmg, Barehanded: 8 dmg, or select another card",
+    getActionBarHint(phase, false, true, 0, panelState, true),
+    "Select a card to play",
   );
 });
 
-Deno.test("getActionBarHint - weapon card selected, can avoid, no shortcuts", () => {
-  const phase: GamePhase = { kind: "room_ready" };
-  const panelState = panelWith({
-    avoidRoom: { enabled: true },
-    equipWeapon: { enabled: true, tooltip: "Equip (rank 5, +2)" },
-  });
+Deno.test("getActionBarHint - mobileMode, choosing phase, no card selected", () => {
+  const phase: GamePhase = {
+    kind: "choosing",
+    cardsChosen: 1,
+    potionUsedThisTurn: false,
+  };
   assertEquals(
-    getActionBarHint(phase, false, true, 0, panelState, false),
-    "Card selected. Avoid Room, Equip Weapon, or select another card",
-  );
-});
-
-Deno.test("getActionBarHint - potion selected, no shortcuts", () => {
-  const phase: GamePhase = { kind: "room_ready" };
-  const panelState = panelWith({
-    drinkPotion: { enabled: true, tooltip: "Heals 5 HP" },
-  });
-  assertEquals(
-    getActionBarHint(phase, true, true, 0, panelState, false),
-    "Card selected. Drink Potion: +5 HP or select another card",
+    getActionBarHint(phase, false, false, 0, undefined, true),
+    "Select a card to play",
   );
 });

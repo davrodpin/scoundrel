@@ -75,7 +75,9 @@ Deno.test("MobileCardActionOverlay - button without tooltip uses text-center", (
   const html = render(
     <MobileCardActionOverlay
       card={monsterCard}
-      actions={makeActions({ avoidRoom: { enabled: true, onClick: noop } })}
+      actions={makeActions({
+        equipWeapon: { enabled: true, tooltip: "", onClick: noop },
+      })}
       onCancel={noop}
     />,
   );
