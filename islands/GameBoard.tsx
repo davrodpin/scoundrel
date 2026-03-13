@@ -673,6 +673,18 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           </div>
         </div>
 
+        {/* Room */}
+        <GameSection label="Room">
+          <RoomArea
+            cards={state.room as Card[]}
+            onCardClick={isInteractive ? handleCardClick : undefined}
+            interactive={isInteractive}
+            selectedIndex={selectedCardIndex.value}
+            focusedIndex={focusedCardIndex.value}
+            pendingAction={pendingAction.value}
+          />
+        </GameSection>
+
         {/* Draw button (during draw phase) or hint text */}
         {isDrawPhase
           ? (
