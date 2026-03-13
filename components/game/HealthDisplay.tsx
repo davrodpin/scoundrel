@@ -130,9 +130,9 @@ export function HealthDisplay(
 
   return (
     <div
-      class={`mb-10 ${damageFlash ? "animate-damage-flash" : ""} ${
-        healFlash ? "animate-heal-glow" : ""
-      }`}
+      class={`hidden md:block mb-10 ${
+        damageFlash ? "animate-damage-flash" : ""
+      } ${healFlash ? "animate-heal-glow" : ""}`}
     >
       <div class="flex w-full border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
         {/* Name field */}

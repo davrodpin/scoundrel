@@ -32,13 +32,13 @@ export function RoomArea(
     : false;
 
   return (
-    <div class="flex justify-center gap-3">
+    <div class="flex gap-1 justify-center md:gap-3">
       {slots.map((card, i) => {
         if (!card) {
           return (
             <div
               key={`empty-${i}`}
-              class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30"
+              class="w-[clamp(70px,20vw,100px)] md:w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30"
             />
           );
         }
@@ -56,7 +56,7 @@ export function RoomArea(
 
         return (
           <CardImage
-            key={`${card.suit}-${card.rank}-${i}`}
+            key={`slot-${i}`}
             card={card}
             onClick={interactive && onCardClick
               ? () => onCardClick(i)

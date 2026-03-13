@@ -14,6 +14,7 @@ type ActionBarProps = {
   roomSize: number;
   panelState?: ActionPanelState;
   pendingAction?: PendingAction;
+  mobileMode?: boolean;
 };
 
 export function getActionBarHint(
@@ -22,14 +23,18 @@ export function getActionBarHint(
   cardSelected: boolean,
   roomSize: number,
   panelState?: ActionPanelState,
+  mobileMode = false,
 ): string {
   if (
+    !mobileMode &&
     cardSelected &&
     (phase.kind === "room_ready" || phase.kind === "choosing")
   ) {
     if (panelState) {
       const actions: string[] = [];
-      if (panelState.avoidRoom.enabled) actions.push("Avoid Room (A)");
+      if (panelState.avoidRoom.enabled) {
+        actions.push("Avoid Room (A)");
+      }
       if (panelState.fightWithWeapon.enabled) {
         const dmg = panelState.fightWithWeapon.tooltip.replace("Weapon: ", "");
         actions.push(`Fight w/ Weapon (W): ${dmg}`);
@@ -47,7 +52,9 @@ export function getActionBarHint(
         );
         actions.push(`Fight Barehanded (B): ${bdmg}`);
       }
-      if (panelState.equipWeapon.enabled) actions.push("Equip Weapon (E)");
+      if (panelState.equipWeapon.enabled) {
+        actions.push("Equip Weapon (E)");
+      }
       if (panelState.drinkPotion.enabled) {
         const healMatch = panelState.drinkPotion.tooltip.match(
           /Heals (\d+) HP/,
@@ -66,22 +73,33 @@ export function getActionBarHint(
   switch (phase.kind) {
     case "drawing":
       return roomSize > 0
-        ? "Draw another card (D)"
+        ? mobileMode ? "Draw another card" : "Draw another card (D)"
+        : mobileMode
+        ? "Draw a card from the Dungeon"
         : "Draw a card from the Dungeon (D)";
     case "room_ready":
-      return lastRoomAvoided
-        ? "Select a card to play (←→ ↩︎)"
+      return lastRoomAvoided || mobileMode
+        ? mobileMode ? "Select a card to play" : "Select a card to play (←→ ↩︎)"
         : "Select a card to play (←→ ↩︎) or Avoid Room (A)";
     case "choosing":
-      return "Select a card to play (←→ ↩︎)";
+      return mobileMode
+        ? "Select a card to play"
+        : "Select a card to play (←→ ↩︎)";
     case "game_over":
       return "Game Over";
   }
 }
 
 export function ActionBar(
-  { phase, lastRoomAvoided, cardSelected, roomSize, panelState, pendingAction }:
-    ActionBarProps,
+  {
+    phase,
+    lastRoomAvoided,
+    cardSelected,
+    roomSize,
+    panelState,
+    pendingAction,
+    mobileMode = false,
+  }: ActionBarProps,
 ) {
   const pendingLabel = pendingAction && isPending(pendingAction)
     ? pendingActionLabel(pendingAction)
@@ -92,6 +110,7 @@ export function ActionBar(
     cardSelected,
     roomSize,
     panelState,
+    mobileMode,
   );
   const isGameOver = phase.kind === "game_over";
 

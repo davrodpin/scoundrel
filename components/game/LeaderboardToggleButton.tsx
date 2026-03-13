@@ -6,7 +6,7 @@ export function LeaderboardToggleButton(
   { onClick }: LeaderboardToggleButtonProps,
 ) {
   return (
-    <div class="fixed top-4 right-14 z-30 group">
+    <div class="fixed top-2 right-11 md:top-4 md:right-14 z-30 group">
       <button
         type="button"
         class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber font-heading text-lg transition-colors duration-200"

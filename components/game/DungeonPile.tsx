@@ -17,7 +17,7 @@ export function DungeonPile(
   const pendingClass = pending ? "animate-dungeon-draw" : "";
 
   return (
-    <div class="flex flex-col items-center gap-1">
+    <div class="hidden md:flex flex-col items-center gap-1">
       <div
         class={`relative w-[clamp(140px,28vw,230px)] mr-3 mb-3 transition-transform duration-200 ${cursorClass} ${pendingClass}`}
         onClick={interactive ? onClick : undefined}

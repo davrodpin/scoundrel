@@ -12,7 +12,7 @@ type LastSlainProps = {
 export function EquippedWeaponCard({ weapon }: EquippedWeaponProps) {
   if (!weapon) {
     return (
-      <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30 flex items-center justify-center">
+      <div class="w-[clamp(70px,22vw,100px)] md:w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dungeon-border bg-dungeon-surface/30 flex items-center justify-center">
         <span class="text-parchment-dark text-xs">No weapon</span>
       </div>
     );
@@ -24,7 +24,7 @@ export function EquippedWeaponCard({ weapon }: EquippedWeaponProps) {
 export function LastSlainCard({ card }: LastSlainProps) {
   if (!card) {
     return (
-      <div class="w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
+      <div class="w-[clamp(70px,22vw,100px)] md:w-[clamp(140px,28vw,230px)] aspect-[460/686] rounded-sm border border-dashed border-dungeon-border bg-dungeon-surface/20 flex items-center justify-center">
         <span class="text-parchment-dark text-xs">No kills yet</span>
       </div>
     );

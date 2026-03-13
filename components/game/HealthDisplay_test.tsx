@@ -144,6 +144,13 @@ Deno.test("HealthDisplay - tooltip uses high-contrast background (bg-ink)", () =
   assertEquals(html.includes("bg-ink"), true);
 });
 
+Deno.test("HealthDisplay - is desktop-only (hidden md:block)", () => {
+  const html = render(
+    <HealthDisplay health={14} maxHealth={20} playerName="Aragorn" />,
+  );
+  assertEquals(html.includes("hidden md:block"), true);
+});
+
 Deno.test("HealthDisplay - tooltip text uses text-white for contrast", () => {
   const html = render(
     <HealthDisplay
