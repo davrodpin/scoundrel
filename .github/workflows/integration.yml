@@ -16,12 +16,17 @@ permissions:
 jobs:
   integration:
     name: Integration Tests
-    runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_dispatch' ||
       github.event.client_payload.revision.preview_url != null
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: >-
+            ${{ github.event_name == 'repository_dispatch'
+                && github.event.client_payload.revision.branch
+                || github.sha }}
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
