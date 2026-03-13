@@ -568,6 +568,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
 
       {/* ── DESKTOP LAYOUT (hidden on mobile) ── */}
       <div class="hidden md:flex md:flex-col md:items-center w-full">
+        {/* Shared container: Health Display + game grid share the same width */}
+        <div class="w-fit">
         {/* Health Display */}
         <HealthDisplay
           health={state.health}
@@ -607,30 +609,62 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             <DiscardPile count={state.discardCount} />
           </GameSection>
         </div>
+      </div>
 
-        {/* Action Bar */}
-        <ActionBar
-          phase={state.phase}
-          cardsChosen={cardsChosen}
-          lastRoomAvoided={state.lastRoomAvoided}
-          cardSelected={selectedCardIndex.value !== null}
-          roomSize={state.room.length}
-          panelState={panelState}
-          pendingAction={pendingAction.value}
-        />
+      {/* Action Bar */}
+      <ActionBar
+        phase={state.phase}
+        cardsChosen={cardsChosen}
+        lastRoomAvoided={state.lastRoomAvoided}
+        cardSelected={selectedCardIndex.value !== null}
+        roomSize={state.room.length}
+        panelState={panelState}
+        pendingAction={pendingAction.value}
+      />
 
-        {/* Error message */}
-        {errorMsg.value && (
-          <div class="text-center text-blood-bright text-sm mt-2 font-body">
-            {errorMsg.value}
-          </div>
-        )}
+      {/* Error message */}
+      {errorMsg.value && (
+        <div class="text-center text-blood-bright text-sm mt-2 font-body">
+          {errorMsg.value}
+        </div>
+      )}
 
-        {/* Equipped Weapon */}
-        <div class="flex gap-4 justify-center w-full max-w-6xl">
+      {/* Equipped Weapon */}
+      <div class="flex gap-4 justify-center w-full max-w-6xl">
+        <GameSection label="Equipped Weapon">
+          <EquippedWeaponCard weapon={state.equippedWeapon} />
+        </GameSection>
+        <GameSection label="Last Monster Slain">
+          <LastSlainCard
+            card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
+          />
+        </GameSection>
+      </div>
+    </div>
+
+    {/* ── MOBILE LAYOUT (hidden on desktop) ── */}
+    <div class="flex md:hidden flex-col w-full gap-2">
+      {/* Top bar: health + icon buttons */}
+      <MobileTopBar
+        health={state.health}
+        maxHealth={20}
+        playerName={state.playerName}
+        damageFlash={damageFlash.value}
+        healFlash={healFlash.value}
+        onRulesClick={handleToggleRules}
+        onLeaderboardClick={handleToggleLeaderboard}
+        onCopyLinkClick={handleCopyLink}
+        copiedLink={copiedLink.value}
+      />
+
+      {/* Weapon / Last Slain */}
+      <div class="flex gap-2 w-full">
+        <div class="flex-1">
           <GameSection label="Equipped Weapon">
             <EquippedWeaponCard weapon={state.equippedWeapon} />
           </GameSection>
+        </div>
+        <div class="flex-1">
           <GameSection label="Last Monster Slain">
             <LastSlainCard
               card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
@@ -639,78 +673,35 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         </div>
       </div>
 
-      {/* ── MOBILE LAYOUT (hidden on desktop) ── */}
-      <div class="flex md:hidden flex-col w-full gap-2">
-        {/* Top bar: health + icon buttons */}
-        <MobileTopBar
-          health={state.health}
-          maxHealth={20}
-          playerName={state.playerName}
-          damageFlash={damageFlash.value}
-          healFlash={healFlash.value}
-          onRulesClick={handleToggleRules}
-          onLeaderboardClick={handleToggleLeaderboard}
-          onCopyLinkClick={handleCopyLink}
-          copiedLink={copiedLink.value}
-        />
-
-        {/* Weapon / Last Slain */}
-        <div class="flex gap-2 w-full">
-          <div class="flex-1">
-            <GameSection label="Equipped Weapon">
-              <EquippedWeaponCard weapon={state.equippedWeapon} />
-            </GameSection>
-          </div>
-          <div class="flex-1">
-            <GameSection label="Last Monster Slain">
-              <LastSlainCard
-                card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
-              />
-            </GameSection>
-          </div>
-        </div>
-
-        {/* Room */}
-        <GameSection label="Room">
-          <RoomArea
-            cards={state.room as Card[]}
-            onCardClick={isInteractive ? handleCardClick : undefined}
-            interactive={isInteractive}
-            selectedIndex={selectedCardIndex.value}
-            focusedIndex={focusedCardIndex.value}
+      {/* Draw button (during draw phase) or hint text */}
+      {isDrawPhase
+        ? (
+          <MobileDungeonButton
+            isEmpty={state.dungeonCount === 0}
+            interactive={isDungeonInteractive}
+            onClick={handleDrawCard}
+            pending={isDungeonPending}
+          />
+        )
+        : (
+          <ActionBar
+            phase={state.phase}
+            cardsChosen={cardsChosen}
+            lastRoomAvoided={state.lastRoomAvoided}
+            cardSelected={selectedCardIndex.value !== null}
+            roomSize={state.room.length}
+            panelState={panelState}
             pendingAction={pendingAction.value}
           />
-        </GameSection>
-
-        {/* Draw button (during draw phase) or hint text */}
-        {isDrawPhase
-          ? (
-            <MobileDungeonButton
-              isEmpty={state.dungeonCount === 0}
-              interactive={isDungeonInteractive}
-              onClick={handleDrawCard}
-              pending={isDungeonPending}
-            />
-          )
-          : (
-            <ActionBar
-              phase={state.phase}
-              cardsChosen={cardsChosen}
-              lastRoomAvoided={state.lastRoomAvoided}
-              cardSelected={selectedCardIndex.value !== null}
-              roomSize={state.room.length}
-              panelState={panelState}
-              pendingAction={pendingAction.value}
-            />
-          )}
-
-        {/* Error message */}
-        {errorMsg.value && (
-          <div class="text-center text-blood-bright text-sm font-body">
-            {errorMsg.value}
-          </div>
         )}
-      </div>
+
+      {/* Error message */}
+      {errorMsg.value && (
+        <div class="text-center text-blood-bright text-sm font-body">
+          {errorMsg.value}
+        </div>
+      )}
+    </div>
 
       {/* Mobile action overlay — shown when a card is selected */}
       {selectedCardIndex.value !== null &&

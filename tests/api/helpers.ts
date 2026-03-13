@@ -42,6 +42,9 @@ export async function getEventLog(gameId: string): Promise<Response> {
   return await fetch(api(`/api/games/${gameId}/events`));
 }
 
-export async function getLeaderboard(): Promise<Response> {
-  return await fetch(api("/api/leaderboard"));
+export async function getLeaderboard(gameId?: string): Promise<Response> {
+  const url = gameId
+    ? api(`/api/leaderboard?gameId=${encodeURIComponent(gameId)}`)
+    : api("/api/leaderboard");
+  return await fetch(url);
 }

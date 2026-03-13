@@ -134,61 +134,58 @@ export function HealthDisplay(
         damageFlash ? "animate-damage-flash" : ""
       } ${healFlash ? "animate-heal-glow" : ""}`}
     >
-      {/* Desktop full health bar */}
-      <div class="hidden md:flex md:justify-center">
-        <div class="inline-flex border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
-          {/* Name field */}
-          <div class="px-5 py-3 flex flex-col gap-1.5 min-w-[140px]">
-            <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-              Adventurer
-            </span>
-            <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight">
-              {playerName}
-            </span>
-          </div>
-
-          {/* Health field */}
-          <div class="px-5 py-3 flex flex-col gap-1.5">
-            <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-              Vitality
-            </span>
-            <div class="flex items-baseline gap-2">
-              <span class="font-heading text-xl text-parchment leading-tight">
-                {health}
-              </span>
-              <span class="text-parchment-dark/50 font-body text-sm">
-                / {maxHealth}
-              </span>
-            </div>
-            <div class="w-36 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
-              <div
-                class={`h-full ${barColor} transition-[width] duration-500`}
-                style={`width: ${pct}%`}
-              />
-            </div>
-          </div>
-
-          {/* Actions field */}
-          {actions && (
-            <div class="px-5 py-3 flex flex-col gap-1.5">
-              <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-                Actions
-              </span>
-              <div class="flex flex-wrap gap-1.5">
-                {buttonDefs.map(({ label, color, button }) => (
-                  <ActionTooltipButton
-                    key={label}
-                    label={label}
-                    color={color}
-                    enabled={button.enabled}
-                    tooltip={"tooltip" in button ? button.tooltip : ""}
-                    onClick={button.onClick}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+      <div class="flex w-full border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
+        {/* Name field */}
+        <div class="px-5 py-3 flex flex-col gap-1.5 min-w-[140px]">
+          <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
+            Adventurer
+          </span>
+          <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight">
+            {playerName}
+          </span>
         </div>
+
+        {/* Health field */}
+        <div class="px-5 py-3 flex flex-col gap-1.5">
+          <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
+            Vitality
+          </span>
+          <div class="flex items-baseline gap-2">
+            <span class="font-heading text-xl text-parchment leading-tight">
+              {health}
+            </span>
+            <span class="text-parchment-dark/50 font-body text-sm">
+              / {maxHealth}
+            </span>
+          </div>
+          <div class="w-36 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
+            <div
+              class={`h-full ${barColor} transition-[width] duration-500`}
+              style={`width: ${pct}%`}
+            />
+          </div>
+        </div>
+
+        {/* Actions field */}
+        {actions && (
+          <div class="px-5 py-3 flex flex-col gap-1.5 flex-1 min-w-0">
+            <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
+              Actions
+            </span>
+            <div class="flex flex-wrap gap-1.5">
+              {buttonDefs.map(({ label, color, button }) => (
+                <ActionTooltipButton
+                  key={label}
+                  label={label}
+                  color={color}
+                  enabled={button.enabled}
+                  tooltip={"tooltip" in button ? button.tooltip : ""}
+                  onClick={button.onClick}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

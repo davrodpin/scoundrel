@@ -15,6 +15,7 @@ export type GameService = {
   getGame(gameId: string): Promise<GameView>;
   getEventLog(gameId: string): Promise<EventLog>;
   getLeaderboard(): Promise<LeaderboardEntry[]>;
+  getLeaderboardEntry(gameId: string): Promise<LeaderboardEntry | null>;
 };
 
 export type GameServiceConfig = {
@@ -190,6 +191,10 @@ export function createGameService(
 
     getLeaderboard(): Promise<LeaderboardEntry[]> {
       return repository.getLeaderboard(config.leaderboardLimit);
+    },
+
+    getLeaderboardEntry(gameId: string): Promise<LeaderboardEntry | null> {
+      return repository.getLeaderboardEntry(gameId);
     },
   };
 }

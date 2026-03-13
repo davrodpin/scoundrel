@@ -151,13 +151,6 @@ Deno.test("HealthDisplay - is desktop-only (hidden md:block)", () => {
   assertEquals(html.includes("hidden md:block"), true);
 });
 
-Deno.test("HealthDisplay - has desktop variant with hidden md:flex md:justify-center", () => {
-  const html = render(
-    <HealthDisplay health={14} maxHealth={20} playerName="Aragorn" />,
-  );
-  assertEquals(html.includes("hidden md:flex"), true);
-  assertEquals(html.includes("md:justify-center"), true);
-});
 
 Deno.test("HealthDisplay - tooltip text uses text-white for contrast", () => {
   const html = render(

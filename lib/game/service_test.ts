@@ -110,6 +110,9 @@ function createMockRepository(
     getLeaderboard(_limit: number) {
       return Promise.resolve([]);
     },
+    getLeaderboardEntry(_gameId: string) {
+      return Promise.resolve(null);
+    },
     createLeaderboardEntry(
       _gameId: string,
       _playerName: string,
@@ -633,4 +636,20 @@ Deno.test("getLeaderboard delegates to repository with limit 25", async () => {
   await service.getLeaderboard();
 
   assertEquals(capturedLimit, 25);
+});
+
+Deno.test("getLeaderboardEntry delegates to repository", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  let capturedGameId: string | null = null;
+  const repository = createMockRepository();
+  repository.getLeaderboardEntry = (gId: string) => {
+    capturedGameId = gId;
+    return Promise.resolve(null);
+  };
+  const engine = createMockEngine();
+  const service = createGameService(engine, repository, TEST_CONFIG);
+
+  await service.getLeaderboardEntry(gameId);
+
+  assertEquals(capturedGameId, gameId);
 });
