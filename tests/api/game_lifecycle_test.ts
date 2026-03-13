@@ -176,7 +176,7 @@ Deno.test("game lifecycle — completed game appears in leaderboard", async () =
   assertEquals(view.phase.kind, "game_over");
 
   // Verify game appears in leaderboard
-  const leaderboardRes = await getLeaderboard();
+  const leaderboardRes = await getLeaderboard(gameId);
   assertEquals(leaderboardRes.status, 200);
 
   const leaderboard = await leaderboardRes.json() as Array<{ gameId: string }>;

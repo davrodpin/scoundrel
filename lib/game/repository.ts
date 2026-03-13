@@ -24,6 +24,7 @@ export type GameRepository = {
   getPlayerName(gameId: string): Promise<string | null>;
   getGameStatus(gameId: string): Promise<string | null>;
   getLeaderboard(limit: number): Promise<LeaderboardEntry[]>;
+  getLeaderboardEntry(gameId: string): Promise<LeaderboardEntry | null>;
   createLeaderboardEntry(
     gameId: string,
     playerName: string,
@@ -157,6 +158,33 @@ export function createPrismaGameRepository(
           completedAt: row.completedAt.toISOString(),
         }),
       );
+    },
+
+    async getLeaderboardEntry(
+      gameId: string,
+    ): Promise<LeaderboardEntry | null> {
+      const row = await prisma.leaderboardEntry.findUnique({
+        where: { gameId },
+        select: {
+          gameId: true,
+          playerName: true,
+          score: true,
+          completedAt: true,
+        },
+      });
+      if (!row) return null;
+      const typed = row as {
+        gameId: string;
+        playerName: string;
+        score: number;
+        completedAt: Date;
+      };
+      return {
+        gameId: typed.gameId,
+        playerName: typed.playerName,
+        score: typed.score,
+        completedAt: typed.completedAt.toISOString(),
+      };
     },
 
     async createLeaderboardEntry(
