@@ -46,5 +46,5 @@ jobs:
           echo "DEPLOY_URL: $BASE_URL"
           deno task test:integration
         env:
-          BASE_URL: ${{ github.event.client_payload.deployment.url }}
+          BASE_URL: ${{ github.event.client_payload.revision.preview_url }}
           DATABASE_URL: ${{ env.PREVIEW_DATABASE_URL }}
