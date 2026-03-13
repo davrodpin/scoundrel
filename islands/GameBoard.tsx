@@ -506,16 +506,6 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         onClose={handleCloseLeaderboard}
       />
 
-      {/* Health Display */}
-      <HealthDisplay
-        health={state.health}
-        maxHealth={20}
-        playerName={state.playerName}
-        damageFlash={damageFlash.value}
-        healFlash={healFlash.value}
-        actions={actions}
-      />
-
       {/* Copy link button */}
       <div class="fixed top-4 right-24 z-30 group">
         <button
@@ -563,36 +553,49 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         </div>
       </div>
 
-      {/* Main play area */}
-      <div class="grid grid-cols-[auto_auto_auto] gap-4 items-stretch">
-        {/* Dungeon pile */}
-        <GameSection label="Dungeon">
-          <DungeonPile
-            count={state.dungeonCount}
-            interactive={state.phase.kind === "drawing" &&
-              state.dungeonCount > 0 && !isLoading}
-            onClick={handleDrawCard}
-            pending={state.phase.kind === "drawing" &&
-              pendingAction.value.kind === "draw_card"}
-          />
-        </GameSection>
+      {/* Shared container: Health Display + Main play area share the same width */}
+      <div class="w-fit">
+        {/* Health Display */}
+        <HealthDisplay
+          health={state.health}
+          maxHealth={20}
+          playerName={state.playerName}
+          damageFlash={damageFlash.value}
+          healFlash={healFlash.value}
+          actions={actions}
+        />
 
-        {/* Room */}
-        <GameSection label="Room">
-          <RoomArea
-            cards={state.room as Card[]}
-            onCardClick={isInteractive ? handleCardClick : undefined}
-            interactive={isInteractive}
-            selectedIndex={selectedCardIndex.value}
-            focusedIndex={focusedCardIndex.value}
-            pendingAction={pendingAction.value}
-          />
-        </GameSection>
+        {/* Main play area */}
+        <div class="grid grid-cols-[auto_auto_auto] gap-4 items-stretch">
+          {/* Dungeon pile */}
+          <GameSection label="Dungeon">
+            <DungeonPile
+              count={state.dungeonCount}
+              interactive={state.phase.kind === "drawing" &&
+                state.dungeonCount > 0 && !isLoading}
+              onClick={handleDrawCard}
+              pending={state.phase.kind === "drawing" &&
+                pendingAction.value.kind === "draw_card"}
+            />
+          </GameSection>
 
-        {/* Discard pile */}
-        <GameSection label="Discard">
-          <DiscardPile count={state.discardCount} />
-        </GameSection>
+          {/* Room */}
+          <GameSection label="Room">
+            <RoomArea
+              cards={state.room as Card[]}
+              onCardClick={isInteractive ? handleCardClick : undefined}
+              interactive={isInteractive}
+              selectedIndex={selectedCardIndex.value}
+              focusedIndex={focusedCardIndex.value}
+              pendingAction={pendingAction.value}
+            />
+          </GameSection>
+
+          {/* Discard pile */}
+          <GameSection label="Discard">
+            <DiscardPile count={state.discardCount} />
+          </GameSection>
+        </div>
       </div>
 
       {/* Action Bar */}

@@ -32,7 +32,7 @@ export function WelcomeScreen(
             <input
               type="text"
               placeholder="Enter your name, adventurer..."
-              maxLength={30}
+              maxLength={16}
               value={playerName}
               onInput={(e) => {
                 onPlayerNameChange((e.target as HTMLInputElement).value);
