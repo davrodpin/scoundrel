@@ -24,6 +24,7 @@ function makeMockPrismaClient(): MockPrisma {
     },
     leaderboardEntry: {
       findMany: () => Promise.resolve([]),
+      findUnique: () => Promise.resolve(null),
       upsert: () => Promise.resolve(),
     },
   };
@@ -43,6 +44,7 @@ Deno.test("createPrismaGameRepository returns object with all repository methods
   assertEquals(typeof repo.getPlayerName, "function");
   assertEquals(typeof repo.getGameStatus, "function");
   assertEquals(typeof repo.getLeaderboard, "function");
+  assertEquals(typeof repo.getLeaderboardEntry, "function");
   assertEquals(typeof repo.createLeaderboardEntry, "function");
   assertEquals(typeof repo.deleteGamesOlderThan, "function");
 });
@@ -337,4 +339,36 @@ Deno.test("getLeaderboard maps leaderboard_entries rows to LeaderboardEntry", as
   assertEquals(result[0].completedAt, "2026-01-01T00:00:00.000Z");
   assertEquals(result[1].gameId, "game-2");
   assertEquals(result[1].score, 10);
+});
+
+Deno.test("getLeaderboardEntry returns null when entry not found", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.leaderboardEntry.findUnique = () => Promise.resolve(null);
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getLeaderboardEntry("non-existent-game-id");
+  assertEquals(result, null);
+});
+
+Deno.test("getLeaderboardEntry returns LeaderboardEntry when found", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.leaderboardEntry.findUnique = () =>
+    Promise.resolve({
+      gameId: "game-1",
+      playerName: "Alice",
+      score: 20,
+      completedAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+  );
+  const result = await repo.getLeaderboardEntry("game-1");
+
+  assertEquals(result?.gameId, "game-1");
+  assertEquals(result?.playerName, "Alice");
+  assertEquals(result?.score, 20);
+  assertEquals(result?.completedAt, "2026-01-01T00:00:00.000Z");
 });
