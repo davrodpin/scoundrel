@@ -62,41 +62,41 @@ export function MobileCardActionOverlay(
       onClick={onCancel}
     >
       <div class="flex min-h-full items-center justify-center p-4 bg-shadow/80">
-      <div
-        class="flex flex-col items-center gap-3 px-6 py-4"
-        onClick={(e: MouseEvent) => e.stopPropagation()}
-      >
-        {/* Selected card */}
-        <CardImage card={card} />
-
-        {/* Enabled action buttons */}
-        <div class="flex flex-col gap-2 w-full">
-          {enabledButtons.map(({ label, color, tooltip, onClick }) => (
-            <button
-              key={label}
-              type="button"
-              class={`px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 text-center ${color}`}
-              onClick={onClick}
-            >
-              <span class="block leading-tight">{label}</span>
-              {tooltip && (
-                <span class="block text-xs opacity-80 leading-tight mt-0.5">
-                  {tooltip}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Cancel */}
-        <button
-          type="button"
-          class="w-full px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface border-dungeon-border text-parchment hover:border-torch-amber"
-          onClick={onCancel}
+        <div
+          class="flex flex-col items-center gap-3 px-6 py-4"
+          onClick={(e: MouseEvent) => e.stopPropagation()}
         >
-          Cancel
-        </button>
-      </div>
+          {/* Selected card */}
+          <CardImage card={card} />
+
+          {/* Enabled action buttons */}
+          <div class="flex flex-col gap-2 w-full">
+            {enabledButtons.map(({ label, color, tooltip, onClick }) => (
+              <button
+                key={label}
+                type="button"
+                class={`px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 text-center ${color}`}
+                onClick={onClick}
+              >
+                <span class="block leading-tight">{label}</span>
+                {tooltip && (
+                  <span class="block text-xs opacity-80 leading-tight mt-0.5">
+                    {tooltip}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Cancel */}
+          <button
+            type="button"
+            class="w-full px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface border-dungeon-border text-parchment hover:border-torch-amber"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );
