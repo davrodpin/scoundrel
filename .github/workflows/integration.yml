@@ -1,40 +1,45 @@
 name: Integration Tests
 
 on:
-  workflow_dispatch:
-    inputs:
-      base_url:
-        description: "Base URL of the deployment to test against"
-        required: true
-        type: string
   repository_dispatch:
     types: [deno_deploy.build.routed]
 
-permissions:
-  contents: read
-
 jobs:
   integration:
+    if: github.event_name == 'workflow_dispatch'
     name: Integration Tests
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event.client_payload.revision.preview_url != null
     runs-on: ubuntu-latest
+    env:
+      PREVIEW_DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout dispatch branch
+        uses: actions/checkout@v4
         with:
-          ref: >-
-            ${{ github.event_name == 'repository_dispatch'
-                && github.event.client_payload.revision.branch
-                || github.sha }}
+          ref: ${{ github.event.client_payload.revision.branch }}
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-          cache: true
-          cache-dependency-path: deno.lock
-      - run: deno task test:integration
+      - name: Cache Deno dependencies
+        uses: actions/cachev4
+        with:
+          patch: | 
+            ~/.cache/deno
+            node_modules
+          key: deno-${{ runner.os }}-${{ hashFiles('deno.lock') }}
+          restore-keys: deno-${{ runner.os }}-
+      - name: Generate Prisma client
+        run: deno task prisma:generate
+      - name: Install dependencies
+        run: deno install
+      - name: Run migrations on preview database
+        run: deno task prisma:migrate
         env:
-          BASE_URL: >-
-            ${{ github.event_name == 'workflow_dispatch'
-                && inputs.base_url
-                || github.event.client_payload.revision.preview_url }}
+          DATABASE_URL: ${{ env.PREVIEW_DATABASE_URL }}
+      - name: Run integrations tests
+        run: |
+          echo "DEPLOY_URL: $DEPLOY_URL"
+          deno task test:integration
+        env:
+          BASE_URL: github.event.client_payload.revision.preview_url
+          DATABASE_URL: ${{ env.PREVIEW_DATABASE_URL }}
+
