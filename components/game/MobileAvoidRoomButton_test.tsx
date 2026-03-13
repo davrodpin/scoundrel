@@ -36,3 +36,17 @@ Deno.test("MobileAvoidRoomButton - applies torch-amber styling", () => {
   );
   assertEquals(html.includes("bg-torch-amber"), true);
 });
+
+Deno.test("MobileAvoidRoomButton - renders within centered wrapper", () => {
+  const html = render(
+    <MobileAvoidRoomButton enabled onClick={() => {}} pending={false} />,
+  );
+  assertEquals(html.includes("flex justify-center"), true);
+});
+
+Deno.test("MobileAvoidRoomButton - button is not full width", () => {
+  const html = render(
+    <MobileAvoidRoomButton enabled onClick={() => {}} pending={false} />,
+  );
+  assertEquals(html.includes("w-full"), false);
+});

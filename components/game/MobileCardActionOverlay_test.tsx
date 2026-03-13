@@ -111,3 +111,28 @@ Deno.test("MobileCardActionOverlay - has backdrop class bg-shadow/80", () => {
   );
   assertEquals(html.includes("bg-shadow/80"), true);
 });
+
+Deno.test("MobileCardActionOverlay - action buttons use text-xs", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions({
+        fightBarehanded: { enabled: true, tooltip: "", onClick: noop },
+      })}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("text-xs"), true);
+});
+
+Deno.test("MobileCardActionOverlay - overlay is vertically centered", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("justify-center"), true);
+  assertEquals(html.includes("overflow-y-auto"), true);
+});

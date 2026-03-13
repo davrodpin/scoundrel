@@ -58,11 +58,11 @@ export function MobileCardActionOverlay(
 
   return (
     <div
-      class="fixed inset-0 z-40 bg-shadow/80 flex flex-col items-center justify-center md:hidden"
+      class="fixed inset-0 z-40 bg-shadow/80 flex flex-col items-center justify-center overflow-y-auto md:hidden"
       onClick={onCancel}
     >
       <div
-        class="flex flex-col items-center gap-4 px-6 py-6"
+        class="flex flex-col items-center gap-3 px-6 py-4"
         onClick={(e: MouseEvent) => e.stopPropagation()}
       >
         {/* Selected card */}
@@ -74,7 +74,7 @@ export function MobileCardActionOverlay(
             <button
               key={label}
               type="button"
-              class={`min-h-[48px] px-4 py-2 text-sm rounded-sm border font-body transition-colors duration-200 ${
+              class={`px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 ${
                 tooltip ? "text-left" : "text-center"
               } ${color}`}
               onClick={onClick}
@@ -92,7 +92,7 @@ export function MobileCardActionOverlay(
         {/* Cancel */}
         <button
           type="button"
-          class="w-full min-h-[44px] px-4 py-2 text-sm rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface border-dungeon-border text-parchment hover:border-torch-amber"
+          class="w-full px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface border-dungeon-border text-parchment hover:border-torch-amber"
           onClick={onCancel}
         >
           Cancel
