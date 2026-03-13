@@ -10,10 +10,11 @@ type CardImageProps = {
   selected?: boolean;
   focused?: boolean;
   disabled?: boolean;
+  animationClass?: string;
 };
 
 export function CardImage(
-  { card, faceDown, onClick, highlighted, selected, focused, disabled }:
+  { card, faceDown, onClick, highlighted, selected, focused, disabled, animationClass }:
     CardImageProps,
 ) {
   const [loaded, setLoaded] = useState(false);
@@ -49,7 +50,7 @@ export function CardImage(
         interactive
           ? "cursor-pointer hover:-translate-y-1 hover:border-torch-amber"
           : ""
-      } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+      } ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${animationClass ?? ""}`}
     >
       <img
         src={src}

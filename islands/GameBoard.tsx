@@ -23,6 +23,7 @@ import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
 import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
+import { isPending, type PendingAction } from "./pending_action.ts";
 
 type GameBoardProps = { gameId?: string };
 
@@ -38,7 +39,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const damageFlash = useSignal(false);
   const healFlash = useSignal(false);
   const errorMsg = useSignal<string | null>(null);
-  const loading = useSignal(false);
+  const pendingAction = useSignal<PendingAction>({ kind: "idle" });
   const resumeLoading = useSignal(!!initialGameId);
   const resumeError = useSignal<string | null>(null);
   const copiedLink = useSignal(false);
@@ -114,8 +115,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       const view = gameView.value;
       if (!view) return;
 
+      const isLoadingNow = isPending(pendingAction.value);
       const isInteractiveNow = (view.phase.kind === "room_ready" ||
-        view.phase.kind === "choosing") && !loading.value;
+        view.phase.kind === "choosing") && !isLoadingNow;
 
       const occupiedSlots = (view.room as (Card | null)[])
         .map((card, i) => (card != null ? i : null))
@@ -139,14 +141,14 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         isInteractive: isInteractiveNow,
         actions: {
           fightWithWeapon: panelStateNow.fightWithWeapon.enabled &&
-            !loading.value,
-          avoidRoom: panelStateNow.avoidRoom.enabled && !loading.value,
-          drinkPotion: panelStateNow.drinkPotion.enabled && !loading.value,
+            !isLoadingNow,
+          avoidRoom: panelStateNow.avoidRoom.enabled && !isLoadingNow,
+          drinkPotion: panelStateNow.drinkPotion.enabled && !isLoadingNow,
           fightBarehanded: panelStateNow.fightBarehanded.enabled &&
-            !loading.value,
-          equipWeapon: panelStateNow.equipWeapon.enabled && !loading.value,
+            !isLoadingNow,
+          equipWeapon: panelStateNow.equipWeapon.enabled && !isLoadingNow,
           drawCard: view.phase.kind === "drawing" &&
-            view.dungeonCount > 0 && !loading.value,
+            view.dungeonCount > 0 && !isLoadingNow,
           openRules: true,
           copyLink: true,
           openLeaderboard: true,
@@ -208,7 +210,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   }, []);
 
   async function startNewGame() {
-    loading.value = true;
+    pendingAction.value = { kind: "draw_card" };
     try {
       const res = await fetch("/api/games", {
         method: "POST",
@@ -229,7 +231,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     } catch {
       errorMsg.value = "Failed to create game";
     } finally {
-      loading.value = false;
+      pendingAction.value = { kind: "idle" };
     }
   }
 
@@ -238,7 +240,6 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     if (!view) return;
 
     const prevHealth = view.health;
-    loading.value = true;
 
     try {
       const res = await fetch(`/api/games/${view.gameId}/actions`, {
@@ -279,15 +280,17 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     } catch {
       errorMsg.value = "Network error";
     } finally {
-      loading.value = false;
+      pendingAction.value = { kind: "idle" };
     }
   }
 
   function handleDrawCard() {
+    pendingAction.value = { kind: "draw_card" };
     dispatch({ type: "draw_card" });
   }
 
   function handleAvoidRoom() {
+    pendingAction.value = { kind: "avoid_room" };
     dispatch({ type: "avoid_room" });
   }
 
@@ -303,28 +306,44 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   function handleFightWithWeapon() {
     const idx = selectedCardIndex.value;
     if (idx === null) return;
-    selectedCardIndex.value = null;
+    pendingAction.value = {
+      kind: "choose_card",
+      cardIndex: idx,
+      actionType: "fight_weapon",
+    };
     dispatch({ type: "choose_card", cardIndex: idx, fightWith: "weapon" });
   }
 
   function handleFightBarehanded() {
     const idx = selectedCardIndex.value;
     if (idx === null) return;
-    selectedCardIndex.value = null;
+    pendingAction.value = {
+      kind: "choose_card",
+      cardIndex: idx,
+      actionType: "fight_barehanded",
+    };
     dispatch({ type: "choose_card", cardIndex: idx, fightWith: "barehanded" });
   }
 
   function handleEquipWeapon() {
     const idx = selectedCardIndex.value;
     if (idx === null) return;
-    selectedCardIndex.value = null;
+    pendingAction.value = {
+      kind: "choose_card",
+      cardIndex: idx,
+      actionType: "equip_weapon",
+    };
     dispatch({ type: "choose_card", cardIndex: idx, fightWith: "barehanded" });
   }
 
   function handleDrinkPotion() {
     const idx = selectedCardIndex.value;
     if (idx === null) return;
-    selectedCardIndex.value = null;
+    pendingAction.value = {
+      kind: "choose_card",
+      cardIndex: idx,
+      actionType: "drink_potion",
+    };
     dispatch({ type: "choose_card", cardIndex: idx, fightWith: "barehanded" });
   }
 
@@ -364,6 +383,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     );
   }
 
+  const isLoading = isPending(pendingAction.value);
+
   // Initial screen - no game started
   const state = gameView.value;
   if (!state) {
@@ -381,7 +402,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           }}
           onStartGame={startNewGame}
           onLeaderboardClick={handleLeaderboardClick}
-          loading={loading.value}
+          loading={isLoading}
           errorMsg={errorMsg.value}
         />
         <LeaderboardPanel
@@ -398,7 +419,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   }
 
   const isInteractive = (state.phase.kind === "room_ready" ||
-    state.phase.kind === "choosing") && !loading.value;
+    state.phase.kind === "choosing") && !isLoading;
   const isGameOver = state.phase.kind === "game_over";
   const cardsChosen = state.phase.kind === "choosing"
     ? state.phase.cardsChosen
@@ -418,26 +439,26 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
 
   const actions: HealthDisplayActions = {
     avoidRoom: {
-      enabled: panelState.avoidRoom.enabled && !loading.value,
+      enabled: panelState.avoidRoom.enabled && !isLoading,
       onClick: handleAvoidRoom,
     },
     fightWithWeapon: {
-      enabled: panelState.fightWithWeapon.enabled && !loading.value,
+      enabled: panelState.fightWithWeapon.enabled && !isLoading,
       tooltip: panelState.fightWithWeapon.tooltip,
       onClick: handleFightWithWeapon,
     },
     fightBarehanded: {
-      enabled: panelState.fightBarehanded.enabled && !loading.value,
+      enabled: panelState.fightBarehanded.enabled && !isLoading,
       tooltip: panelState.fightBarehanded.tooltip,
       onClick: handleFightBarehanded,
     },
     equipWeapon: {
-      enabled: panelState.equipWeapon.enabled && !loading.value,
+      enabled: panelState.equipWeapon.enabled && !isLoading,
       tooltip: panelState.equipWeapon.tooltip,
       onClick: handleEquipWeapon,
     },
     drinkPotion: {
-      enabled: panelState.drinkPotion.enabled && !loading.value,
+      enabled: panelState.drinkPotion.enabled && !isLoading,
       tooltip: panelState.drinkPotion.tooltip,
       onClick: handleDrinkPotion,
     },
@@ -549,8 +570,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           <DungeonPile
             count={state.dungeonCount}
             interactive={state.phase.kind === "drawing" &&
-              state.dungeonCount > 0 && !loading.value}
+              state.dungeonCount > 0 && !isLoading}
             onClick={handleDrawCard}
+            pending={state.phase.kind === "drawing" && pendingAction.value.kind === "draw_card"}
           />
         </GameSection>
 
@@ -562,6 +584,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             interactive={isInteractive}
             selectedIndex={selectedCardIndex.value}
             focusedIndex={focusedCardIndex.value}
+            pendingAction={pendingAction.value}
           />
         </GameSection>
 
@@ -579,6 +602,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         cardSelected={selectedCardIndex.value !== null}
         roomSize={state.room.length}
         panelState={panelState}
+        pendingAction={pendingAction.value}
       />
 
       {/* Error message */}
@@ -609,7 +633,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           leaderboardEntries={leaderboardEntries.value}
           currentGameId={state.gameId}
           errorMessage={errorMsg.value}
-          loading={loading.value}
+          loading={isLoading}
         />
       )}
     </div>

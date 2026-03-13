@@ -6,18 +6,20 @@ type DungeonPileProps = {
   count: number;
   interactive?: boolean;
   onClick?: () => void;
+  pending?: boolean;
 };
 
 export function DungeonPile(
-  { count, interactive = false, onClick }: DungeonPileProps,
+  { count, interactive = false, onClick, pending = false }: DungeonPileProps,
 ) {
   const [loaded, setLoaded] = useState(false);
   const cursorClass = interactive ? "cursor-pointer hover:scale-105" : "";
+  const pendingClass = pending ? "animate-dungeon-draw" : "";
 
   return (
     <div class="flex flex-col items-center gap-1">
       <div
-        class={`relative w-[clamp(140px,28vw,230px)] mr-3 mb-3 transition-transform duration-200 ${cursorClass}`}
+        class={`relative w-[clamp(140px,28vw,230px)] mr-3 mb-3 transition-transform duration-200 ${cursorClass} ${pendingClass}`}
         onClick={interactive ? onClick : undefined}
         role={interactive ? "button" : undefined}
         tabIndex={interactive ? 0 : undefined}

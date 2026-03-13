@@ -1,5 +1,11 @@
 import type { Card } from "@scoundrel/engine";
 import { CardImage } from "./CardImage.tsx";
+import {
+  isPendingAvoidRoom,
+  isPendingOnCard,
+  pendingCardAnimation,
+  type PendingAction,
+} from "../../islands/pending_action.ts";
 
 type RoomAreaProps = {
   cards: readonly Card[];
@@ -7,13 +13,15 @@ type RoomAreaProps = {
   interactive: boolean;
   selectedIndex?: number | null;
   focusedIndex?: number | null;
+  pendingAction?: PendingAction;
 };
 
 export function RoomArea(
-  { cards, onCardClick, interactive, selectedIndex, focusedIndex }:
+  { cards, onCardClick, interactive, selectedIndex, focusedIndex, pendingAction }:
     RoomAreaProps,
 ) {
   const slots = Array.from({ length: 4 }, (_, i) => cards[i] ?? null);
+  const avoidPending = pendingAction ? isPendingAvoidRoom(pendingAction) : false;
 
   return (
     <div class="flex justify-center gap-3">
@@ -31,6 +39,13 @@ export function RoomArea(
         const isFocused = focusedIndex === i && !isSelected;
         const isHighlighted = interactive && !isSelected && !isFocused;
 
+        let animClass: string | undefined;
+        if (pendingAction && isPendingOnCard(pendingAction, i)) {
+          animClass = pendingCardAnimation(pendingAction) ?? undefined;
+        } else if (avoidPending) {
+          animClass = "animate-room-avoid";
+        }
+
         return (
           <CardImage
             key={`${card.suit}-${card.rank}-${i}`}
@@ -41,6 +56,7 @@ export function RoomArea(
             selected={isSelected}
             focused={isFocused}
             highlighted={isHighlighted}
+            animationClass={animClass}
           />
         );
       })}

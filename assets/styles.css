@@ -21,6 +21,13 @@
   --animate-damage-flash: damage-flash 0.4s ease-out;
   --animate-heal-glow: heal-glow 0.5s ease-out;
   --animate-card-draw: card-draw 0.3s ease-out;
+
+  --animate-dungeon-draw: dungeon-draw 0.7s ease-in-out infinite;
+  --animate-weapon-strike: weapon-strike 0.6s ease-in-out infinite;
+  --animate-barehanded-strike: barehanded-strike 0.6s ease-in-out infinite;
+  --animate-equip-glow: equip-glow 0.8s ease-in-out infinite;
+  --animate-potion-drink: potion-drink 0.7s ease-in-out infinite;
+  --animate-room-avoid: room-avoid 0.7s ease-in-out infinite;
 }
 
 @keyframes damage-flash {
@@ -55,5 +62,77 @@
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes dungeon-draw {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(194, 123, 26, 0);
+    border-color: #c4b49a;
+  }
+  50% {
+    box-shadow: 0 0 18px 4px rgba(194, 123, 26, 0.65);
+    border-color: #c27b1a;
+  }
+}
+
+@keyframes weapon-strike {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(105, 112, 128, 0);
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(105, 112, 128, 0.7);
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes barehanded-strike {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(155, 44, 44, 0);
+  }
+  50% {
+    box-shadow: 0 0 18px 5px rgba(155, 44, 44, 0.7);
+  }
+}
+
+@keyframes equip-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(194, 123, 26, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(194, 123, 26, 0.6);
+  }
+}
+
+@keyframes potion-drink {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 113, 58, 0);
+  }
+  50% {
+    box-shadow: 0 0 18px 5px rgba(56, 113, 58, 0.65);
+  }
+}
+
+@keyframes room-avoid {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.96);
   }
 }
