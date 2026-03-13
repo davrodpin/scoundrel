@@ -83,4 +83,8 @@ Deno.test("validation — get event log for in-progress game returns 404", async
   // Game is still in progress — event log should be 404
   const res = await getEventLog(view.gameId);
   assertEquals(res.status, 404);
+
+  const body = await res.json() as ErrorBody;
+  assertEquals(body.code, 404);
+  assertEquals(body.error.reason, "GameNotFoundError");
 });
