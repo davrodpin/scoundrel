@@ -151,7 +151,6 @@ Deno.test("HealthDisplay - is desktop-only (hidden md:block)", () => {
   assertEquals(html.includes("hidden md:block"), true);
 });
 
-
 Deno.test("HealthDisplay - tooltip text uses text-white for contrast", () => {
   const html = render(
     <HealthDisplay
