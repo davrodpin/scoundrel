@@ -7,7 +7,7 @@ export const configSchema = z.object({
   app: z.object({
     origin: z.string().default("https://scoundrel.deno.dev"),
     maxBodyBytes: z.number().int().positive().default(4096),
-    maxPlayerNameLength: z.number().int().positive().default(30),
+    maxPlayerNameLength: z.number().int().positive().default(16),
   }).default({}),
   game: z.object({
     defaultPlayerName: z.string().default("Anonymous"),
