@@ -2,6 +2,10 @@ import { AppError } from "@scoundrel/errors";
 
 const BODY_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
+export function extractUserAgent(req: Request): string {
+  return req.headers.get("user-agent") ?? "unknown";
+}
+
 export function extractClientIp(req: Request, remoteAddr?: string): string {
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {

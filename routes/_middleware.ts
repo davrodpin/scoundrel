@@ -17,6 +17,7 @@ import {
   extractClientIp,
   extractErrorInfo,
   extractErrorStatus,
+  extractUserAgent,
   toErrorResponse,
 } from "./_middleware_helpers.ts";
 
@@ -93,6 +94,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   const addr = ctx.info.remoteAddr;
   const remoteIp = "hostname" in addr ? addr.hostname : undefined;
   const clientIp = extractClientIp(ctx.req, remoteIp);
+  const userAgent = extractUserAgent(ctx.req);
 
   // Enrich the auto-created Deno.serve HTTP span with route-level attributes
   const gameId = extractGameId(path);
@@ -105,6 +107,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     if (clientIp) {
       activeSpan.setAttribute("client.ip", clientIp);
     }
+    activeSpan.setAttribute("user_agent.original", userAgent);
   }
 
   const start = Date.now();
@@ -122,6 +125,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
       gameId,
       body,
       clientIp,
+      userAgent,
       ...extractErrorInfo(error),
     });
     throw error;
@@ -129,7 +133,16 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   const duration = Date.now() - start;
   const status = response.status;
 
-  const data = { method, path, status, duration, gameId, body, clientIp };
+  const data = {
+    method,
+    path,
+    status,
+    duration,
+    gameId,
+    body,
+    clientIp,
+    userAgent,
+  };
 
   if (status >= 500) {
     logger.error("Request", data);
