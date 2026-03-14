@@ -6,9 +6,9 @@ read the file every time.
 
 | Trigger                              | Skill to Load   | File to Read                                |
 | ------------------------------------ | --------------- | ------------------------------------------- |
-| Any code change (feature, bug, test) | tdd-development | `/mnt/skills/user/tdd-development/SKILL.md` |
-| Starting any implementation task     | git-workflow    | `/mnt/skills/user/git-workflow/SKILL.md`    |
-| Building or modifying UI components  | game-frontend   | `/mnt/skills/user/game-frontend/SKILL.md`   |
+| Any code change (feature, bug, test) | tdd-development | `.claude/skills/tdd-development/SKILL.md` |
+| Starting any implementation task     | git-workflow    | `.claude/skills/git-workflow/SKILL.md`    |
+| Building or modifying UI components  | game-frontend   | `.claude/skills/game-frontend/SKILL.md`   |
 
 Multiple skills often apply to the same task. Load ALL that match.
 
