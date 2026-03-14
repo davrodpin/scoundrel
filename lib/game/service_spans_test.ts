@@ -102,6 +102,9 @@ function createMockRepository(
     getLeaderboardEntry(_gameId: string) {
       return Promise.resolve(null);
     },
+    getLeaderboardRank(_score: number) {
+      return Promise.resolve({ rank: 1, totalEntries: 1 });
+    },
     createLeaderboardEntry(): Promise<void> {
       return Promise.resolve();
     },

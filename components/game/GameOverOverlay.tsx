@@ -8,6 +8,8 @@ type GameOverOverlayProps = {
   currentGameId: string;
   errorMessage?: string | null;
   loading?: boolean;
+  rank?: number | null;
+  totalPlayers?: number | null;
 };
 
 export function GameOverOverlay(
@@ -19,6 +21,8 @@ export function GameOverOverlay(
     currentGameId,
     errorMessage,
     loading,
+    rank,
+    totalPlayers,
   }: GameOverOverlayProps,
 ) {
   const title = reason === "dead" ? "You Have Fallen" : "Dungeon Cleared";
@@ -45,6 +49,11 @@ export function GameOverOverlay(
           >
             {score}
           </div>
+          {rank != null && totalPlayers != null && (
+            <div class="text-parchment-dark text-sm font-body mt-2">
+              Rank #{rank.toLocaleString()} of {totalPlayers.toLocaleString()}
+            </div>
+          )}
         </div>
 
         {top10.length > 0 && (

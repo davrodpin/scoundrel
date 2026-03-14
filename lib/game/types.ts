@@ -21,3 +21,9 @@ export type LeaderboardEntry = {
   score: number;
   completedAt: string; // ISO 8601 UTC
 };
+
+export type LeaderboardRank = {
+  entry: LeaderboardEntry;
+  rank: number;
+  totalEntries: number;
+};
