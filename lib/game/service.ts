@@ -314,7 +314,10 @@ export function createGameService(
           const { rank, totalEntries } = await repository.getLeaderboardRank(
             entry.score,
           );
-          return { entry, rank, totalEntries };
+          const topPercent = totalEntries === 0
+            ? 100
+            : Math.max(1, Math.ceil((rank / totalEntries) * 100));
+          return { entry, rank, topPercent };
         },
       );
     },

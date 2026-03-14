@@ -25,5 +25,5 @@ export type LeaderboardEntry = {
 export type LeaderboardRank = {
   entry: LeaderboardEntry;
   rank: number;
-  totalEntries: number;
+  topPercent: number;
 };
