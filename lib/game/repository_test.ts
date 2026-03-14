@@ -3,6 +3,7 @@ import { createPrismaGameRepository } from "./repository.ts";
 import type { GameRepository, StoredEvent } from "./repository.ts";
 import type { PrismaClient } from "../generated/prisma/client.ts";
 import type { GameEvent as EngineGameEvent } from "@scoundrel/engine";
+import { createSpyTracer } from "../telemetry/testing.ts";
 
 // deno-lint-ignore no-explicit-any
 type MockPrisma = Record<string, any>;
@@ -34,6 +35,7 @@ Deno.test("createPrismaGameRepository returns object with all repository methods
   const mockPrisma = makeMockPrismaClient();
   const repo: GameRepository = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
 
   assertEquals(typeof repo.createGame, "function");
@@ -62,6 +64,7 @@ Deno.test("createGame calls $transaction on prisma client", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
 
   await repo.createGame("test-game-id", "TestPlayer", {
@@ -92,6 +95,7 @@ Deno.test("createGame passes playerName to game.create", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
 
   await repo.createGame("test-game-id", "TestPlayer", {
@@ -118,6 +122,7 @@ Deno.test("appendEvent calls gameEvent.create with correct data", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
 
   const event = {
@@ -143,6 +148,7 @@ Deno.test("getLatestEvent returns null when no events found", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getLatestEvent("test-game-id");
 
@@ -163,6 +169,7 @@ Deno.test("getLatestEvent returns StoredEvent when event exists", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getLatestEvent("test-game-id");
 
@@ -194,6 +201,7 @@ Deno.test("getAllEvents returns events ordered by sequence", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getAllEvents("test-game-id");
 
@@ -214,6 +222,7 @@ Deno.test("updateStatus calls game.update with correct data", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   await repo.updateStatus("test-game-id", "completed", 15);
 
@@ -233,6 +242,7 @@ Deno.test("updateStatus passes null score correctly", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   await repo.updateStatus("test-game-id", "in_progress", null);
 
@@ -248,6 +258,7 @@ Deno.test("getPlayerName returns null when game not found", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getPlayerName("non-existent");
   assertEquals(result, null);
@@ -260,6 +271,7 @@ Deno.test("getPlayerName returns playerName when game found", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getPlayerName("test-game-id");
   assertEquals(result, "TestHero");
@@ -271,6 +283,7 @@ Deno.test("getLeaderboard returns empty array when no leaderboard entries", asyn
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getLeaderboard(25);
   assertEquals(result, []);
@@ -282,6 +295,7 @@ Deno.test("getGameStatus returns null when game not found", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getGameStatus("non-existent");
   assertEquals(result, null);
@@ -293,6 +307,7 @@ Deno.test("getGameStatus returns status when game found", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getGameStatus("test-game-id");
   assertEquals(result, "completed");
@@ -304,6 +319,7 @@ Deno.test("getGameStatus returns in_progress status for active game", async () =
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getGameStatus("test-game-id");
   assertEquals(result, "in_progress");
@@ -329,6 +345,7 @@ Deno.test("getLeaderboard maps leaderboard_entries rows to LeaderboardEntry", as
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getLeaderboard(25);
 
@@ -347,6 +364,7 @@ Deno.test("getLeaderboardEntry returns null when entry not found", async () => {
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getLeaderboardEntry("non-existent-game-id");
   assertEquals(result, null);
@@ -364,6 +382,7 @@ Deno.test("getLeaderboardEntry returns LeaderboardEntry when found", async () =>
 
   const repo = createPrismaGameRepository(
     mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
   );
   const result = await repo.getLeaderboardEntry("game-1");
 

@@ -54,7 +54,9 @@
     "@scoundrel/log-format": "./lib/log-format/mod.ts",
     "@scoundrel/cleanup": "./lib/cleanup/mod.ts",
     "@scoundrel/validation": "./lib/validation/mod.ts",
-    "obscenity": "npm:obscenity@^0.4.6"
+    "@scoundrel/telemetry": "./lib/telemetry/mod.ts",
+    "obscenity": "npm:obscenity@^0.4.6",
+    "@opentelemetry/api": "npm:@opentelemetry/api@^1"
   },
   "compilerOptions": {
     "lib": [

@@ -1,5 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { createCleanupService } from "./cleanup.ts";
+import { createSpyTracer } from "../telemetry/testing.ts";
 
 Deno.test("runCleanup calls deleteGamesOlderThan with a cutoff date", async () => {
   let capturedCutoff: Date | null = null;
@@ -10,7 +11,11 @@ Deno.test("runCleanup calls deleteGamesOlderThan with a cutoff date", async () =
     },
   };
 
-  const service = createCleanupService(stubRepo, { retentionDays: 30 });
+  const service = createCleanupService(
+    stubRepo,
+    { retentionDays: 30 },
+    createSpyTracer().tracer,
+  );
   await service.runCleanup();
 
   assertEquals(capturedCutoff !== null, true);
@@ -28,7 +33,11 @@ Deno.test(
     };
 
     const before = new Date();
-    const service = createCleanupService(stubRepo, { retentionDays: 30 });
+    const service = createCleanupService(
+      stubRepo,
+      { retentionDays: 30 },
+      createSpyTracer().tracer,
+    );
     await service.runCleanup();
     const after = new Date();
 
@@ -58,7 +67,11 @@ Deno.test(
     };
 
     const before = new Date();
-    const service = createCleanupService(stubRepo, { retentionDays: 7 });
+    const service = createCleanupService(
+      stubRepo,
+      { retentionDays: 7 },
+      createSpyTracer().tracer,
+    );
     await service.runCleanup();
     const after = new Date();
 
