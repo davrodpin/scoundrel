@@ -5,7 +5,7 @@ import type { EventLog, GameEngine } from "@scoundrel/engine";
 import { AppError } from "@scoundrel/errors";
 import { isPlayerNameAllowed } from "@scoundrel/validation";
 import { z } from "zod";
-import type { GameView, LeaderboardEntry } from "./types.ts";
+import type { GameView, LeaderboardEntry, LeaderboardRank } from "./types.ts";
 import type { GameRepository } from "./repository.ts";
 import { toGameView } from "./view.ts";
 
@@ -18,6 +18,7 @@ export type GameService = {
   getEventLog(gameId: string): Promise<EventLog>;
   getLeaderboard(): Promise<LeaderboardEntry[]>;
   getLeaderboardEntry(gameId: string): Promise<LeaderboardEntry | null>;
+  getLeaderboardRank(gameId: string): Promise<LeaderboardRank | null>;
 };
 
 export type GameServiceConfig = {
@@ -295,6 +296,26 @@ export function createGameService(
         "game.getLeaderboardEntry",
         { "game.id": gameId },
         () => repository.getLeaderboardEntry(gameId),
+      );
+    },
+
+    getLeaderboardRank(gameId: string): Promise<LeaderboardRank | null> {
+      if (!uuidSchema.safeParse(gameId).success) {
+        return Promise.reject(
+          new AppError("GameNotFoundError", 404, { gameId }),
+        );
+      }
+      return withSpan(
+        "game.getLeaderboardRank",
+        { "game.id": gameId },
+        async () => {
+          const entry = await repository.getLeaderboardEntry(gameId);
+          if (!entry) return null;
+          const { rank, totalEntries } = await repository.getLeaderboardRank(
+            entry.score,
+          );
+          return { entry, rank, totalEntries };
+        },
       );
     },
   };
