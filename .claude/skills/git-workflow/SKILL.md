@@ -52,8 +52,8 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
    ```
 4. Set up the worktree environment:
 
-   **Copy configuration files** — use the `Read` and `Write` tools (NOT `cp`)
-   to avoid OS-level sandbox permission prompts when writing to the sibling
+   **Copy configuration files** — use the `Read` and `Write` tools (NOT `cp`) to
+   avoid OS-level sandbox permission prompts when writing to the sibling
    worktree:
    - Read `../main/.env` with the Read tool, then Write it to `./.env`
    - Read `../main/.claude/settings.local.json` with the Read tool, then Write
