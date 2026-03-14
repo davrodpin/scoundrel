@@ -13,7 +13,8 @@
     "prisma:migrate": "deno run -A --env-file npm:prisma migrate dev",
     "prisma:studio": "deno run -A --env-file npm:prisma studio",
     "optimize:cards": "deno run --allow-read --allow-write --allow-env --allow-run --allow-ffi scripts/optimize-cards.ts",
-    "worktree:cleanup": "deno run --allow-run --allow-read scripts/worktree_cleanup.ts"
+    "worktree:setup": "deno run --allow-run --allow-read --allow-write .claude/skills/git-workflow/scripts/worktree_setup.ts",
+    "worktree:cleanup": "deno run --allow-run --allow-read .claude/skills/git-workflow/scripts/worktree_cleanup.ts"
   },
   "lint": {
     "rules": {

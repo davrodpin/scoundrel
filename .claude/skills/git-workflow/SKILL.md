@@ -34,42 +34,30 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
 
 ## Starting New Work with Worktrees
 
-1. Navigate to `.bare` and fetch the latest refs:
-   ```sh
-   cd ../.bare
-   git fetch origin main
-   ```
-2. Create a worktree based with a descriptive branch name:
-   ```sh
-   git worktree add -b <branch-name ../<branch-name>
-   ```
-   Branch naming convention: `<type>/<short-description>` (e.g.,
-   `feat/deck-shuffle`, `fix/health-overflow`, `refactor/combat-logic`). The
-   worktree is created as a sibling directory to `main/` and `.bare/`.
-3. Navigate to the new worktree:
-   ```sh
-   cd ../<branch-name>
-   ```
-4. Set up the worktree environment:
+**You MUST use `deno task worktree:setup` to set up new worktrees.** Never
+create worktrees manually.
 
-   **Copy configuration files** — use the `Read` and `Write` tools:
-   - Read `../main/.env` with the Read tool, then Write it to `./.env`
-   - Read `../main/.claude/settings.local.json` with the Read tool, then Write
-     it to `./.claude/settings.local.json`
+The script automates:
+1. Fetching the latest `origin main`
+2. Creating the worktree and branch
+3. Copying `.env` and `.claude/settings.local.json` from `main/` (warns if
+   missing, does not fail)
+4. Running `deno install --allow-scripts`, `deno task prisma:migrate`, and
+   `deno task prisma:generate`
 
-   `.claude/hooks/` is tracked in git — no copy needed, it comes with the
-   worktree.
+**Command** (run from any existing worktree):
+```sh
+deno task worktree:setup <branch-name>
+```
 
-   **Install dependencies and set up database:**
-   ```sh
-   deno install --allow-scripts
-   deno task prisma:migrate
-   deno task prisma:generate
-   ```
+**Example:**
+```sh
+deno task worktree:setup feat/deck-shuffle
+```
 
-   The `--allow-scripts` flag is needed because Prisma and esbuild have npm
-   lifecycle scripts (postinstall) that must run to download engines/binaries.
-   Without it, `deno install` skips these scripts and the project won't work.
+Branch naming convention: `<type>/<short-description>` (e.g.,
+`feat/deck-shuffle`, `fix/health-overflow`, `refactor/combat-logic`). The
+worktree is created as a sibling directory to `main/` and `.bare/`.
 
 ## Committing Code
 
@@ -101,10 +89,22 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
 
 ## Cleaning Up After Merge
 
-Once the PR is merged, navigate to `.bare` and clean up:
+**You MUST use `deno task worktree:cleanup` to clean up after a merge.** Never
+remove worktrees manually.
 
+The script:
+1. Verifies the PR is merged or closed (aborts if still open)
+2. Removes the worktree directory
+3. Deletes the local branch
+4. Fetches `origin` with `--prune`
+5. Pulls `main` to the latest
+
+**Command** (run from any existing worktree):
 ```sh
-cd ../.bare
-git worktree remove ../<branch-name>
-git branch -d <branch-name>
+deno task worktree:cleanup <branch-name>
+```
+
+**Example:**
+```sh
+deno task worktree:cleanup feat/deck-shuffle
 ```
