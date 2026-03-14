@@ -1,7 +1,11 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import { type Card, type GameAction } from "@scoundrel/engine";
-import type { GameView, LeaderboardEntry } from "@scoundrel/game-service";
+import type {
+  GameView,
+  LeaderboardEntry,
+  LeaderboardRank,
+} from "@scoundrel/game-service";
 import { computeActionPanel } from "../components/game/action_panel_utils.ts";
 import { HealthDisplay } from "../components/game/HealthDisplay.tsx";
 import type { HealthDisplayActions } from "../components/game/HealthDisplay.tsx";
@@ -42,6 +46,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const showLeaderboard = useSignal(false);
   const leaderboardEntries = useSignal<LeaderboardEntry[]>([]);
   const leaderboardLoading = useSignal(false);
+  const playerRank = useSignal<number | null>(null);
+  const topPercent = useSignal<number | null>(null);
   const selectedCardIndex = useSignal<number | null>(null);
   const focusedCardIndex = useSignal<number | null>(null);
   const damageFlash = useSignal(false);
@@ -66,6 +72,31 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     }
   }
 
+  async function fetchLeaderboardWithRank(gameId: string) {
+    leaderboardLoading.value = true;
+    try {
+      const [leaderboardRes, rankRes] = await Promise.all([
+        fetch("/api/leaderboard"),
+        fetch(`/api/leaderboard?gameId=${gameId}`),
+      ]);
+      if (leaderboardRes.ok) {
+        leaderboardEntries.value = await leaderboardRes
+          .json() as LeaderboardEntry[];
+      }
+      if (rankRes.ok) {
+        const rankData = await rankRes.json() as LeaderboardRank | null;
+        if (rankData) {
+          playerRank.value = rankData.rank;
+          topPercent.value = rankData.topPercent;
+        }
+      }
+    } catch {
+      // Non-critical — silently fail
+    } finally {
+      leaderboardLoading.value = false;
+    }
+  }
+
   async function loadGame(id: string) {
     resumeLoading.value = true;
     resumeError.value = null;
@@ -80,7 +111,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       gameView.value = data as GameView;
       playerName.value = (data as GameView).playerName;
       if ((data as GameView).phase.kind === "game_over") {
-        await fetchLeaderboard();
+        await fetchLeaderboardWithRank((data as GameView).gameId);
       }
     } catch {
       resumeError.value = "Failed to load game";
@@ -270,7 +301,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       focusedCardIndex.value = null;
 
       if (newView.phase.kind === "game_over") {
-        await fetchLeaderboard();
+        await fetchLeaderboardWithRank(newView.gameId);
       }
 
       // Flash animations
@@ -747,10 +778,10 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           reason={state.phase.reason}
           score={state.score ?? 0}
           onNewGame={startNewGame}
-          leaderboardEntries={leaderboardEntries.value}
-          currentGameId={state.gameId}
           errorMessage={errorMsg.value}
           loading={isLoading}
+          rank={playerRank.value}
+          topPercent={topPercent.value}
         />
       )}
     </div>
