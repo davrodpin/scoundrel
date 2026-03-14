@@ -102,14 +102,24 @@ export function GameOverOverlay(
             {errorMessage}
           </p>
         )}
-        <button
-          type="button"
-          class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={onNewGame}
-          disabled={loading}
-        >
-          {loading ? "Starting..." : "New Game"}
-        </button>
+        <div class="flex flex-col gap-3 items-center">
+          <button
+            type="button"
+            class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={onNewGame}
+            disabled={loading}
+          >
+            {loading ? "Starting..." : "New Game"}
+          </button>
+          <a
+            href="/play"
+            class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
+              loading ? "pointer-events-none opacity-50" : ""
+            }`}
+          >
+            Back to Main
+          </a>
+        </div>
       </div>
     </div>
   );
