@@ -9,6 +9,7 @@ import {
   createPrismaGameRepository,
 } from "@scoundrel/game-service";
 import { config } from "@scoundrel/config";
+import { getTracer, trace } from "@scoundrel/telemetry";
 import { define } from "@/utils.ts";
 import {
   captureRequestBody,
@@ -19,21 +20,23 @@ import {
   toErrorResponse,
 } from "./_middleware_helpers.ts";
 
+const tracer = getTracer();
+
 const pool = new pg.Pool({ connectionString: config.db.url });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 const engine = createGameEngine();
-const repository = createPrismaGameRepository(prisma);
+const repository = createPrismaGameRepository(prisma, tracer);
 const gameService = createGameService(engine, repository, {
   defaultPlayerName: config.game.defaultPlayerName,
   leaderboardLimit: config.game.leaderboardLimit,
-});
+}, tracer);
 
 const logger = getLogger(["scoundrel", "http"]);
 
 const cleanupService = createCleanupService(repository, {
   retentionDays: config.cleanup.retentionDays,
-});
+}, tracer);
 
 if (typeof Deno.cron === "function") {
   Deno.cron("game-data-cleanup", "0 3 * * *", async () => {
@@ -91,6 +94,19 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   const remoteIp = "hostname" in addr ? addr.hostname : undefined;
   const clientIp = extractClientIp(ctx.req, remoteIp);
 
+  // Enrich the auto-created Deno.serve HTTP span with route-level attributes
+  const gameId = extractGameId(path);
+  const activeSpan = trace.getActiveSpan();
+  if (activeSpan) {
+    activeSpan.setAttribute("http.route", path);
+    if (gameId) {
+      activeSpan.setAttribute("game.id", gameId);
+    }
+    if (clientIp) {
+      activeSpan.setAttribute("client.ip", clientIp);
+    }
+  }
+
   const start = Date.now();
   let response: Response;
   try {
@@ -98,7 +114,6 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   } catch (error) {
     const duration = Date.now() - start;
     const status = extractErrorStatus(error);
-    const gameId = extractGameId(path);
     logger.error("Request", {
       method,
       path,
@@ -113,7 +128,6 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   }
   const duration = Date.now() - start;
   const status = response.status;
-  const gameId = extractGameId(path);
 
   const data = { method, path, status, duration, gameId, body, clientIp };
 
