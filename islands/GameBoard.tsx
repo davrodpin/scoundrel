@@ -47,7 +47,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const leaderboardEntries = useSignal<LeaderboardEntry[]>([]);
   const leaderboardLoading = useSignal(false);
   const playerRank = useSignal<number | null>(null);
-  const totalPlayers = useSignal<number | null>(null);
+  const topPercent = useSignal<number | null>(null);
   const selectedCardIndex = useSignal<number | null>(null);
   const focusedCardIndex = useSignal<number | null>(null);
   const damageFlash = useSignal(false);
@@ -87,7 +87,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         const rankData = await rankRes.json() as LeaderboardRank | null;
         if (rankData) {
           playerRank.value = rankData.rank;
-          totalPlayers.value = rankData.totalEntries;
+          topPercent.value = rankData.topPercent;
         }
       }
     } catch {
@@ -778,12 +778,10 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           reason={state.phase.reason}
           score={state.score ?? 0}
           onNewGame={startNewGame}
-          leaderboardEntries={leaderboardEntries.value}
-          currentGameId={state.gameId}
           errorMessage={errorMsg.value}
           loading={isLoading}
           rank={playerRank.value}
-          totalPlayers={totalPlayers.value}
+          topPercent={topPercent.value}
         />
       )}
     </div>
