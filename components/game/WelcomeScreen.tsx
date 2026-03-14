@@ -4,7 +4,6 @@ type WelcomeScreenProps = {
   playerName: string;
   onPlayerNameChange: (name: string) => void;
   onStartGame: () => void;
-  onLeaderboardClick: () => void;
   loading: boolean;
   errorMsg: string | null;
 };
@@ -14,7 +13,6 @@ export function WelcomeScreen(
     playerName,
     onPlayerNameChange,
     onStartGame,
-    onLeaderboardClick,
     loading,
     errorMsg,
   }: WelcomeScreenProps,
@@ -56,13 +54,12 @@ export function WelcomeScreen(
               How to Play
             </a>
             <span class="text-parchment-dark/50 text-sm">·</span>
-            <button
-              type="button"
+            <a
+              href="/leaderboard"
               class="text-sm font-body text-parchment-dark hover:text-torch-amber transition-colors duration-200"
-              onClick={onLeaderboardClick}
             >
-              Leaderboard
-            </button>
+              Show Leaderboard
+            </a>
           </div>
           {errorMsg && (
             <p class="text-blood-bright font-body text-sm mt-3">{errorMsg}</p>

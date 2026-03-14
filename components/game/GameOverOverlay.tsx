@@ -6,6 +6,8 @@ type GameOverOverlayProps = {
   loading?: boolean;
   rank?: number | null;
   topPercent?: number | null;
+  isInTopN?: boolean;
+  gameId?: string;
 };
 
 export function GameOverOverlay(
@@ -17,6 +19,8 @@ export function GameOverOverlay(
     loading,
     rank,
     topPercent,
+    isInTopN,
+    gameId,
   }: GameOverOverlayProps,
 ) {
   const title = reason === "dead" ? "You Have Fallen" : "Dungeon Cleared";
@@ -41,11 +45,19 @@ export function GameOverOverlay(
           >
             {score}
           </div>
-          {rank != null && topPercent != null && (
-            <div class="text-parchment-dark text-sm font-body mt-2">
-              Top {topPercent}%
-            </div>
-          )}
+          {isInTopN && rank != null
+            ? (
+              <div class="text-parchment-dark text-sm font-body mt-2">
+                #{rank}
+              </div>
+            )
+            : !isInTopN && topPercent != null
+            ? (
+              <div class="text-parchment-dark text-sm font-body mt-2">
+                Top {topPercent}%
+              </div>
+            )
+            : null}
         </div>
 
         {errorMessage && (
@@ -62,6 +74,16 @@ export function GameOverOverlay(
           >
             {loading ? "Starting..." : "New Game"}
           </button>
+          {gameId && (
+            <a
+              href={`/leaderboard?gameId=${gameId}`}
+              class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
+                loading ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
+              Show Leaderboard
+            </a>
+          )}
           <a
             href="/play"
             class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${

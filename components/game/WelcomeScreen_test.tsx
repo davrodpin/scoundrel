@@ -12,7 +12,6 @@ Deno.test("WelcomeScreen - renders player name input", () => {
       playerName=""
       onPlayerNameChange={noop}
       onStartGame={noop}
-      onLeaderboardClick={noop}
       loading={false}
       errorMsg={null}
     />,
@@ -26,7 +25,6 @@ Deno.test("WelcomeScreen - renders Enter the Dungeon button", () => {
       playerName=""
       onPlayerNameChange={noop}
       onStartGame={noop}
-      onLeaderboardClick={noop}
       loading={false}
       errorMsg={null}
     />,
@@ -40,7 +38,6 @@ Deno.test("WelcomeScreen - renders How to Play link", () => {
       playerName=""
       onPlayerNameChange={noop}
       onStartGame={noop}
-      onLeaderboardClick={noop}
       loading={false}
       errorMsg={null}
     />,
@@ -48,18 +45,18 @@ Deno.test("WelcomeScreen - renders How to Play link", () => {
   assertEquals(html.includes("How to Play"), true);
 });
 
-Deno.test("WelcomeScreen - renders Leaderboard button", () => {
+Deno.test("WelcomeScreen - renders Show Leaderboard link", () => {
   const html = render(
     <WelcomeScreen
       playerName=""
       onPlayerNameChange={noop}
       onStartGame={noop}
-      onLeaderboardClick={noop}
       loading={false}
       errorMsg={null}
     />,
   );
-  assertEquals(html.includes("Leaderboard"), true);
+  assertEquals(html.includes("Show Leaderboard"), true);
+  assertEquals(html.includes('href="/leaderboard"'), true);
 });
 
 Deno.test("WelcomeScreen - Enter the Dungeon is disabled when name is empty", () => {
@@ -68,7 +65,6 @@ Deno.test("WelcomeScreen - Enter the Dungeon is disabled when name is empty", ()
       playerName=""
       onPlayerNameChange={noop}
       onStartGame={noop}
-      onLeaderboardClick={noop}
       loading={false}
       errorMsg={null}
     />,
@@ -82,7 +78,6 @@ Deno.test("WelcomeScreen - Enter the Dungeon is enabled when name is provided", 
       playerName="Aragorn"
       onPlayerNameChange={noop}
       onStartGame={noop}
-      onLeaderboardClick={noop}
       loading={false}
       errorMsg={null}
     />,
@@ -91,26 +86,4 @@ Deno.test("WelcomeScreen - Enter the Dungeon is enabled when name is provided", 
   // Note: Tailwind class names like "disabled:opacity-50" contain "disabled:" so we check
   // for the HTML attribute form ` disabled` (space-prefixed) or `disabled="`.
   assertEquals(html.includes('disabled=""'), false);
-});
-
-Deno.test("WelcomeScreen - calls onLeaderboardClick when Leaderboard button is clicked", () => {
-  let called = false;
-  // Since preact-render-to-string is SSR, we verify onClick is wired by checking
-  // the rendered output includes the Leaderboard button (event handler can't be tested in SSR).
-  // We render with a tracking function to confirm the prop is accepted without error.
-  const html = render(
-    <WelcomeScreen
-      playerName="Aragorn"
-      onPlayerNameChange={noop}
-      onStartGame={noop}
-      onLeaderboardClick={() => {
-        called = true;
-      }}
-      loading={false}
-      errorMsg={null}
-    />,
-  );
-  assertEquals(html.includes("Leaderboard"), true);
-  // called stays false in SSR — that's expected; the test confirms the prop is accepted
-  assertEquals(called, false);
 });
