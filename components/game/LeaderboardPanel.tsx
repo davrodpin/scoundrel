@@ -1,5 +1,6 @@
 import type { LeaderboardEntry } from "@scoundrel/game-service";
 import { getLeaderboardStatusMessage } from "./leaderboard_panel_utils.ts";
+import { LeaderboardTable } from "./LeaderboardTable.tsx";
 
 type LeaderboardPanelProps = {
   open: boolean;
@@ -50,46 +51,10 @@ export function LeaderboardPanel(
               </p>
             )
             : (
-              <table class="w-full font-body text-sm">
-                <thead>
-                  <tr class="text-parchment-dark border-b border-dungeon-border">
-                    <th class="text-left py-2 w-8">#</th>
-                    <th class="text-left py-2">Adventurer</th>
-                    <th class="text-right py-2">Score</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.map((entry, i) => {
-                    const isCurrentGame = entry.gameId === currentGameId;
-                    return (
-                      <tr
-                        key={entry.gameId}
-                        class={`border-b border-dungeon-border/40 ${
-                          isCurrentGame
-                            ? "bg-torch-amber/10 text-torch-glow"
-                            : "text-parchment"
-                        }`}
-                      >
-                        <td class="py-2 text-parchment-dark">{i + 1}</td>
-                        <td class="py-2 truncate max-w-[180px]">
-                          {isCurrentGame
-                            ? `\u25b6 ${entry.playerName}`
-                            : entry.playerName}
-                        </td>
-                        <td
-                          class={`py-2 text-right font-heading ${
-                            entry.score >= 0
-                              ? "text-torch-amber"
-                              : "text-blood-bright"
-                          }`}
-                        >
-                          {entry.score}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <LeaderboardTable
+                entries={entries}
+                highlightGameId={currentGameId}
+              />
             )}
         </div>
       </div>

@@ -427,33 +427,16 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   // Initial screen - no game started
   const state = gameView.value;
   if (!state) {
-    const handleLeaderboardClick = () => {
-      showLeaderboard.value = !showLeaderboard.value;
-      if (showLeaderboard.value) fetchLeaderboard();
-    };
-
     return (
-      <>
-        <WelcomeScreen
-          playerName={playerName.value}
-          onPlayerNameChange={(name) => {
-            playerName.value = name;
-          }}
-          onStartGame={startNewGame}
-          onLeaderboardClick={handleLeaderboardClick}
-          loading={isLoading}
-          errorMsg={errorMsg.value}
-        />
-        <LeaderboardPanel
-          open={showLeaderboard.value}
-          loading={leaderboardLoading.value}
-          entries={leaderboardEntries.value}
-          currentGameId={null}
-          onClose={() => {
-            showLeaderboard.value = false;
-          }}
-        />
-      </>
+      <WelcomeScreen
+        playerName={playerName.value}
+        onPlayerNameChange={(name) => {
+          playerName.value = name;
+        }}
+        onStartGame={startNewGame}
+        loading={isLoading}
+        errorMsg={errorMsg.value}
+      />
     );
   }
 
@@ -782,6 +765,10 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           loading={isLoading}
           rank={playerRank.value}
           topPercent={topPercent.value}
+          isInTopN={leaderboardEntries.value.some((e) =>
+            e.gameId === state.gameId
+          )}
+          gameId={state.gameId}
         />
       )}
     </div>
