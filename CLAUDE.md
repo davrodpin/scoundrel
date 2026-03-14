@@ -1,3 +1,32 @@
+# Skill Loading (MANDATORY — Execute Before All Tasks)
+
+Every task MUST begin by loading the relevant skills. Do NOT write or modify any
+code until you have read the matching SKILL.md files. Do not rely on memory —
+read the file every time.
+
+| Trigger                                | Skill to Load    | File to Read                                |
+| -------------------------------------- | ---------------- | ------------------------------------------- |
+| Any code change (feature, bug, test)   | tdd-development  | `/mnt/skills/user/tdd-development/SKILL.md` |
+| Starting any implementation task       | git-workflow     | `/mnt/skills/user/git-workflow/SKILL.md`    |
+| Building or modifying UI components    | game-frontend    | `/mnt/skills/user/game-frontend/SKILL.md`   |
+
+Multiple skills often apply to the same task. Load ALL that match.
+
+## Execution Order
+
+1. FIRST: `git-workflow` — create worktree and branch
+2. THEN: `tdd-development` — write tests before implementation
+3. IF UI work: `game-frontend` — apply dungeon crawler aesthetic
+
+## Common Mistakes (AVOID)
+
+- Starting to code and reading the skill mid-task
+- Skipping `git-workflow` for "small changes"
+- Assuming you know the TDD skill without re-reading it
+- Loading only one skill when multiple apply (e.g., UI + TDD)
+
+---
+
 # Project Overview
 
 Scoundrel is a web application where people can play the Scoundrel card game
@@ -9,16 +38,13 @@ For more information about the games, including all rules, you can refer to
 
 # Development Methodology
 
-IMPORTANT: Before writing or modifying any production code or test code, you
-MUST invoke the `tdd-development` skill. This applies to all tasks: new
-features, bug fixes, refactors, and any code changes. TDD is non-negotiable.
-
-IMPORTANT: Every implementation task MUST be done inside a git worktree. Invoke
-the `git-workflow` skill before starting any work to create the worktree and
-branch. Never implement directly on `main`.
-
-When building or modifying UI components, you MUST also invoke the
-`game-frontend` skill to maintain the dungeon crawler aesthetic.
+- TDD is non-negotiable. Every code change — new features, bug fixes, refactors
+  — goes through the `tdd-development` skill.
+- Every implementation task MUST be done inside a git worktree. Use the
+  `git-workflow` skill to create the worktree and branch. Never implement
+  directly on `main`.
+- When building or modifying UI components, also use the `game-frontend` skill
+  to maintain the dungeon crawler aesthetic.
 
 # Tech Stack
 
@@ -111,3 +137,12 @@ inline `Response.json` error objects in route handlers or service methods.
 - Never chain shell commands with `&&`, `||`, or `;`
 - Execute each command as a separate Bash tool call
 - Use parallel tool calls for independent commands instead of chaining
+
+---
+
+# Final Checklist (Re-read Before Every Task)
+
+- [ ] Read `git-workflow` SKILL.md and created worktree?
+- [ ] Read `tdd-development` SKILL.md?
+- [ ] UI task? Read `game-frontend` SKILL.md?
+- [ ] Working in a worktree, NOT on `main`?
