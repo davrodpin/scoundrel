@@ -74,24 +74,26 @@ export function GameOverOverlay(
           >
             {loading ? "Starting..." : "New Game"}
           </button>
-          {gameId && (
+          <div class="flex gap-3">
+            {gameId && (
+              <a
+                href={`/leaderboard?gameId=${gameId}`}
+                class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
+                  loading ? "pointer-events-none opacity-50" : ""
+                }`}
+              >
+                Show Leaderboard
+              </a>
+            )}
             <a
-              href={`/leaderboard?gameId=${gameId}`}
+              href="/play"
               class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
                 loading ? "pointer-events-none opacity-50" : ""
               }`}
             >
-              Show Leaderboard
+              Back to Main
             </a>
-          )}
-          <a
-            href="/play"
-            class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
-              loading ? "pointer-events-none opacity-50" : ""
-            }`}
-          >
-            Back to Main
-          </a>
+          </div>
         </div>
       </div>
     </div>
