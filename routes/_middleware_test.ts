@@ -6,6 +6,7 @@ import {
   extractClientIp,
   extractErrorInfo,
   extractErrorStatus,
+  extractUserAgent,
   toErrorResponse,
 } from "./_middleware_helpers.ts";
 
@@ -262,4 +263,17 @@ Deno.test("extractErrorStatus - returns 0 for non-error values", () => {
   assertEquals(extractErrorStatus("string error"), 0);
   assertEquals(extractErrorStatus(null), 0);
   assertEquals(extractErrorStatus(42), 0);
+});
+
+// extractUserAgent tests
+Deno.test("extractUserAgent - returns User-Agent header value when present", () => {
+  const req = new Request("http://localhost/api/games", {
+    headers: { "user-agent": "Mozilla/5.0 (compatible; TestBot/1.0)" },
+  });
+  assertEquals(extractUserAgent(req), "Mozilla/5.0 (compatible; TestBot/1.0)");
+});
+
+Deno.test("extractUserAgent - returns 'unknown' when User-Agent header is absent", () => {
+  const req = new Request("http://localhost/api/games");
+  assertEquals(extractUserAgent(req), "unknown");
 });
