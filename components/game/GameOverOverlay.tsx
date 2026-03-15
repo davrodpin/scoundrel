@@ -1,3 +1,19 @@
+export function getLeaderboardPositionText(topPercent: number): string {
+  if (topPercent <= 10) {
+    return `Near the top of the Leaderboard (top ${topPercent}%)`;
+  } else if (topPercent <= 25) {
+    return `In the upper ranks of the Leaderboard (top ${topPercent}%)`;
+  } else if (topPercent <= 50) {
+    return `In the upper half of the Leaderboard (top ${topPercent}%)`;
+  } else if (topPercent <= 75) {
+    return `In the lower half of the Leaderboard (top ${topPercent}%)`;
+  } else if (topPercent <= 90) {
+    return `Near the bottom of the Leaderboard (top ${topPercent}%)`;
+  } else {
+    return `Close to the bottom of the Leaderboard (top ${topPercent}%)`;
+  }
+}
+
 type GameOverOverlayProps = {
   reason: "dead" | "dungeon_cleared";
   score: number;
@@ -54,7 +70,7 @@ export function GameOverOverlay(
             : !isInTopN && topPercent != null
             ? (
               <div class="text-parchment-dark text-sm font-body mt-2">
-                Top {topPercent}% in the Leaderboard
+                {getLeaderboardPositionText(topPercent)}
               </div>
             )
             : null}
