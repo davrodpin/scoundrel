@@ -31,7 +31,8 @@ Never skip a step. Never write production code without a failing test first.
 ## Test File Conventions
 
 - **Unit tests** live alongside the code they test: `<filename>_test.ts`
-- **Integration tests** live in `tests/api/` — full-stack HTTP tests with no mocks
+- **Integration tests** live in `tests/api/` — full-stack HTTP tests with no
+  mocks
 - Use Deno's built-in test runner: `Deno.test`
 - Integration tests use no mocks — they run against real dependencies
 - Run tests with: `deno test`
@@ -70,7 +71,8 @@ first, dependency injection, etc.).
    implementation is complete and unit tests pass.
 
    **When to act**:
-   - New API route or HTTP method → add tests to an existing file or create a new one
+   - New API route or HTTP method → add tests to an existing file or create a
+     new one
    - Changed response shape (added/removed/renamed fields) → update assertions
    - New error reason or changed status code → add a validation test case
    - Changed query parameter behavior → update or add tests that exercise it
@@ -79,7 +81,8 @@ first, dependency injection, etc.).
    documentation — anything that does not alter what a client sees over HTTP.
 
    **Conventions**:
-   - Use helpers from `tests/api/helpers.ts`; add new helpers when a new endpoint is introduced
+   - Use helpers from `tests/api/helpers.ts`; add new helpers when a new
+     endpoint is introduced
    - Test names follow `"category — scenario"` format
    - Tests make real HTTP requests — no mocks
    - Cannot run locally; CI runs them against Deno Deploy preview URLs
