@@ -175,7 +175,10 @@ Deno.test("game lifecycle — completed game appears in leaderboard", async () =
     playerRank: { entry: { gameId: string }; rank: number } | null;
   };
   assert(Array.isArray(leaderboard.entries));
-  assertExists(leaderboard.playerRank, "Completed game should have a leaderboard entry");
+  assertExists(
+    leaderboard.playerRank,
+    "Completed game should have a leaderboard entry",
+  );
   assertEquals(
     leaderboard.playerRank.entry.gameId,
     gameId,
