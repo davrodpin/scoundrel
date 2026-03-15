@@ -1,13 +1,34 @@
-import type { LeaderboardEntry } from "@scoundrel/game-service";
+type LeaderboardPositionText = { label: string; percent: string };
+
+export function getLeaderboardPositionText(
+  topPercent: number,
+): LeaderboardPositionText {
+  const percent = `(top ${topPercent}%)`;
+  if (topPercent <= 10) {
+    return { label: "Near the top of the Leaderboard", percent };
+  } else if (topPercent <= 25) {
+    return { label: "In the upper ranks of the Leaderboard", percent };
+  } else if (topPercent <= 50) {
+    return { label: "In the upper half of the Leaderboard", percent };
+  } else if (topPercent <= 75) {
+    return { label: "In the lower half of the Leaderboard", percent };
+  } else if (topPercent <= 90) {
+    return { label: "Near the bottom of the Leaderboard", percent };
+  } else {
+    return { label: "Close to the bottom of the Leaderboard", percent };
+  }
+}
 
 type GameOverOverlayProps = {
   reason: "dead" | "dungeon_cleared";
   score: number;
   onNewGame: () => void;
-  leaderboardEntries: LeaderboardEntry[];
-  currentGameId: string;
   errorMessage?: string | null;
   loading?: boolean;
+  rank?: number | null;
+  topPercent?: number | null;
+  isInTopN?: boolean;
+  gameId?: string;
 };
 
 export function GameOverOverlay(
@@ -15,18 +36,18 @@ export function GameOverOverlay(
     reason,
     score,
     onNewGame,
-    leaderboardEntries,
-    currentGameId,
     errorMessage,
     loading,
+    rank,
+    topPercent,
+    isInTopN,
+    gameId,
   }: GameOverOverlayProps,
 ) {
   const title = reason === "dead" ? "You Have Fallen" : "Dungeon Cleared";
   const subtitle = reason === "dead"
     ? "The dungeon claims another soul..."
     : "You survived the dungeon!";
-
-  const top10 = leaderboardEntries.slice(0, 10);
 
   return (
     <div class="fixed inset-0 bg-shadow/90 flex items-center justify-center z-50 overflow-y-auto py-4">
@@ -39,63 +60,36 @@ export function GameOverOverlay(
         <div class="mb-6">
           <div class="text-parchment-dark text-sm font-body mb-1">Score</div>
           <div
-            class={`font-heading text-5xl ${
+            class={`font-heading text-4xl md:text-5xl ${
               score >= 0 ? "text-torch-glow" : "text-blood-bright"
             }`}
           >
             {score}
           </div>
-        </div>
-
-        {top10.length > 0 && (
-          <div class="mb-6 text-left">
-            <h3 class="font-heading text-torch-amber text-sm mb-2 text-center">
-              Hall of Fame
-            </h3>
-            <table class="w-full font-body text-sm">
-              <thead>
-                <tr class="text-parchment-dark border-b border-dungeon-border">
-                  <th class="text-left py-1 w-6">#</th>
-                  <th class="text-left py-1">Adventurer</th>
-                  <th class="text-right py-1">Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {top10.map((entry, i) => {
-                  const isCurrentGame = entry.gameId === currentGameId;
-                  return (
-                    <tr
-                      key={entry.gameId}
-                      class={`border-b border-dungeon-border/30 ${
-                        isCurrentGame ? "bg-torch-amber/10" : ""
-                      }`}
-                    >
-                      <td class="py-1 text-parchment-dark">{i + 1}</td>
-                      <td
-                        class={`py-1 truncate max-w-[160px] ${
-                          isCurrentGame ? "text-torch-glow" : "text-parchment"
-                        }`}
-                      >
-                        {isCurrentGame
-                          ? `\u25b6 ${entry.playerName}`
-                          : entry.playerName}
-                      </td>
-                      <td
-                        class={`py-1 text-right font-heading ${
-                          entry.score >= 0
-                            ? "text-torch-amber"
-                            : "text-blood-bright"
-                        }`}
-                      >
-                        {entry.score}
-                      </td>
-                    </tr>
+          {isInTopN && rank != null
+            ? (
+              <div class="text-parchment-dark text-sm font-body mt-2">
+                Leaderboard Rank #{rank}
+              </div>
+            )
+            : !isInTopN && topPercent != null
+            ? (
+              <div class="text-parchment-dark text-sm font-body mt-2">
+                {(() => {
+                  const { label, percent } = getLeaderboardPositionText(
+                    topPercent,
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  return (
+                    <>
+                      <div>{label}</div>
+                      <div>{percent}</div>
+                    </>
+                  );
+                })()}
+              </div>
+            )
+            : null}
+        </div>
 
         {errorMessage && (
           <p class="text-blood-bright font-body text-sm mb-3">
@@ -111,14 +105,26 @@ export function GameOverOverlay(
           >
             {loading ? "Starting..." : "New Game"}
           </button>
-          <a
-            href="/play"
-            class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
-              loading ? "pointer-events-none opacity-50" : ""
-            }`}
-          >
-            Back to Main
-          </a>
+          <div class="flex flex-col md:flex-row gap-3">
+            {gameId && (
+              <a
+                href={`/leaderboard?gameId=${gameId}`}
+                class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
+                  loading ? "pointer-events-none opacity-50" : ""
+                }`}
+              >
+                Show Leaderboard
+              </a>
+            )}
+            <a
+              href="/play"
+              class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
+                loading ? "pointer-events-none opacity-50" : ""
+              }`}
+            >
+              Back to Main
+            </a>
+          </div>
         </div>
       </div>
     </div>

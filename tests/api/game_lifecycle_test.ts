@@ -187,6 +187,46 @@ Deno.test("game lifecycle — completed game appears in leaderboard", async () =
   );
 });
 
+Deno.test("game lifecycle — leaderboard rank matches list position for completed game", async () => {
+  // Play a full game to completion
+  const createRes = await createGame("RankPositionTester");
+  assertEquals(createRes.status, 201);
+  let view = await createRes.json() as GameView;
+  const gameId = view.gameId;
+
+  let iterations = 0;
+  while (view.phase.kind !== "game_over" && iterations < 500) {
+    iterations++;
+    const action: Record<string, unknown> = view.phase.kind === "drawing"
+      ? { type: "draw_card" }
+      : { type: "choose_card", cardIndex: 0, fightWith: "barehanded" };
+    const r = await submitAction(gameId, action);
+    assertEquals(r.status, 200);
+    view = await r.json() as GameView;
+  }
+  assertEquals(view.phase.kind, "game_over");
+
+  // Get the full leaderboard list
+  const listRes = await getLeaderboard();
+  assertEquals(listRes.status, 200);
+  const list = await listRes.json() as Array<{ gameId: string }>;
+  assert(Array.isArray(list));
+
+  // Get the rank for this game
+  const rankRes = await getLeaderboard(gameId);
+  assertEquals(rankRes.status, 200);
+  const rankData = await rankRes.json() as { rank: number };
+
+  // Find 1-based position in the list
+  const position = list.findIndex((entry) => entry.gameId === gameId) + 1;
+  assert(position > 0, "Completed game should appear in leaderboard list");
+  assertEquals(
+    position,
+    rankData.rank,
+    `Rank ${rankData.rank} should match list position ${position}`,
+  );
+});
+
 Deno.test("game lifecycle — getGame returns current state", async () => {
   const createRes = await createGame("GetGameTester");
   assertEquals(createRes.status, 201);

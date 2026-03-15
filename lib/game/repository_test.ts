@@ -27,6 +27,7 @@ function makeMockPrismaClient(): MockPrisma {
       findMany: () => Promise.resolve([]),
       findUnique: () => Promise.resolve(null),
       upsert: () => Promise.resolve(),
+      count: () => Promise.resolve(0),
     },
   };
 }
@@ -390,4 +391,61 @@ Deno.test("getLeaderboardEntry returns LeaderboardEntry when found", async () =>
   assertEquals(result?.playerName, "Alice");
   assertEquals(result?.score, 20);
   assertEquals(result?.completedAt, "2026-01-01T00:00:00.000Z");
+});
+
+Deno.test("getLeaderboardRank returns rank 1 when no entries score higher", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.leaderboardEntry.count = () => Promise.resolve(0);
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
+  );
+  const completedAt = new Date("2026-01-01T00:00:00.000Z");
+  const result = await repo.getLeaderboardRank(10, completedAt);
+
+  assertEquals(result.rank, 1);
+});
+
+Deno.test("getLeaderboardRank counts entries with higher score or same score and earlier completedAt", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  const capturedWhereArgs: unknown[] = [];
+  mockPrisma.leaderboardEntry.count = (args: { where?: unknown }) => {
+    if (args?.where !== undefined) {
+      capturedWhereArgs.push(args.where);
+      return Promise.resolve(5);
+    }
+    return Promise.resolve(10);
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
+  );
+  const completedAt = new Date("2026-01-15T00:00:00.000Z");
+  const result = await repo.getLeaderboardRank(10, completedAt);
+
+  assertEquals(result.rank, 6);
+  assertEquals(result.totalEntries, 10);
+  assertEquals(capturedWhereArgs.length, 1);
+});
+
+Deno.test("getLeaderboardRank returns totalEntries from total count", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  let callCount = 0;
+  mockPrisma.leaderboardEntry.count = (args: { where?: unknown }) => {
+    callCount++;
+    if (args?.where !== undefined) return Promise.resolve(2);
+    return Promise.resolve(7);
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
+  );
+  const completedAt = new Date("2026-01-01T00:00:00.000Z");
+  const result = await repo.getLeaderboardRank(5, completedAt);
+
+  assertEquals(result.totalEntries, 7);
+  assertEquals(callCount, 2);
 });

@@ -114,6 +114,9 @@ function createMockRepository(
     getLeaderboardEntry(_gameId: string) {
       return Promise.resolve(null);
     },
+    getLeaderboardRank(_score: number, _completedAt: Date) {
+      return Promise.resolve({ rank: 1, totalEntries: 1 });
+    },
     createLeaderboardEntry(
       _gameId: string,
       _playerName: string,
@@ -743,4 +746,150 @@ Deno.test("getLeaderboardEntry delegates to repository", async () => {
   await service.getLeaderboardEntry(gameId);
 
   assertEquals(capturedGameId, gameId);
+});
+
+Deno.test("getLeaderboardRank returns rank for game with leaderboard entry", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const entry = {
+    gameId,
+    playerName: "Hero",
+    score: 15,
+    completedAt: new Date().toISOString(),
+  };
+  const repository = createMockRepository();
+  repository.getLeaderboardEntry = (_gId: string) => Promise.resolve(entry);
+  repository.getLeaderboardRank = (_score: number, _completedAt: Date) =>
+    Promise.resolve({ rank: 3, totalEntries: 10 });
+  const engine = createMockEngine();
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  const result = await service.getLeaderboardRank(gameId);
+
+  assertEquals(result?.entry, entry);
+  assertEquals(result?.rank, 3);
+  assertEquals(result?.topPercent, 30);
+});
+
+Deno.test("getLeaderboardRank computes topPercent as ceil percentage of rank/total", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const entry = {
+    gameId,
+    playerName: "Hero",
+    score: 15,
+    completedAt: new Date().toISOString(),
+  };
+  const repository = createMockRepository();
+  repository.getLeaderboardEntry = (_gId: string) => Promise.resolve(entry);
+  repository.getLeaderboardRank = (_score: number, _completedAt: Date) =>
+    Promise.resolve({ rank: 3, totalEntries: 100 });
+  const engine = createMockEngine();
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  const result = await service.getLeaderboardRank(gameId);
+
+  assertEquals(result?.topPercent, 3);
+});
+
+Deno.test("getLeaderboardRank returns topPercent 100 for single player", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const entry = {
+    gameId,
+    playerName: "Hero",
+    score: 15,
+    completedAt: new Date().toISOString(),
+  };
+  const repository = createMockRepository();
+  repository.getLeaderboardEntry = (_gId: string) => Promise.resolve(entry);
+  repository.getLeaderboardRank = (_score: number, _completedAt: Date) =>
+    Promise.resolve({ rank: 1, totalEntries: 1 });
+  const engine = createMockEngine();
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  const result = await service.getLeaderboardRank(gameId);
+
+  assertEquals(result?.topPercent, 100);
+});
+
+Deno.test("getLeaderboardRank returns null when game has no leaderboard entry", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const repository = createMockRepository();
+  repository.getLeaderboardEntry = (_gId: string) => Promise.resolve(null);
+  const engine = createMockEngine();
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  const result = await service.getLeaderboardRank(gameId);
+
+  assertEquals(result, null);
+});
+
+Deno.test("getLeaderboardRank throws GameNotFoundError for invalid UUID", async () => {
+  const repository: GameRepository = {
+    ...createMockRepository(),
+    getLeaderboardEntry(_gameId: string) {
+      throw new Error("should not be called");
+    },
+  };
+  const engine = createMockEngine();
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  const error = await assertRejects(
+    () => service.getLeaderboardRank("not-a-uuid"),
+    AppError,
+  );
+  assertEquals(error.reason, "GameNotFoundError");
+  assertEquals(error.statusCode, 404);
+});
+
+Deno.test("getLeaderboardRank passes completedAt from entry to repository", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const completedAtIso = "2026-02-15T12:00:00.000Z";
+  const entry = {
+    gameId,
+    playerName: "Hero",
+    score: 15,
+    completedAt: completedAtIso,
+  };
+  let capturedCompletedAt: Date | undefined;
+  const repository = createMockRepository();
+  repository.getLeaderboardEntry = (_gId: string) => Promise.resolve(entry);
+  repository.getLeaderboardRank = (_score: number, completedAt: Date) => {
+    capturedCompletedAt = completedAt;
+    return Promise.resolve({ rank: 1, totalEntries: 1 });
+  };
+  const engine = createMockEngine();
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  await service.getLeaderboardRank(gameId);
+
+  assertEquals(capturedCompletedAt!.toISOString(), completedAtIso);
 });
