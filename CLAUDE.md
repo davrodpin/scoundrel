@@ -4,8 +4,8 @@ Every task MUST begin by loading the relevant skills. Do NOT write or modify any
 code until you have read the matching SKILL.md files. Do not rely on memory —
 read the file every time.
 
-| Trigger                              | Skill to Load   | File to Read                                |
-| ------------------------------------ | --------------- | ------------------------------------------- |
+| Trigger                              | Skill to Load   | File to Read                              |
+| ------------------------------------ | --------------- | ----------------------------------------- |
 | Any code change (feature, bug, test) | tdd-development | `.claude/skills/tdd-development/SKILL.md` |
 | Starting any implementation task     | git-workflow    | `.claude/skills/git-workflow/SKILL.md`    |
 | Building or modifying UI components  | game-frontend   | `.claude/skills/game-frontend/SKILL.md`   |

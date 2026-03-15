@@ -34,48 +34,30 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
 
 ## Starting New Work with Worktrees
 
-1. Navigate to `.bare` and fetch the latest refs:
-   ```sh
-   cd ../.bare
-   git fetch origin main
-   ```
-2. Create a worktree based with a descriptive branch name:
-   ```sh
-   git worktree add -b <branch-name ../<branch-name>
-   ```
-   Branch naming convention: `<type>/<short-description>` (e.g.,
-   `feat/deck-shuffle`, `fix/health-overflow`, `refactor/combat-logic`). The
-   worktree is created as a sibling directory to `main/` and `.bare/`.
-3. Navigate to the new worktree:
-   ```sh
-   cd ../<branch-name>
-   ```
-4. Set up the worktree environment:
+**You MUST use `deno task worktree:setup` to set up new worktrees.** Never
+create worktrees manually.
 
-   **Copy configuration files** — use the `Read` and `Write` tools:
-   - Read `../main/.env` with the Read tool, then Write it to `./.env`
-   - Read `../main/.claude/settings.local.json` with the Read tool, then Write
-     it to `./.claude/settings.local.json`
+**Command** (run from any existing worktree):
 
-   `.claude/hooks/` is tracked in git — no copy needed, it comes with the
-   worktree.
+```sh
+deno task worktree:setup <branch-name>
+```
 
-   **Install dependencies and set up database:**
-   ```sh
-   deno install --allow-scripts
-   deno task prisma:migrate
-   deno task prisma:generate
-   ```
+**Example:**
 
-   The `--allow-scripts` flag is needed because Prisma and esbuild have npm
-   lifecycle scripts (postinstall) that must run to download engines/binaries.
-   Without it, `deno install` skips these scripts and the project won't work.
+```sh
+deno task worktree:setup feat/deck-shuffle
+```
+
+Branch naming convention: `<type>/<short-description>` (e.g.,
+`feat/deck-shuffle`, `fix/health-overflow`, `refactor/combat-logic`). The
+worktree is created as a sibling directory to `main/` and `.bare/`.
 
 ## Committing Code
 
-- Before committing, run `deno test`, `deno lint`, `deno check`, and `deno fmt`.
-  Fix any failures before committing.
-- Always use
+- Before committing, you MUST run `deno check`. Fix any failures before
+  committing.
+- ALWAYS use
   [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (e.g.,
   `feat:`, `fix:`, `refactor:`) when creating commit messages.
 - Commit early, commit often. Each commit should represent a small, logical unit
@@ -83,11 +65,11 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
 
 ## Creating Pull Requests
 
-- Push your branch using `git`:
+- MUST push your branch using `git`:
   ```sh
   git push origin <branch-name>
   ```
-- Create a PR using `gh`:
+- MUST create a PR using `gh`:
   ```sh
   gh pr create --base main --title "<type>: <description>" --body "<summary of changes>"
   ```
@@ -101,10 +83,17 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
 
 ## Cleaning Up After Merge
 
-Once the PR is merged, navigate to `.bare` and clean up:
+**You MUST use `deno task worktree:cleanup` to clean up after a merge.** Never
+remove worktrees manually.
+
+**Command** (run from any existing worktree):
 
 ```sh
-cd ../.bare
-git worktree remove ../<branch-name>
-git branch -d <branch-name>
+deno task worktree:cleanup <branch-name>
+```
+
+**Example:**
+
+```sh
+deno task worktree:cleanup feat/deck-shuffle
 ```
