@@ -54,7 +54,7 @@ export function GameOverOverlay(
             : !isInTopN && topPercent != null
             ? (
               <div class="text-parchment-dark text-sm font-body mt-2">
-                Top {topPercent}%
+                Top {topPercent}% in the Leaderboard
               </div>
             )
             : null}
