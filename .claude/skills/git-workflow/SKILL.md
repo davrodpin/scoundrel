@@ -38,11 +38,13 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
 create worktrees manually.
 
 **Command** (run from any existing worktree):
+
 ```sh
 deno task worktree:setup <branch-name>
 ```
 
 **Example:**
+
 ```sh
 deno task worktree:setup feat/deck-shuffle
 ```
@@ -53,8 +55,8 @@ worktree is created as a sibling directory to `main/` and `.bare/`.
 
 ## Committing Code
 
-- Before committing, you MUST run `deno check`.
-  Fix any failures before committing.
+- Before committing, you MUST run `deno check`. Fix any failures before
+  committing.
 - ALWAYS use
   [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (e.g.,
   `feat:`, `fix:`, `refactor:`) when creating commit messages.
@@ -85,11 +87,13 @@ worktree is created as a sibling directory to `main/` and `.bare/`.
 remove worktrees manually.
 
 **Command** (run from any existing worktree):
+
 ```sh
 deno task worktree:cleanup <branch-name>
 ```
 
 **Example:**
+
 ```sh
 deno task worktree:cleanup feat/deck-shuffle
 ```
