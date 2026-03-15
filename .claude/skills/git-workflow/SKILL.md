@@ -37,14 +37,6 @@ points back to `.bare` via its `.git` file. There is no traditional clone —
 **You MUST use `deno task worktree:setup` to set up new worktrees.** Never
 create worktrees manually.
 
-The script automates:
-1. Fetching the latest `origin main`
-2. Creating the worktree and branch
-3. Copying `.env` and `.claude/settings.local.json` from `main/` (warns if
-   missing, does not fail)
-4. Running `deno install --allow-scripts`, `deno task prisma:migrate`, and
-   `deno task prisma:generate`
-
 **Command** (run from any existing worktree):
 ```sh
 deno task worktree:setup <branch-name>
@@ -61,9 +53,9 @@ worktree is created as a sibling directory to `main/` and `.bare/`.
 
 ## Committing Code
 
-- Before committing, run `deno test`, `deno lint`, `deno check`, and `deno fmt`.
+- Before committing, you MUST run `deno check`.
   Fix any failures before committing.
-- Always use
+- ALWAYS use
   [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (e.g.,
   `feat:`, `fix:`, `refactor:`) when creating commit messages.
 - Commit early, commit often. Each commit should represent a small, logical unit
@@ -71,11 +63,11 @@ worktree is created as a sibling directory to `main/` and `.bare/`.
 
 ## Creating Pull Requests
 
-- Push your branch using `git`:
+- MUST push your branch using `git`:
   ```sh
   git push origin <branch-name>
   ```
-- Create a PR using `gh`:
+- MUST create a PR using `gh`:
   ```sh
   gh pr create --base main --title "<type>: <description>" --body "<summary of changes>"
   ```
@@ -91,13 +83,6 @@ worktree is created as a sibling directory to `main/` and `.bare/`.
 
 **You MUST use `deno task worktree:cleanup` to clean up after a merge.** Never
 remove worktrees manually.
-
-The script:
-1. Verifies the PR is merged or closed (aborts if still open)
-2. Removes the worktree directory
-3. Deletes the local branch
-4. Fetches `origin` with `--prune`
-5. Pulls `main` to the latest
 
 **Command** (run from any existing worktree):
 ```sh
