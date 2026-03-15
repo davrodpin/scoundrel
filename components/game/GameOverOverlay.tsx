@@ -1,16 +1,21 @@
-export function getLeaderboardPositionText(topPercent: number): string {
+type LeaderboardPositionText = { label: string; percent: string };
+
+export function getLeaderboardPositionText(
+  topPercent: number,
+): LeaderboardPositionText {
+  const percent = `(top ${topPercent}%)`;
   if (topPercent <= 10) {
-    return `Near the top of the Leaderboard (top ${topPercent}%)`;
+    return { label: "Near the top of the Leaderboard", percent };
   } else if (topPercent <= 25) {
-    return `In the upper ranks of the Leaderboard (top ${topPercent}%)`;
+    return { label: "In the upper ranks of the Leaderboard", percent };
   } else if (topPercent <= 50) {
-    return `In the upper half of the Leaderboard (top ${topPercent}%)`;
+    return { label: "In the upper half of the Leaderboard", percent };
   } else if (topPercent <= 75) {
-    return `In the lower half of the Leaderboard (top ${topPercent}%)`;
+    return { label: "In the lower half of the Leaderboard", percent };
   } else if (topPercent <= 90) {
-    return `Near the bottom of the Leaderboard (top ${topPercent}%)`;
+    return { label: "Near the bottom of the Leaderboard", percent };
   } else {
-    return `Close to the bottom of the Leaderboard (top ${topPercent}%)`;
+    return { label: "Close to the bottom of the Leaderboard", percent };
   }
 }
 
@@ -70,7 +75,17 @@ export function GameOverOverlay(
             : !isInTopN && topPercent != null
             ? (
               <div class="text-parchment-dark text-sm font-body mt-2">
-                {getLeaderboardPositionText(topPercent)}
+                {(() => {
+                  const { label, percent } = getLeaderboardPositionText(
+                    topPercent,
+                  );
+                  return (
+                    <>
+                      <div>{label}</div>
+                      <div>{percent}</div>
+                    </>
+                  );
+                })()}
               </div>
             )
             : null}
