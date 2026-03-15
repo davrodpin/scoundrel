@@ -48,7 +48,7 @@ export function GameOverOverlay(
           {isInTopN && rank != null
             ? (
               <div class="text-parchment-dark text-sm font-body mt-2">
-                #{rank}
+                Leaderboard Rank #{rank}
               </div>
             )
             : !isInTopN && topPercent != null

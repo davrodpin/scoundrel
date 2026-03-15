@@ -313,6 +313,7 @@ export function createGameService(
           if (!entry) return null;
           const { rank, totalEntries } = await repository.getLeaderboardRank(
             entry.score,
+            new Date(entry.completedAt),
           );
           const topPercent = totalEntries === 0
             ? 100

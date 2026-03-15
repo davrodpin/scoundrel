@@ -29,6 +29,7 @@ export type GameRepository = {
   getLeaderboardEntry(gameId: string): Promise<LeaderboardEntry | null>;
   getLeaderboardRank(
     score: number,
+    completedAt: Date,
   ): Promise<{ rank: number; totalEntries: number }>;
   createLeaderboardEntry(
     gameId: string,
@@ -198,7 +199,7 @@ export function createPrismaGameRepository(
         "db.limit": limit,
       }, async () => {
         const rows = await prisma.leaderboardEntry.findMany({
-          orderBy: { score: "desc" },
+          orderBy: [{ score: "desc" }, { completedAt: "asc" }],
           take: limit,
           select: {
             gameId: true,
@@ -258,13 +259,21 @@ export function createPrismaGameRepository(
 
     getLeaderboardRank(
       score: number,
+      completedAt: Date,
     ): Promise<{ rank: number; totalEntries: number }> {
       return withSpan(tracer, "db.getLeaderboardRank", {
         "db.operation": "count",
         "leaderboard.score": score,
       }, async () => {
         const [above, total] = await Promise.all([
-          prisma.leaderboardEntry.count({ where: { score: { gt: score } } }),
+          prisma.leaderboardEntry.count({
+            where: {
+              OR: [
+                { score: { gt: score } },
+                { score: { equals: score }, completedAt: { lt: completedAt } },
+              ],
+            },
+          }),
           prisma.leaderboardEntry.count(),
         ]);
         return { rank: above + 1, totalEntries: total };
