@@ -78,7 +78,7 @@ cd ../feat/deck-shuffle
   ```
 - MUST create a PR using `gh`:
   ```sh
-  gh pr create --base main --title "<type>: <description>" --body "<summary of changes>"
+  gh pr create --base main --head --title "<type>: <description>" --body "<summary of changes>"
   ```
 - In the PR description, provide a clear summary of the changes you made, why
   they were necessary, and any relevant context or links to related issues.
