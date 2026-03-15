@@ -1,14 +1,14 @@
 ---
 name: git-workflow
-description: How to use git worktrees, commit code, push changes, and create pull requests
+description: How to use git worktrees, commit code, push changes, and create pull requests. Use this skill whenever ANY file in the repository is modified — code, tests, documentation, markdown, config files, skill files, or anything else. Every change goes through a worktree.
 ---
 
 # Git Workflow
 
-Every time you need to implement a change, whether a feature or a bug fix, you
-must create a [git worktree](https://git-scm.com/docs/git-worktree) to allow
-other developers or agents to work on the same codebase in parallel without
-conflicts.
+Every time you need to make any change to the repository — whether code, tests,
+documentation, config, skill files, or anything else — you must create a
+[git worktree](https://git-scm.com/docs/git-worktree) to allow other developers
+or agents to work on the same codebase in parallel without conflicts.
 
 ## Tools
 
