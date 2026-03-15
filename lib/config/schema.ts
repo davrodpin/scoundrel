@@ -11,7 +11,7 @@ export const configSchema = z.object({
   }).default({}),
   game: z.object({
     defaultPlayerName: z.string().default("Anonymous"),
-    leaderboardLimit: z.number().int().positive().default(25),
+    leaderboardLimit: z.number().int().positive().default(100),
   }).default({}),
   deploy: z.object({
     id: z.string().optional(),
