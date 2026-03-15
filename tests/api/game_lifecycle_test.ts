@@ -176,8 +176,8 @@ Deno.test("game lifecycle — completed game appears in leaderboard", async () =
   };
   assert(Array.isArray(leaderboard.entries));
   assert(
-    leaderboard.entries.some((entry) => entry.gameId === gameId),
-    "Completed game should appear in leaderboard",
+    leaderboard.playerRank !== null,
+    "Completed game should have a leaderboard entry",
   );
 });
 
@@ -210,15 +210,23 @@ Deno.test("game lifecycle — leaderboard rank matches list position for complet
   assert(Array.isArray(rankData.entries));
   assert(rankData.playerRank !== null, "Completed game should have a rank");
 
-  // Find 1-based position in the entries list
+  // If rank <= 100, game must appear in entries at that position.
+  // If rank > 100, game must not appear in entries (list is capped at 100).
   const position =
     rankData.entries.findIndex((entry) => entry.gameId === gameId) + 1;
-  assert(position > 0, "Completed game should appear in leaderboard list");
-  assertEquals(
-    position,
-    rankData.playerRank.rank,
-    `Rank ${rankData.playerRank.rank} should match list position ${position}`,
-  );
+  if (rankData.playerRank.rank <= 100) {
+    assertEquals(
+      position,
+      rankData.playerRank.rank,
+      `Rank ${rankData.playerRank.rank} should match list position ${position}`,
+    );
+  } else {
+    assertEquals(
+      position,
+      0,
+      `Game ranked ${rankData.playerRank.rank} (>100) should not appear in entries`,
+    );
+  }
 });
 
 Deno.test("game lifecycle — getGame returns current state", async () => {
