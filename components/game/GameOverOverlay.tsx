@@ -5,17 +5,17 @@ export function getLeaderboardPositionText(
 ): LeaderboardPositionText {
   const percent = `(top ${topPercent}%)`;
   if (topPercent <= 10) {
-    return { label: "Near the top of the Leaderboard", percent };
+    return { label: "Near the top of the Gravekeeper's Ledger", percent };
   } else if (topPercent <= 25) {
-    return { label: "In the upper ranks of the Leaderboard", percent };
+    return { label: "In the upper ranks of the Gravekeeper's Ledger", percent };
   } else if (topPercent <= 50) {
-    return { label: "In the upper half of the Leaderboard", percent };
+    return { label: "In the upper half of the Gravekeeper's Ledger", percent };
   } else if (topPercent <= 75) {
-    return { label: "In the lower half of the Leaderboard", percent };
+    return { label: "In the lower half of the Gravekeeper's Ledger", percent };
   } else if (topPercent <= 90) {
-    return { label: "Near the bottom of the Leaderboard", percent };
+    return { label: "Near the bottom of the Gravekeeper's Ledger", percent };
   } else {
-    return { label: "Close to the bottom of the Leaderboard", percent };
+    return { label: "Close to the bottom of the Gravekeeper's Ledger", percent };
   }
 }
 
@@ -69,7 +69,7 @@ export function GameOverOverlay(
           {isInTopN && rank != null
             ? (
               <div class="text-parchment-dark text-sm font-body mt-2">
-                Leaderboard Rank #{rank}
+                Gravekeeper's Ledger Rank #{rank}
               </div>
             )
             : !isInTopN && topPercent != null
@@ -113,7 +113,7 @@ export function GameOverOverlay(
                   loading ? "pointer-events-none opacity-50" : ""
                 }`}
               >
-                Show Leaderboard
+                The Gravekeeper's Ledger
               </a>
             )}
             <a

@@ -31,7 +31,9 @@ export function LeaderboardPanel(
       >
         {/* Header */}
         <div class="flex items-center justify-between px-5 py-4 border-b border-dungeon-border">
-          <h2 class="font-heading text-xl text-torch-amber">Hall of Fame</h2>
+          <h2 class="font-heading text-xl text-torch-amber">
+            The Gravekeeper's Ledger
+          </h2>
           <button
             type="button"
             class="text-parchment-dark hover:text-parchment transition-colors duration-200 text-xl leading-none"

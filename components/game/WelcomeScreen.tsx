@@ -58,7 +58,7 @@ export function WelcomeScreen(
               href="/leaderboard"
               class="text-sm font-body text-parchment-dark hover:text-torch-amber transition-colors duration-200"
             >
-              Show Leaderboard
+              The Gravekeeper's Ledger
             </a>
           </div>
           {errorMsg && (
