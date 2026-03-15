@@ -45,7 +45,7 @@ Deno.test("WelcomeScreen - renders How to Play link", () => {
   assertEquals(html.includes("How to Play"), true);
 });
 
-Deno.test("WelcomeScreen - renders Show Leaderboard link", () => {
+Deno.test("WelcomeScreen - renders The Gravekeeper's Ledger link", () => {
   const html = render(
     <WelcomeScreen
       playerName=""
@@ -55,7 +55,8 @@ Deno.test("WelcomeScreen - renders Show Leaderboard link", () => {
       errorMsg={null}
     />,
   );
-  assertEquals(html.includes("Show Leaderboard"), true);
+  assertEquals(html.includes("Gravekeeper"), true);
+  assertEquals(html.includes("Ledger"), true);
   assertEquals(html.includes('href="/leaderboard"'), true);
 });
 

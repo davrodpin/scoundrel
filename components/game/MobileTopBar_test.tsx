@@ -37,7 +37,10 @@ Deno.test("MobileTopBar - contains Game rules button", () => {
 
 Deno.test("MobileTopBar - contains Leaderboard button", () => {
   const html = render(<MobileTopBar {...baseProps} />);
-  assertEquals(html.includes(`aria-label="Leaderboard"`), true);
+  assertEquals(
+    html.includes(`aria-label="The Gravekeeper&#39;s Ledger"`),
+    true,
+  );
 });
 
 Deno.test("MobileTopBar - contains copy link button with correct aria-label when not copied", () => {

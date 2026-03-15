@@ -61,7 +61,9 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
     <div class="min-h-screen bg-dungeon-bg text-parchment p-4 md:p-8">
       <div class="max-w-lg mx-auto">
         <div class="flex items-center justify-between mb-6">
-          <h1 class="font-heading text-3xl text-torch-amber">Hall of Fame</h1>
+          <h1 class="font-heading text-3xl text-torch-amber">
+            The Gravekeeper's Ledger
+          </h1>
           <a
             href="/play"
             class="text-sm font-body text-parchment-dark hover:text-parchment transition-colors duration-200"
@@ -82,6 +84,7 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
                 entries={entries.value}
                 highlightGameId={gameId ?? null}
                 extraEntry={extraEntry}
+                showDungeonLink={!!gameId}
               />
             )}
         </div>

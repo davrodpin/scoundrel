@@ -4,10 +4,12 @@ type LeaderboardTableProps = {
   entries: LeaderboardEntry[];
   highlightGameId: string | null;
   extraEntry?: { entry: LeaderboardEntry; rank: number } | null;
+  showDungeonLink?: boolean;
 };
 
 export function LeaderboardTable(
-  { entries, highlightGameId, extraEntry }: LeaderboardTableProps,
+  { entries, highlightGameId, extraEntry, showDungeonLink = false }:
+    LeaderboardTableProps,
 ) {
   const showExtraEntry = extraEntry != null &&
     !entries.some((e) => e.gameId === extraEntry.entry.gameId);
@@ -17,7 +19,7 @@ export function LeaderboardTable(
       <thead>
         <tr class="text-parchment-dark border-b border-dungeon-border">
           <th class="text-left py-2 w-8">#</th>
-          <th class="text-left py-2">Adventurer</th>
+          <th class="text-left py-2">Fallen Hero</th>
           <th class="text-right py-2">Score</th>
         </tr>
       </thead>
@@ -36,7 +38,19 @@ export function LeaderboardTable(
               <td class="py-2 text-parchment-dark">{i + 1}</td>
               <td class="py-2 truncate max-w-[180px]">
                 {isHighlighted
-                  ? `\u25b6 ${entry.playerName}`
+                  ? (
+                    <span class="inline-flex items-center gap-2">
+                      {`\u25b6 ${entry.playerName}`}
+                      {showDungeonLink && (
+                        <a
+                          href={`/play/${entry.gameId}`}
+                          class="text-xs text-parchment-dark hover:text-torch-glow transition-colors duration-200 border border-dungeon-border rounded-sm px-1 py-0.5 shrink-0"
+                        >
+                          See Dungeon
+                        </a>
+                      )}
+                    </span>
+                  )
                   : entry.playerName}
               </td>
               <td
@@ -62,7 +76,17 @@ export function LeaderboardTable(
             <tr class="border-b border-dungeon-border/40 bg-torch-amber/10 text-torch-glow">
               <td class="py-2 text-parchment-dark">{extraEntry!.rank}</td>
               <td class="py-2 truncate max-w-[180px]">
-                {`\u25b6 ${extraEntry!.entry.playerName}`}
+                <span class="inline-flex items-center gap-2">
+                  {`\u25b6 ${extraEntry!.entry.playerName}`}
+                  {showDungeonLink && (
+                    <a
+                      href={`/play/${extraEntry!.entry.gameId}`}
+                      class="text-xs text-parchment-dark hover:text-torch-glow transition-colors duration-200 border border-dungeon-border rounded-sm px-1 py-0.5 shrink-0"
+                    >
+                      See Dungeon
+                    </a>
+                  )}
+                </span>
               </td>
               <td
                 class={`py-2 text-right font-heading ${

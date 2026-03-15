@@ -28,6 +28,9 @@
     "**/_fresh/*",
     "lib/generated/**"
   ],
+  "fmt": {
+    "lineWidth": 80
+  },
   "imports": {
     "@/": "./",
     "fresh": "jsr:@fresh/core@^2.2.0",
