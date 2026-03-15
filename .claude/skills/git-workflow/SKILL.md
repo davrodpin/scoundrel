@@ -53,6 +53,13 @@ Branch naming convention: `<type>/<short-description>` (e.g.,
 `feat/deck-shuffle`, `fix/health-overflow`, `refactor/combat-logic`). The
 worktree is created as a sibling directory to `main/` and `.bare/`.
 
+After creating the worktree, you **MUST** change your current working directory
+to the new worktree before doing any work:
+
+```sh
+cd ../feat/deck-shuffle
+```
+
 ## Committing Code
 
 - Before committing, you MUST run `deno check`. Fix any failures before
