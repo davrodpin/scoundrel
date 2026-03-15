@@ -37,7 +37,7 @@ Deno.test("defaults applied for optional fields", () => {
   assertEquals(cfg.app.maxBodyBytes, 4096);
   assertEquals(cfg.app.maxPlayerNameLength, 16);
   assertEquals(cfg.game.defaultPlayerName, "Anonymous");
-  assertEquals(cfg.game.leaderboardLimit, 25);
+  assertEquals(cfg.game.leaderboardLimit, 100);
   assertEquals(cfg.deploy.id, undefined);
 });
 
