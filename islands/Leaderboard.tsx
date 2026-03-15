@@ -3,6 +3,7 @@ import { useEffect } from "preact/hooks";
 import type {
   LeaderboardEntry,
   LeaderboardRank,
+  LeaderboardResponse,
 } from "@scoundrel/game-service";
 import { LeaderboardTable } from "../components/game/LeaderboardTable.tsx";
 import { getLeaderboardStatusMessage } from "../components/game/leaderboard_panel_utils.ts";
@@ -20,23 +21,14 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
     async function load() {
       loading.value = true;
       try {
-        if (gameId) {
-          const [leaderboardRes, rankRes] = await Promise.all([
-            fetch("/api/leaderboard"),
-            fetch(`/api/leaderboard?gameId=${gameId}`),
-          ]);
-          if (leaderboardRes.ok) {
-            entries.value = await leaderboardRes.json() as LeaderboardEntry[];
-          }
-          if (rankRes.ok) {
-            const rankData = await rankRes.json() as LeaderboardRank | null;
-            playerRank.value = rankData;
-          }
-        } else {
-          const res = await fetch("/api/leaderboard");
-          if (res.ok) {
-            entries.value = await res.json() as LeaderboardEntry[];
-          }
+        const url = gameId
+          ? `/api/leaderboard?gameId=${gameId}`
+          : "/api/leaderboard";
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json() as LeaderboardResponse;
+          entries.value = data.entries;
+          playerRank.value = data.playerRank;
         }
       } catch {
         // Non-critical — silently fail

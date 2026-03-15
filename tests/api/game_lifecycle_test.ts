@@ -4,21 +4,12 @@
 import { assert, assertEquals, assertExists } from "@std/assert";
 import {
   createGame,
+  type GameView,
   getEventLog,
   getGame,
   getLeaderboard,
   submitAction,
 } from "./helpers.ts";
-
-type GameView = {
-  gameId: string;
-  playerName: string;
-  health: number;
-  dungeonCount: number;
-  room: Array<{ suit: string; rank: number }>;
-  phase: { kind: string };
-  score: number | null;
-};
 
 Deno.test("game lifecycle — create game returns 201 with initial state", async () => {
   const res = await createGame("LifecycleTester");
@@ -179,14 +170,17 @@ Deno.test("game lifecycle — completed game appears in leaderboard", async () =
   const rankRes = await getLeaderboard(gameId);
   assertEquals(rankRes.status, 200);
 
-  const rankData = await rankRes.json() as {
-    entry: { gameId: string };
-    rank: number;
-    topPercent: number;
-  } | null;
-  assertExists(rankData, "Completed game should have a leaderboard entry");
+  const leaderboard = await rankRes.json() as {
+    entries: Array<{ gameId: string }>;
+    playerRank: { entry: { gameId: string }; rank: number } | null;
+  };
+  assert(Array.isArray(leaderboard.entries));
+  assertExists(
+    leaderboard.playerRank,
+    "Completed game should have a leaderboard entry",
+  );
   assertEquals(
-    rankData.entry.gameId,
+    leaderboard.playerRank.entry.gameId,
     gameId,
     "Leaderboard entry should match the completed game",
   );
@@ -211,29 +205,32 @@ Deno.test("game lifecycle — leaderboard rank matches list position for complet
   }
   assertEquals(view.phase.kind, "game_over");
 
-  // Get the rank for this game
+  // Get rank for this game (combined response includes both)
   const rankRes = await getLeaderboard(gameId);
   assertEquals(rankRes.status, 200);
   const rankData = await rankRes.json() as {
-    entry: { gameId: string };
-    rank: number;
-    topPercent: number;
-  } | null;
-  assertExists(rankData, "Completed game should have a leaderboard rank entry");
-  assert(rankData.rank >= 1, "Rank should be a positive integer");
+    entries: Array<{ gameId: string }>;
+    playerRank: { rank: number } | null;
+  };
+  assert(Array.isArray(rankData.entries));
+  assert(rankData.playerRank !== null, "Completed game should have a rank");
+  assert(rankData.playerRank.rank >= 1, "Rank should be a positive integer");
 
-  // Get the full leaderboard list and verify rank matches position (if in top list)
-  const listRes = await getLeaderboard();
-  assertEquals(listRes.status, 200);
-  const list = await listRes.json() as Array<{ gameId: string }>;
-  assert(Array.isArray(list));
-
-  const position = list.findIndex((entry) => entry.gameId === gameId) + 1;
-  if (position > 0) {
+  // If rank <= 100, game must appear in entries at that position.
+  // If rank > 100, game must not appear in entries (list is capped at 100).
+  const position =
+    rankData.entries.findIndex((entry) => entry.gameId === gameId) + 1;
+  if (rankData.playerRank.rank <= 100) {
     assertEquals(
       position,
-      rankData.rank,
-      `Rank ${rankData.rank} should match list position ${position}`,
+      rankData.playerRank.rank,
+      `Rank ${rankData.playerRank.rank} should match list position ${position}`,
+    );
+  } else {
+    assertEquals(
+      position,
+      0,
+      `Game ranked ${rankData.playerRank.rank} (>100) should not appear in entries`,
     );
   }
 });

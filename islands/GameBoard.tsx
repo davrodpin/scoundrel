@@ -4,7 +4,7 @@ import { type Card, type GameAction } from "@scoundrel/engine";
 import type {
   GameView,
   LeaderboardEntry,
-  LeaderboardRank,
+  LeaderboardResponse,
 } from "@scoundrel/game-service";
 import { computeActionPanel } from "../components/game/action_panel_utils.ts";
 import { HealthDisplay } from "../components/game/HealthDisplay.tsx";
@@ -63,7 +63,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     try {
       const res = await fetch("/api/leaderboard");
       if (res.ok) {
-        leaderboardEntries.value = await res.json() as LeaderboardEntry[];
+        const data = await res.json() as LeaderboardResponse;
+        leaderboardEntries.value = data.entries;
       }
     } catch {
       // Non-critical — silently fail
@@ -75,19 +76,13 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   async function fetchLeaderboardWithRank(gameId: string) {
     leaderboardLoading.value = true;
     try {
-      const [leaderboardRes, rankRes] = await Promise.all([
-        fetch("/api/leaderboard"),
-        fetch(`/api/leaderboard?gameId=${gameId}`),
-      ]);
-      if (leaderboardRes.ok) {
-        leaderboardEntries.value = await leaderboardRes
-          .json() as LeaderboardEntry[];
-      }
-      if (rankRes.ok) {
-        const rankData = await rankRes.json() as LeaderboardRank | null;
-        if (rankData) {
-          playerRank.value = rankData.rank;
-          topPercent.value = rankData.topPercent;
+      const res = await fetch(`/api/leaderboard?gameId=${gameId}`);
+      if (res.ok) {
+        const data = await res.json() as LeaderboardResponse;
+        leaderboardEntries.value = data.entries;
+        if (data.playerRank) {
+          playerRank.value = data.playerRank.rank;
+          topPercent.value = data.playerRank.topPercent;
         }
       }
     } catch {

@@ -301,9 +301,7 @@ export function createGameService(
 
     getLeaderboardRank(gameId: string): Promise<LeaderboardRank | null> {
       if (!uuidSchema.safeParse(gameId).success) {
-        return Promise.reject(
-          new AppError("GameNotFoundError", 404, { gameId }),
-        );
+        return Promise.resolve(null);
       }
       return withSpan(
         "game.getLeaderboardRank",
