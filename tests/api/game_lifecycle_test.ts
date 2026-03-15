@@ -149,7 +149,7 @@ Deno.test("game lifecycle — event log is available for completed game", async 
 
 Deno.test("game lifecycle — completed game appears in leaderboard", async () => {
   // Play through a full game
-  const createRes = await createGame("LeaderboardTester");
+  const createRes = await createGame("LbTester");
   assertEquals(createRes.status, 201);
   let view = await createRes.json() as GameView;
   const gameId = view.gameId;
@@ -183,7 +183,7 @@ Deno.test("game lifecycle — completed game appears in leaderboard", async () =
 
 Deno.test("game lifecycle — leaderboard rank matches list position for completed game", async () => {
   // Play a full game to completion
-  const createRes = await createGame("RankPositionTester");
+  const createRes = await createGame("RankTester");
   assertEquals(createRes.status, 201);
   let view = await createRes.json() as GameView;
   const gameId = view.gameId;
