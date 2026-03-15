@@ -31,7 +31,7 @@ Never skip a step. Never write production code without a failing test first.
 ## Test File Conventions
 
 - **Unit tests** live alongside the code they test: `<filename>_test.ts`
-- **Integration tests** live in a `tests/` directory within the module
+- **Integration tests** live in `tests/api/` — full-stack HTTP tests with no mocks
 - Use Deno's built-in test runner: `Deno.test`
 - Integration tests use no mocks — they run against real dependencies
 - Run tests with: `deno test`
@@ -49,7 +49,7 @@ first, dependency injection, etc.).
 
 ## Development Workflow
 
-### Code Changes (steps 1–6)
+### Code Changes (steps 1–7)
 
 1. **Create and set up a worktree** — Follow the `git-workflow` skill to create
    a git worktree and branch, then set up the worktree environment (copy `.env`,
@@ -63,13 +63,33 @@ first, dependency injection, etc.).
    at a time
 6. **Run full checks** — `deno task check` to verify formatting, linting, and
    type checking all pass
+7. **Evaluate integration tests** — If the change affects what the API sends or
+   receives (new endpoints, changed request/response shapes, new error codes,
+   altered status codes, modified query parameters), add or update integration
+   tests in `tests/api/`. This is not a TDD cycle — write the tests after the
+   implementation is complete and unit tests pass.
+
+   **When to act**:
+   - New API route or HTTP method → add tests to an existing file or create a new one
+   - Changed response shape (added/removed/renamed fields) → update assertions
+   - New error reason or changed status code → add a validation test case
+   - Changed query parameter behavior → update or add tests that exercise it
+
+   **When to skip**: internal refactors, engine logic changes, UI-only changes,
+   documentation — anything that does not alter what a client sees over HTTP.
+
+   **Conventions**:
+   - Use helpers from `tests/api/helpers.ts`; add new helpers when a new endpoint is introduced
+   - Test names follow `"category — scenario"` format
+   - Tests make real HTTP requests — no mocks
+   - Cannot run locally; CI runs them against Deno Deploy preview URLs
 
 ### Every Change (mandatory, no exceptions)
 
-> **MANDATORY FOR ALL CHANGES** — Steps 1–6 apply only to code. Step 7 applies
+> **MANDATORY FOR ALL CHANGES** — Steps 1–7 apply only to code. Step 8 applies
 > to every change without exception, including documentation and skill updates.
 
-7. **Commit and push** — follow the `git-workflow` skill for committing,
+8. **Commit and push** — follow the `git-workflow` skill for committing,
    pushing, and creating a PR. This step applies to ALL changes: code,
    documentation, skill files, configuration. Never leave changes uncommitted.
 
