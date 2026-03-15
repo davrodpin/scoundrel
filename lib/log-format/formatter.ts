@@ -1,6 +1,6 @@
 import {
   getAnsiColorFormatter,
-  getTextFormatter,
+  getJsonLinesFormatter,
   type TextFormatter,
 } from "@logtape/logtape";
 
@@ -16,14 +16,9 @@ function formatProps(
 
 export function selectFormatter(
   deploymentId: string | undefined,
-): TextFormatter {
+): TextFormatter | ReturnType<typeof getJsonLinesFormatter> {
   if (deploymentId) {
-    return getTextFormatter({
-      format({ timestamp, level, category, message, record }) {
-        const props = formatProps(record.properties, false);
-        return `${timestamp} [${level}] ${category}: ${message}${props}`;
-      },
-    });
+    return getJsonLinesFormatter({ properties: "flatten" });
   }
   return getAnsiColorFormatter({
     format({ timestamp, level, category, message, record }) {
