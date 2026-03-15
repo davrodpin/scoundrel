@@ -55,7 +55,7 @@ export function GameOverOverlay(
         <div class="mb-6">
           <div class="text-parchment-dark text-sm font-body mb-1">Score</div>
           <div
-            class={`font-heading text-5xl ${
+            class={`font-heading text-4xl md:text-5xl ${
               score >= 0 ? "text-torch-glow" : "text-blood-bright"
             }`}
           >
@@ -90,7 +90,7 @@ export function GameOverOverlay(
           >
             {loading ? "Starting..." : "New Game"}
           </button>
-          <div class="flex gap-3">
+          <div class="flex flex-col md:flex-row gap-3">
             {gameId && (
               <a
                 href={`/leaderboard?gameId=${gameId}`}
