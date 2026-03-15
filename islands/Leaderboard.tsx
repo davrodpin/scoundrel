@@ -84,6 +84,7 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
                 entries={entries.value}
                 highlightGameId={gameId ?? null}
                 extraEntry={extraEntry}
+                showDungeonLink={!!gameId}
               />
             )}
         </div>
