@@ -54,7 +54,7 @@ export function LeaderboardPanel(
                 <thead>
                   <tr class="text-parchment-dark border-b border-dungeon-border">
                     <th class="text-left py-2 w-8">#</th>
-                    <th class="text-left py-2">Adventurer</th>
+                    <th class="text-left py-2">Fallen Hero</th>
                     <th class="text-right py-2">Score</th>
                   </tr>
                 </thead>

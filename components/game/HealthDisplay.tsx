@@ -138,7 +138,7 @@ export function HealthDisplay(
         {/* Name field */}
         <div class="px-5 py-3 flex flex-col gap-1.5 min-w-[140px]">
           <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-            Adventurer
+            Hero
           </span>
           <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight">
             {playerName}

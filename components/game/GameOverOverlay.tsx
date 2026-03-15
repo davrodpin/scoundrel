@@ -56,7 +56,7 @@ export function GameOverOverlay(
               <thead>
                 <tr class="text-parchment-dark border-b border-dungeon-border">
                   <th class="text-left py-1 w-6">#</th>
-                  <th class="text-left py-1">Adventurer</th>
+                  <th class="text-left py-1">Fallen Hero</th>
                   <th class="text-right py-1">Score</th>
                 </tr>
               </thead>
