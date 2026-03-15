@@ -76,7 +76,7 @@ Deno.test("validation — submit malformed JSON returns 422 InvalidJsonError", a
 });
 
 Deno.test("validation — get event log for in-progress game returns 404", async () => {
-  const createRes = await createGame("InProgTester");
+  const createRes = await createGame("InProgressEvtLog");
   assertEquals(createRes.status, 201);
   const view = await createRes.json() as { gameId: string };
 

@@ -149,7 +149,7 @@ Deno.test("game lifecycle — event log is available for completed game", async 
 
 Deno.test("game lifecycle — completed game appears in leaderboard", async () => {
   // Play through a full game
-  const createRes = await createGame("LbTester");
+  const createRes = await createGame("LeaderboardTest");
   assertEquals(createRes.status, 201);
   let view = await createRes.json() as GameView;
   const gameId = view.gameId;
@@ -166,24 +166,26 @@ Deno.test("game lifecycle — completed game appears in leaderboard", async () =
   }
   assertEquals(view.phase.kind, "game_over");
 
-  // Verify game appears in leaderboard
-  const leaderboardRes = await getLeaderboard(gameId);
-  assertEquals(leaderboardRes.status, 200);
+  // Verify game has a leaderboard entry via the rank endpoint
+  const rankRes = await getLeaderboard(gameId);
+  assertEquals(rankRes.status, 200);
 
-  const leaderboard = await leaderboardRes.json() as {
+  const leaderboard = await rankRes.json() as {
     entries: Array<{ gameId: string }>;
-    playerRank: { rank: number } | null;
+    playerRank: { entry: { gameId: string }; rank: number } | null;
   };
   assert(Array.isArray(leaderboard.entries));
-  assert(
-    leaderboard.playerRank !== null,
-    "Completed game should have a leaderboard entry",
+  assertExists(leaderboard.playerRank, "Completed game should have a leaderboard entry");
+  assertEquals(
+    leaderboard.playerRank.entry.gameId,
+    gameId,
+    "Leaderboard entry should match the completed game",
   );
 });
 
 Deno.test("game lifecycle — leaderboard rank matches list position for completed game", async () => {
   // Play a full game to completion
-  const createRes = await createGame("RankTester");
+  const createRes = await createGame("RankPosTester");
   assertEquals(createRes.status, 201);
   let view = await createRes.json() as GameView;
   const gameId = view.gameId;
@@ -209,6 +211,7 @@ Deno.test("game lifecycle — leaderboard rank matches list position for complet
   };
   assert(Array.isArray(rankData.entries));
   assert(rankData.playerRank !== null, "Completed game should have a rank");
+  assert(rankData.playerRank.rank >= 1, "Rank should be a positive integer");
 
   // If rank <= 100, game must appear in entries at that position.
   // If rank > 100, game must not appear in entries (list is capped at 100).
