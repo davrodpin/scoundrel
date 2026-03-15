@@ -27,3 +27,8 @@ export type LeaderboardRank = {
   rank: number;
   topPercent: number;
 };
+
+export type LeaderboardResponse = {
+  entries: LeaderboardEntry[];
+  playerRank: LeaderboardRank | null;
+};

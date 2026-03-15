@@ -4,21 +4,12 @@
 import { assert, assertEquals, assertExists } from "@std/assert";
 import {
   createGame,
+  type GameView,
   getEventLog,
   getGame,
   getLeaderboard,
   submitAction,
 } from "./helpers.ts";
-
-type GameView = {
-  gameId: string;
-  playerName: string;
-  health: number;
-  dungeonCount: number;
-  room: Array<{ suit: string; rank: number }>;
-  phase: { kind: string };
-  score: number | null;
-};
 
 Deno.test("game lifecycle — create game returns 201 with initial state", async () => {
   const res = await createGame("LifecycleTester");
@@ -179,10 +170,13 @@ Deno.test("game lifecycle — completed game appears in leaderboard", async () =
   const leaderboardRes = await getLeaderboard(gameId);
   assertEquals(leaderboardRes.status, 200);
 
-  const leaderboard = await leaderboardRes.json() as Array<{ gameId: string }>;
-  assert(Array.isArray(leaderboard));
+  const leaderboard = await leaderboardRes.json() as {
+    entries: Array<{ gameId: string }>;
+    playerRank: { rank: number } | null;
+  };
+  assert(Array.isArray(leaderboard.entries));
   assert(
-    leaderboard.some((entry) => entry.gameId === gameId),
+    leaderboard.entries.some((entry) => entry.gameId === gameId),
     "Completed game should appear in leaderboard",
   );
 });
@@ -206,24 +200,24 @@ Deno.test("game lifecycle — leaderboard rank matches list position for complet
   }
   assertEquals(view.phase.kind, "game_over");
 
-  // Get the full leaderboard list
-  const listRes = await getLeaderboard();
-  assertEquals(listRes.status, 200);
-  const list = await listRes.json() as Array<{ gameId: string }>;
-  assert(Array.isArray(list));
-
-  // Get the rank for this game
+  // Get rank for this game (combined response includes both)
   const rankRes = await getLeaderboard(gameId);
   assertEquals(rankRes.status, 200);
-  const rankData = await rankRes.json() as { rank: number };
+  const rankData = await rankRes.json() as {
+    entries: Array<{ gameId: string }>;
+    playerRank: { rank: number } | null;
+  };
+  assert(Array.isArray(rankData.entries));
+  assert(rankData.playerRank !== null, "Completed game should have a rank");
 
-  // Find 1-based position in the list
-  const position = list.findIndex((entry) => entry.gameId === gameId) + 1;
+  // Find 1-based position in the entries list
+  const position =
+    rankData.entries.findIndex((entry) => entry.gameId === gameId) + 1;
   assert(position > 0, "Completed game should appear in leaderboard list");
   assertEquals(
     position,
-    rankData.rank,
-    `Rank ${rankData.rank} should match list position ${position}`,
+    rankData.playerRank.rank,
+    `Rank ${rankData.playerRank.rank} should match list position ${position}`,
   );
 });
 

@@ -842,7 +842,7 @@ Deno.test("getLeaderboardRank returns null when game has no leaderboard entry", 
   assertEquals(result, null);
 });
 
-Deno.test("getLeaderboardRank throws GameNotFoundError for invalid UUID", async () => {
+Deno.test("getLeaderboardRank returns null for invalid UUID", async () => {
   const repository: GameRepository = {
     ...createMockRepository(),
     getLeaderboardEntry(_gameId: string) {
@@ -857,12 +857,8 @@ Deno.test("getLeaderboardRank throws GameNotFoundError for invalid UUID", async 
     createSpyTracer().tracer,
   );
 
-  const error = await assertRejects(
-    () => service.getLeaderboardRank("not-a-uuid"),
-    AppError,
-  );
-  assertEquals(error.reason, "GameNotFoundError");
-  assertEquals(error.statusCode, 404);
+  const result = await service.getLeaderboardRank("not-a-uuid");
+  assertEquals(result, null);
 });
 
 Deno.test("getLeaderboardRank passes completedAt from entry to repository", async () => {
