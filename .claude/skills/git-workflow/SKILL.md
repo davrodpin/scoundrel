@@ -62,7 +62,8 @@ cd ../feat/deck-shuffle
 
 ## Committing Code
 
-- Before committing, you MUST run `deno check`. Fix any failures before
+- Before committing, you MUST run `deno task check`. This verifies formatting
+  (including markdown), linting, and type checking. Fix any failures before
   committing.
 - ALWAYS use
   [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (e.g.,
