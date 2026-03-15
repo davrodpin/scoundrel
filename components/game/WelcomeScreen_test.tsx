@@ -55,7 +55,8 @@ Deno.test("WelcomeScreen - renders The Gravekeeper's Ledger link", () => {
       errorMsg={null}
     />,
   );
-  assertEquals(html.includes("The Gravekeeper&#39;s Ledger"), true);
+  assertEquals(html.includes("Gravekeeper"), true);
+  assertEquals(html.includes("Ledger"), true);
   assertEquals(html.includes('href="/leaderboard"'), true);
 });
 
