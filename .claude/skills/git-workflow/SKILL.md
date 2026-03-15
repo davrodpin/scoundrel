@@ -7,9 +7,8 @@ description: How to use git worktrees, commit code, push changes, and create pul
 
 Every time you need to make any change to the repository — whether code, tests,
 documentation, config, skill files, or anything else — you must create a
-[git worktree](https://git-scm.com/docs/git-worktree) to allow
-other developers or agents to work on the same codebase in parallel without
-conflicts.
+[git worktree](https://git-scm.com/docs/git-worktree) to allow other developers
+or agents to work on the same codebase in parallel without conflicts.
 
 ## Tools
 
