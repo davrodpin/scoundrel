@@ -15,7 +15,10 @@ export function getLeaderboardPositionText(
   } else if (topPercent <= 90) {
     return { label: "Near the bottom of the Gravekeeper's Ledger", percent };
   } else {
-    return { label: "Close to the bottom of the Gravekeeper's Ledger", percent };
+    return {
+      label: "Close to the bottom of the Gravekeeper's Ledger",
+      percent,
+    };
   }
 }
 
