@@ -394,7 +394,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   // Resume loading state
   if (resumeLoading.value) {
     return (
-      <div class="min-h-screen bg-dungeon-bg flex items-center justify-center">
+      <div class="min-h-dvh bg-dungeon-bg flex items-center justify-center">
         <p class="text-parchment font-body text-xl">Loading game...</p>
       </div>
     );
@@ -403,7 +403,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   // Resume error state
   if (resumeError.value !== null) {
     return (
-      <div class="min-h-screen bg-dungeon-bg flex flex-col items-center justify-center gap-4">
+      <div class="min-h-dvh bg-dungeon-bg flex flex-col items-center justify-center gap-4">
         <p class="text-blood-bright font-body text-xl">{resumeError.value}</p>
         <a
           href="/play"
@@ -507,7 +507,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
 
   return (
     <div
-      class="min-h-screen bg-dungeon-bg text-parchment p-2 md:p-4 font-body flex flex-col items-center"
+      class="min-h-dvh bg-dungeon-bg text-parchment p-2 md:p-4 font-body flex flex-col items-center"
       onClick={() => {
         selectedCardIndex.value = null;
         focusedCardIndex.value = null;
