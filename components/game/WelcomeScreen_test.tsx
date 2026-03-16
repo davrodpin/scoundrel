@@ -6,6 +6,13 @@ import { WelcomeScreen } from "./WelcomeScreen.tsx";
 
 const noop = () => {};
 
+const defaultDeckProps = {
+  decks: [],
+  selectedDeckId: "classic",
+  onDeckChange: noop,
+  decksLoading: false,
+};
+
 Deno.test("WelcomeScreen - renders player name input", () => {
   const html = render(
     <WelcomeScreen
@@ -14,6 +21,7 @@ Deno.test("WelcomeScreen - renders player name input", () => {
       onStartGame={noop}
       loading={false}
       errorMsg={null}
+      {...defaultDeckProps}
     />,
   );
   assertEquals(html.includes("Enter your name, adventurer"), true);
@@ -27,6 +35,7 @@ Deno.test("WelcomeScreen - renders Enter the Dungeon button", () => {
       onStartGame={noop}
       loading={false}
       errorMsg={null}
+      {...defaultDeckProps}
     />,
   );
   assertEquals(html.includes("Enter the Dungeon"), true);
@@ -40,6 +49,7 @@ Deno.test("WelcomeScreen - renders How to Play link", () => {
       onStartGame={noop}
       loading={false}
       errorMsg={null}
+      {...defaultDeckProps}
     />,
   );
   assertEquals(html.includes("How to Play"), true);
@@ -53,6 +63,7 @@ Deno.test("WelcomeScreen - renders The Gravekeeper's Ledger link", () => {
       onStartGame={noop}
       loading={false}
       errorMsg={null}
+      {...defaultDeckProps}
     />,
   );
   assertEquals(html.includes("Gravekeeper"), true);
@@ -68,6 +79,7 @@ Deno.test("WelcomeScreen - Enter the Dungeon is disabled when name is empty", ()
       onStartGame={noop}
       loading={false}
       errorMsg={null}
+      {...defaultDeckProps}
     />,
   );
   assertEquals(html.includes("disabled"), true);
@@ -81,10 +93,60 @@ Deno.test("WelcomeScreen - Enter the Dungeon is enabled when name is provided", 
       onStartGame={noop}
       loading={false}
       errorMsg={null}
+      {...defaultDeckProps}
     />,
   );
   // When enabled, the disabled attribute (disabled="") should not appear in the rendered HTML.
   // Note: Tailwind class names like "disabled:opacity-50" contain "disabled:" so we check
   // for the HTML attribute form ` disabled` (space-prefixed) or `disabled="`.
   assertEquals(html.includes('disabled=""'), false);
+});
+
+Deno.test("WelcomeScreen - deck selector hidden when only one deck", () => {
+  const html = render(
+    <WelcomeScreen
+      playerName=""
+      onPlayerNameChange={noop}
+      onStartGame={noop}
+      loading={false}
+      errorMsg={null}
+      decks={[{
+        id: "classic",
+        name: "Classic",
+        basePath: "/decks/classic",
+        cards: {},
+      }]}
+      selectedDeckId="classic"
+      onDeckChange={noop}
+      decksLoading={false}
+    />,
+  );
+  assertEquals(html.includes("<select"), false);
+});
+
+Deno.test("WelcomeScreen - deck selector shown when multiple decks", () => {
+  const html = render(
+    <WelcomeScreen
+      playerName=""
+      onPlayerNameChange={noop}
+      onStartGame={noop}
+      loading={false}
+      errorMsg={null}
+      decks={[
+        {
+          id: "classic",
+          name: "Classic",
+          basePath: "/decks/classic",
+          cards: {},
+        },
+        { id: "modern", name: "Modern", basePath: "/decks/modern", cards: {} },
+      ]}
+      selectedDeckId="classic"
+      onDeckChange={noop}
+      decksLoading={false}
+    />,
+  );
+  assertEquals(html.includes("<select"), true);
+  assertEquals(html.includes("Classic"), true);
+  assertEquals(html.includes("Modern"), true);
 });

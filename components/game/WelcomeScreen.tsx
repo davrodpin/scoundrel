@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+import type { DeckInfo } from "@scoundrel/game";
 
 type WelcomeScreenProps = {
   playerName: string;
@@ -6,6 +7,10 @@ type WelcomeScreenProps = {
   onStartGame: () => void;
   loading: boolean;
   errorMsg: string | null;
+  decks: DeckInfo[];
+  selectedDeckId: string;
+  onDeckChange: (deckId: string) => void;
+  decksLoading: boolean;
 };
 
 export function WelcomeScreen(
@@ -15,6 +20,10 @@ export function WelcomeScreen(
     onStartGame,
     loading,
     errorMsg,
+    decks,
+    selectedDeckId,
+    onDeckChange,
+    decksLoading,
   }: WelcomeScreenProps,
 ) {
   const trimmedName = playerName.trim();
@@ -43,11 +52,28 @@ export function WelcomeScreen(
               class="w-full px-4 py-2 rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment font-body placeholder-parchment-dark/50 focus:outline-none focus:border-torch-amber transition-colors duration-200"
             />
           </div>
+          {decks.length > 1 && (
+            <div class="mb-4">
+              <select
+                value={selectedDeckId}
+                disabled={decksLoading}
+                onChange={(e) =>
+                  onDeckChange((e.target as HTMLSelectElement).value)}
+                class="w-full px-4 py-2 rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment font-body focus:outline-none focus:border-torch-amber transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {decks.map((deck) => (
+                  <option key={deck.id} value={deck.id}>
+                    {deck.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <button
             type="button"
             class="w-full px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body text-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onStartGame}
-            disabled={loading || trimmedName.length === 0}
+            disabled={loading || trimmedName.length === 0 || decksLoading}
           >
             Enter the Dungeon
           </button>
