@@ -28,6 +28,8 @@ import { MobileTopBar } from "../components/game/MobileTopBar.tsx";
 import { MobileAvoidRoomButton } from "../components/game/MobileAvoidRoomButton.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
+import { getAllDeckCardImagePaths } from "@scoundrel/game";
+import type { DeckInfo, DeckManifest, DeckMetadata } from "@scoundrel/game";
 import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
 import {
   isPending,
@@ -55,6 +57,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const resumeLoading = useSignal(!!initialGameId);
   const resumeError = useSignal<string | null>(null);
   const copiedLink = useSignal(false);
+  const availableDecks = useSignal<DeckInfo[]>([]);
+  const selectedDeckId = useSignal("classic");
+  const decksLoading = useSignal(true);
 
   async function fetchLeaderboard() {
     leaderboardLoading.value = true;
@@ -120,10 +125,33 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   }, []);
 
   useEffect(() => {
-    for (const path of getAllCardImagePaths()) {
-      const img = new Image();
-      img.src = path;
+    async function loadDecks() {
+      try {
+        const manifestRes = await fetch("/decks/manifest.json");
+        if (!manifestRes.ok) return;
+        const manifest = await manifestRes.json() as DeckManifest;
+        selectedDeckId.value = manifest.defaultDeck;
+
+        const deckInfos: DeckInfo[] = [];
+        for (const deckId of manifest.decks) {
+          const deckRes = await fetch(`/decks/${deckId}/deck.json`);
+          if (!deckRes.ok) continue;
+          const meta = await deckRes.json() as DeckMetadata;
+          deckInfos.push({
+            id: deckId,
+            name: meta.name,
+            basePath: `/decks/${deckId}`,
+            cards: meta.cards,
+          });
+        }
+        availableDecks.value = deckInfos;
+      } catch {
+        // Non-critical — fall back to no decks loaded
+      } finally {
+        decksLoading.value = false;
+      }
     }
+    loadDecks();
   }, []);
 
   useEffect(() => {
@@ -260,6 +288,18 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       selectedCardIndex.value = null;
       errorMsg.value = null;
       showLeaderboard.value = false;
+
+      // Preload card images for the selected deck
+      const activeDeck = availableDecks.value.find(
+        (d) => d.id === selectedDeckId.value,
+      );
+      const paths = activeDeck
+        ? getAllDeckCardImagePaths(activeDeck)
+        : getAllCardImagePaths();
+      for (const path of paths) {
+        const img = new Image();
+        img.src = path;
+      }
     } catch {
       errorMsg.value = "Failed to create game";
     } finally {
@@ -429,9 +469,19 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         onStartGame={startNewGame}
         loading={isLoading}
         errorMsg={errorMsg.value}
+        decks={availableDecks.value}
+        selectedDeckId={selectedDeckId.value}
+        onDeckChange={(id) => {
+          selectedDeckId.value = id;
+        }}
+        decksLoading={decksLoading.value}
       />
     );
   }
+
+  const activeDeck = availableDecks.value.find(
+    (d) => d.id === selectedDeckId.value,
+  );
 
   const isInteractive = (state.phase.kind === "room_ready" ||
     state.phase.kind === "choosing") && !isLoading;
@@ -554,6 +604,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
                 interactive={isDungeonInteractive}
                 onClick={handleDrawCard}
                 pending={isDungeonPending}
+                deck={activeDeck}
               />
             </GameSection>
 
@@ -566,12 +617,13 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
                 selectedIndex={selectedCardIndex.value}
                 focusedIndex={focusedCardIndex.value}
                 pendingAction={pendingAction.value}
+                deck={activeDeck}
               />
             </GameSection>
 
             {/* Discard pile */}
             <GameSection label="Discard">
-              <DiscardPile count={state.discardCount} />
+              <DiscardPile count={state.discardCount} deck={activeDeck} />
             </GameSection>
           </div>
         </div>
@@ -597,11 +649,15 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         {/* Equipped Weapon */}
         <div class="flex gap-4 justify-center w-full max-w-6xl">
           <GameSection label="Equipped Weapon">
-            <EquippedWeaponCard weapon={state.equippedWeapon} />
+            <EquippedWeaponCard
+              weapon={state.equippedWeapon}
+              deck={activeDeck}
+            />
           </GameSection>
           <GameSection label="Last Monster Slain">
             <LastSlainCard
               card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
+              deck={activeDeck}
             />
           </GameSection>
         </div>
@@ -626,13 +682,17 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         <div class="flex gap-2 w-full">
           <div class="flex-1">
             <GameSection label="Equipped Weapon">
-              <EquippedWeaponCard weapon={state.equippedWeapon} />
+              <EquippedWeaponCard
+                weapon={state.equippedWeapon}
+                deck={activeDeck}
+              />
             </GameSection>
           </div>
           <div class="flex-1">
             <GameSection label="Last Monster Slain">
               <LastSlainCard
                 card={state.equippedWeapon?.slainMonsters.at(-1) ?? null}
+                deck={activeDeck}
               />
             </GameSection>
           </div>
@@ -647,6 +707,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             selectedIndex={selectedCardIndex.value}
             focusedIndex={focusedCardIndex.value}
             pendingAction={pendingAction.value}
+            deck={activeDeck}
           />
         </GameSection>
 
@@ -698,6 +759,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             selectedCardIndex.value = null;
             focusedCardIndex.value = null;
           }}
+          deck={activeDeck}
         />
       )}
 
