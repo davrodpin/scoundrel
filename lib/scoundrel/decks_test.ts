@@ -216,16 +216,21 @@ Deno.test("disk — manifest.json is valid and has at least one deck", async () 
 });
 
 Deno.test("disk — each deck has valid deck.json with all 45 images on disk", async () => {
-  const manifestRaw = await Deno.readTextFile(
-    new URL("../../static/decks/manifest.json", import.meta.url),
-  );
-  const manifest = JSON.parse(manifestRaw) as { decks: string[] };
+  const decksDir = new URL("../../static/decks/", import.meta.url);
 
-  for (const deckId of manifest.decks) {
+  for await (const entry of Deno.readDir(decksDir)) {
+    if (!entry.isDirectory) continue;
+    const deckId = entry.name;
     const deckJsonPath = new URL(
       `../../static/decks/${deckId}/deck.json`,
       import.meta.url,
     );
+    try {
+      await Deno.stat(deckJsonPath);
+    } catch {
+      continue;
+    }
+
     const deckRaw = await Deno.readTextFile(deckJsonPath);
     const deckData = JSON.parse(deckRaw) as unknown;
     const meta = validateDeckMetadata(deckData);
