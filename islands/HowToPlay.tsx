@@ -175,7 +175,9 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Weapon Degradation */}
         <section id="weapon-degradation">
-          <SectionHeading id="weapon-degradation">Weapon Degradation</SectionHeading>
+          <SectionHeading id="weapon-degradation">
+            Weapon Degradation
+          </SectionHeading>
           <Prose>
             Once you use a weapon against a monster, it can only be used against
             monsters with a{" "}
@@ -292,7 +294,9 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Keyboard Shortcuts */}
         <section id="keyboard-shortcuts">
-          <SectionHeading id="keyboard-shortcuts">Keyboard Shortcuts</SectionHeading>
+          <SectionHeading id="keyboard-shortcuts">
+            Keyboard Shortcuts
+          </SectionHeading>
           <Prose>
             You can control the game entirely from the keyboard. Action keys
             only work when the corresponding action is available.
