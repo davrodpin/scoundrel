@@ -1,13 +1,17 @@
 import { useState } from "preact/hooks";
 import { cardBackPath } from "@scoundrel/game";
+import { deckCardBackPath } from "@scoundrel/game";
+import type { DeckInfo } from "@scoundrel/game";
 import { deckLayerOffsets, DUNGEON_MAX_CARDS } from "./deck_volume_utils.ts";
 
 type DiscardPileProps = {
   count: number;
+  deck?: DeckInfo;
 };
 
-export function DiscardPile({ count }: DiscardPileProps) {
+export function DiscardPile({ count, deck }: DiscardPileProps) {
   const [loaded, setLoaded] = useState(false);
+  const backSrc = deck ? deckCardBackPath(deck) : cardBackPath();
 
   return (
     <div class="hidden md:flex flex-col items-center gap-1">
@@ -27,7 +31,7 @@ export function DiscardPile({ count }: DiscardPileProps) {
                 />
               ))}
               <img
-                src={cardBackPath()}
+                src={backSrc}
                 alt="Discard pile"
                 draggable={false}
                 onLoad={() => setLoaded(true)}

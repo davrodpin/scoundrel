@@ -1,5 +1,6 @@
 import type { Card } from "@scoundrel/engine";
 import { CardImage } from "./CardImage.tsx";
+import type { DeckInfo } from "@scoundrel/game";
 import {
   isPendingAvoidRoom,
   isPendingOnCard,
@@ -14,6 +15,7 @@ type RoomAreaProps = {
   selectedIndex?: number | null;
   focusedIndex?: number | null;
   pendingAction?: PendingAction;
+  deck?: DeckInfo;
 };
 
 export function RoomArea(
@@ -24,6 +26,7 @@ export function RoomArea(
     selectedIndex,
     focusedIndex,
     pendingAction,
+    deck,
   }: RoomAreaProps,
 ) {
   const slots = Array.from({ length: 4 }, (_, i) => cards[i] ?? null);
@@ -65,6 +68,7 @@ export function RoomArea(
             focused={isFocused}
             highlighted={isHighlighted}
             animationClass={animClass}
+            deck={deck}
           />
         );
       })}

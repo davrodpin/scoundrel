@@ -1,11 +1,13 @@
 import type { Card } from "@scoundrel/engine";
 import { CardImage } from "./CardImage.tsx";
 import type { HealthDisplayActions } from "./HealthDisplay.tsx";
+import type { DeckInfo } from "@scoundrel/game";
 
 type MobileCardActionOverlayProps = {
   card: Card;
   actions: HealthDisplayActions;
   onCancel: () => void;
+  deck?: DeckInfo;
 };
 
 type OverlayButtonDef = {
@@ -17,7 +19,7 @@ type OverlayButtonDef = {
 };
 
 export function MobileCardActionOverlay(
-  { card, actions, onCancel }: MobileCardActionOverlayProps,
+  { card, actions, onCancel, deck }: MobileCardActionOverlayProps,
 ) {
   const buttonDefs: OverlayButtonDef[] = [
     {
@@ -67,7 +69,7 @@ export function MobileCardActionOverlay(
           onClick={(e: MouseEvent) => e.stopPropagation()}
         >
           {/* Selected card */}
-          <CardImage card={card} />
+          <CardImage card={card} deck={deck} />
 
           {/* Enabled action buttons */}
           <div class="flex flex-col gap-2 w-full">

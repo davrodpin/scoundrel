@@ -1,6 +1,8 @@
 import { useState } from "preact/hooks";
 import type { Card } from "@scoundrel/engine";
 import { cardBackPath, cardImagePath } from "@scoundrel/game";
+import { deckCardBackPath, deckCardImagePath } from "@scoundrel/game";
+import type { DeckInfo } from "@scoundrel/game";
 
 type CardImageProps = {
   card?: Card;
@@ -11,6 +13,7 @@ type CardImageProps = {
   focused?: boolean;
   disabled?: boolean;
   animationClass?: string;
+  deck?: DeckInfo;
 };
 
 export function CardImage(
@@ -23,10 +26,13 @@ export function CardImage(
     focused,
     disabled,
     animationClass,
+    deck,
   }: CardImageProps,
 ) {
   const [loaded, setLoaded] = useState(false);
-  const src = faceDown || !card ? cardBackPath() : cardImagePath(card);
+  const src = faceDown || !card
+    ? (deck ? deckCardBackPath(deck) : cardBackPath())
+    : (deck ? deckCardImagePath(deck, card) : cardImagePath(card));
   const alt = faceDown || !card ? "Card back" : `${card.rank} of ${card.suit}`;
 
   const interactive = onClick && !disabled;
