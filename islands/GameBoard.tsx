@@ -20,9 +20,7 @@ import { ActionBar } from "../components/game/ActionBar.tsx";
 import { GameSection } from "../components/game/GameSection.tsx";
 import { GameOverOverlay } from "../components/game/GameOverOverlay.tsx";
 import { RulesPanel } from "../components/game/RulesPanel.tsx";
-import { RulesToggleButton } from "../components/game/RulesToggleButton.tsx";
 import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
-import { LeaderboardToggleButton } from "../components/game/LeaderboardToggleButton.tsx";
 import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
 import { MobileDungeonButton } from "../components/game/MobileDungeonButton.tsx";
 import { MobileCardActionOverlay } from "../components/game/MobileCardActionOverlay.tsx";
@@ -515,16 +513,10 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         focusedCardIndex.value = null;
       }}
     >
-      {/* Rules toggle + panel */}
-      <div class="hidden md:block">
-        <RulesToggleButton onClick={handleToggleRules} />
-      </div>
+      {/* Rules panel */}
       <RulesPanel open={showRules.value} onClose={handleCloseRules} />
 
-      {/* Leaderboard toggle + panel */}
-      <div class="hidden md:block">
-        <LeaderboardToggleButton onClick={handleToggleLeaderboard} />
-      </div>
+      {/* Leaderboard panel */}
       <LeaderboardPanel
         open={showLeaderboard.value}
         loading={leaderboardLoading.value}
@@ -532,53 +524,6 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         currentGameId={state?.gameId ?? null}
         onClose={handleCloseLeaderboard}
       />
-
-      {/* Copy link button — desktop only */}
-      <div class="hidden md:block fixed top-2 right-20 md:top-4 md:right-24 z-30 group">
-        <button
-          type="button"
-          onClick={handleCopyLink}
-          class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
-          aria-label={copiedLink.value ? "Link copied!" : "Copy shareable link"}
-        >
-          {copiedLink.value
-            ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="w-5 h-5 text-torch-amber"
-              >
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
-            )
-            : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="w-5 h-5"
-              >
-                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-              </svg>
-            )}
-        </button>
-        <div class="pointer-events-none absolute top-full right-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200">
-          <div class="bg-dungeon-surface border border-dungeon-border text-parchment text-xs font-body px-3 py-1.5 rounded-sm whitespace-nowrap">
-            {copiedLink.value ? "Copied!" : "Copy link"}
-          </div>
-          <div class="absolute bottom-full right-3 border-4 border-transparent border-b-dungeon-border" />
-        </div>
-      </div>
 
       {/* ── DESKTOP LAYOUT (hidden on mobile) ── */}
       <div class="hidden md:flex md:flex-col md:items-center w-full">
@@ -592,6 +537,12 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             damageFlash={damageFlash.value}
             healFlash={healFlash.value}
             actions={actions}
+            toolButtons={{
+              onCopyLink: handleCopyLink,
+              onToggleLeaderboard: handleToggleLeaderboard,
+              onToggleRules: handleToggleRules,
+              copiedLink: copiedLink.value,
+            }}
           />
 
           {/* Main play area */}
