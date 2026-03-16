@@ -4,12 +4,14 @@ description: >
   Game Frontend Design Skill for the Scoundrel dungeon crawler. Use this skill
   whenever building, modifying, or reviewing any UI component, page, island,
   layout, or visual element in the Scoundrel web app — including cards, health
-  bars, game board layout, buttons, panels, and animations. Invoke this any time
-  someone touches the frontend: adding a new component, changing a page's look,
-  styling an island, adjusting colors or typography, or wiring up game state to
-  the UI. This skill defines the visual identity, Tailwind color palette,
-  component conventions, and anti-patterns that keep the dungeon crawler
-  aesthetic consistent.
+  bars, game board layout, buttons, panels, animations, and responsive/mobile
+  design. Invoke this any time someone touches the frontend: adding a new
+  component, changing a page's look, styling an island, adjusting colors or
+  typography, wiring up game state to the UI, or making mobile/responsive
+  changes. This skill defines the visual identity, Tailwind color palette,
+  component conventions, responsive layout rules, mobile components, and
+  anti-patterns that keep the dungeon crawler aesthetic consistent across all
+  screen sizes.
 ---
 
 # Game Frontend Design Skill
@@ -92,6 +94,26 @@ Card images live in `assets/cards/`. The naming pattern:
 Cards should never have `rounded-xl` or heavy `shadow-xl`. Use minimal rounding
 (`rounded` or `rounded-sm`) and subtle borders (`border border-dungeon-border`).
 
+### Card Sizing
+
+**MUST use `clamp()` for card widths** — never fixed pixel values. The pattern
+provides fluid sizing within mobile and desktop ranges using two chained
+Tailwind arbitrary values:
+
+```tsx
+// Mobile: 70px–100px, fluid between | Desktop: 140px–230px, fluid between
+<img class="w-[clamp(70px,20vw,100px)] md:w-[clamp(140px,28vw,230px)] ..." />;
+```
+
+- Mobile range: `clamp(70px, 20vw, 100px)` — compact but readable on small
+  screens
+- Desktop range: `clamp(140px, 28vw, 230px)` — full-size cards for comfortable
+  play
+- The `aspect-[460/686]` class maintains the correct playing card aspect ratio
+
+Apply this pattern to every card image: room cards, dungeon pile face-down,
+discard pile face-down, weapon cards, and stacked slain monsters.
+
 ### Stacked Cards (Weapon + Slain Monsters)
 
 When a weapon has slain monsters stacked on it, render them overlapping
@@ -158,6 +180,95 @@ Implementation approach:
 - Discard pile shows the card back (or top discarded card) with count
 - Room cards are interactive (selectable) — see Islands section
 
+## Responsive Design — Desktop & Mobile
+
+The `md:` breakpoint (768px) is the **single dividing line** between mobile and
+desktop layouts. Do not introduce other breakpoints.
+
+### Dual-Layout Pattern
+
+The game board uses two entirely separate layout trees — one for desktop, one
+for mobile — toggled by Tailwind visibility classes:
+
+```tsx
+{/* Desktop layout — hidden on mobile */}
+<div class="hidden md:flex md:flex-col ...">
+  {/* Full desktop grid: HealthDisplay | Dungeon | Room | Discard | Weapon */}
+</div>;
+
+{/* Mobile layout — hidden on desktop */}
+<div class="flex md:hidden flex-col w-full gap-2">
+  {/* MobileTopBar | Weapon | Room cards | MobileDungeonButton | Overlay */}
+</div>;
+```
+
+**MUST update both layouts** when modifying any game board element. A change to
+the desktop Room display also needs a corresponding change to the mobile Room
+display.
+
+**MUST test both viewports** (desktop ≥768px and mobile <768px) when making any
+UI change to the game board.
+
+### Desktop-Only Components
+
+These components are hidden on mobile and have dedicated mobile equivalents:
+
+| Desktop component | Mobile equivalent                           |
+| ----------------- | ------------------------------------------- |
+| `HealthDisplay`   | `MobileTopBar` (health bar)                 |
+| `DungeonPile`     | `MobileDungeonButton`                       |
+| `DiscardPile`     | (not shown — deck management is background) |
+| ActionBar buttons | `MobileCardActionOverlay`                   |
+
+## Mobile Components
+
+Four dedicated components in `components/game/` handle all mobile-specific UI.
+**MUST use these components** for mobile interactions. Do not try to make
+desktop components responsive with conditional classes.
+
+### `MobileTopBar`
+
+Header bar for mobile, showing health bar + icon buttons (leaderboard, copy
+link, rules).
+
+- Uses `class="flex md:hidden"` — mobile-only
+- Health bar width via inline `style={{ width: '${pct}%' }}` with CSS transition
+- Supports `damageFlash` / `healFlash` animation props
+
+### `MobileCardActionOverlay`
+
+Full-screen modal overlay triggered when the player taps a room card on mobile.
+Shows the selected card and available action buttons.
+
+- Uses `class="fixed inset-0 z-40 md:hidden"` — fullscreen, mobile-only
+- Tap outside overlay to dismiss; `e.stopPropagation()` prevents unintentional
+  dismiss when tapping the modal content
+- Renders only enabled actions based on game state
+
+### `MobileDungeonButton`
+
+Single tap button for drawing from the dungeon pile during the draw phase.
+
+- Uses `class="flex md:hidden"` — mobile-only
+- Three states: `interactive` (tap to draw), `pending` (animating), `empty`
+  (disabled)
+
+### `MobileAvoidRoomButton`
+
+Tap button to skip the current room. Renders `null` when not enabled.
+
+- Amber `bg-torch-amber` background — distinguishable from action buttons
+- No `md:hidden` — conditionally rendered when `enabled` is true
+
+### Mobile Interaction Rules
+
+**MUST keep mobile interactions touch-friendly:**
+
+- No hover-dependent actions on mobile (hover states are fine for desktop
+  enhancement, but must not be the only trigger)
+- No keyboard shortcut references in mobile UI (no "press F to fight" labels)
+- Tap targets should be large enough for comfortable touch use
+
 ## Component Conventions
 
 ### When to use Islands (interactive)
@@ -218,3 +329,8 @@ Keep animations subtle and quick. The game should feel responsive, not flashy.
 - **No external font CDNs** — self-host or system fonts
 - **No heavy box shadows on interactive elements** — prefer border color changes
   for focus/hover states
+- **No desktop-only UI without a mobile equivalent** — every game action or
+  information element visible on desktop must also be reachable on mobile (via a
+  dedicated mobile component or layout)
+- **No hover-only interactions** — hover states are desktop enhancements only;
+  every interactive element must also support a tap/click trigger on mobile
