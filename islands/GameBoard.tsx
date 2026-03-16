@@ -58,7 +58,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const resumeError = useSignal<string | null>(null);
   const copiedLink = useSignal(false);
   const availableDecks = useSignal<DeckInfo[]>([]);
-  const selectedDeckId = useSignal("classic");
+  const selectedDeckId = useSignal("dungeon");
   const decksLoading = useSignal(true);
 
   async function fetchLeaderboard() {

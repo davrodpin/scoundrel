@@ -11,9 +11,9 @@ import type { DeckInfo } from "./decks.ts";
 import type { Card } from "@scoundrel/engine";
 
 const CLASSIC_DECK: DeckInfo = {
-  id: "classic",
-  name: "Classic",
-  basePath: "/decks/classic",
+  id: "dungeon",
+  name: "Dungeon",
+  basePath: "/decks/dungeon",
   cards: {
     "clubs_2": "clubs_2.jpg",
     "clubs_3": "clubs_3.jpg",
@@ -137,7 +137,7 @@ Deno.test("deckCardImagePath — resolves face-up card path", () => {
   const card: Card = { suit: "clubs", rank: 7 };
   assertEquals(
     deckCardImagePath(CLASSIC_DECK, card),
-    "/decks/classic/clubs_7.jpg",
+    "/decks/dungeon/clubs_7.jpg",
   );
 });
 
@@ -145,12 +145,12 @@ Deno.test("deckCardImagePath — resolves face card path", () => {
   const card: Card = { suit: "spades", rank: 11 };
   assertEquals(
     deckCardImagePath(CLASSIC_DECK, card),
-    "/decks/classic/spades_j.jpg",
+    "/decks/dungeon/spades_j.jpg",
   );
 });
 
 Deno.test("deckCardBackPath — resolves card back path", () => {
-  assertEquals(deckCardBackPath(CLASSIC_DECK), "/decks/classic/card_cover.jpg");
+  assertEquals(deckCardBackPath(CLASSIC_DECK), "/decks/dungeon/card_cover.jpg");
 });
 
 Deno.test("getAllDeckCardImagePaths — returns exactly 45 paths", () => {
@@ -162,7 +162,7 @@ Deno.test("getAllDeckCardImagePaths — all paths start with basePath", () => {
   const paths = getAllDeckCardImagePaths(CLASSIC_DECK);
   for (const p of paths) {
     assertEquals(
-      p.startsWith("/decks/classic/"),
+      p.startsWith("/decks/dungeon/"),
       true,
       `path does not start with basePath: ${p}`,
     );
@@ -171,12 +171,12 @@ Deno.test("getAllDeckCardImagePaths — all paths start with basePath", () => {
 
 Deno.test("validateDeckMetadata — accepts valid metadata", () => {
   const data = {
-    name: "Classic",
+    name: "Dungeon",
     cards: CLASSIC_DECK.cards,
   };
   const result = validateDeckMetadata(data);
   assertNotEquals(result, null);
-  assertEquals(result!.name, "Classic");
+  assertEquals(result!.name, "Dungeon");
 });
 
 Deno.test("validateDeckMetadata — rejects missing name", () => {
@@ -190,7 +190,7 @@ Deno.test("validateDeckMetadata — rejects non-string name", () => {
 });
 
 Deno.test("validateDeckMetadata — rejects missing cards", () => {
-  const data = { name: "Classic" };
+  const data = { name: "Dungeon" };
   assertEquals(validateDeckMetadata(data), null);
 });
 

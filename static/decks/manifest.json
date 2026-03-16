@@ -1,4 +1,4 @@
 {
-  "defaultDeck": "classic",
-  "decks": ["classic", "8bit"]
+  "defaultDeck": "dungeon",
+  "decks": ["dungeon", "8bit"]
 }

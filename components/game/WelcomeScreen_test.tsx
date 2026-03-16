@@ -8,7 +8,7 @@ const noop = () => {};
 
 const defaultDeckProps = {
   decks: [],
-  selectedDeckId: "classic",
+  selectedDeckId: "dungeon",
   onDeckChange: noop,
   decksLoading: false,
 };
@@ -111,12 +111,12 @@ Deno.test("WelcomeScreen - deck selector hidden when only one deck", () => {
       loading={false}
       errorMsg={null}
       decks={[{
-        id: "classic",
-        name: "Classic",
-        basePath: "/decks/classic",
+        id: "dungeon",
+        name: "Dungeon",
+        basePath: "/decks/dungeon",
         cards: {},
       }]}
-      selectedDeckId="classic"
+      selectedDeckId="dungeon"
       onDeckChange={noop}
       decksLoading={false}
     />,
@@ -134,20 +134,20 @@ Deno.test("WelcomeScreen - deck selector shown when multiple decks", () => {
       errorMsg={null}
       decks={[
         {
-          id: "classic",
-          name: "Classic",
-          basePath: "/decks/classic",
+          id: "dungeon",
+          name: "Dungeon",
+          basePath: "/decks/dungeon",
           cards: {},
         },
         { id: "modern", name: "Modern", basePath: "/decks/modern", cards: {} },
       ]}
-      selectedDeckId="classic"
+      selectedDeckId="dungeon"
       onDeckChange={noop}
       decksLoading={false}
     />,
   );
   assertEquals(html.includes("<select"), true);
-  assertEquals(html.includes("Classic"), true);
+  assertEquals(html.includes("Dungeon"), true);
   assertEquals(html.includes("Modern"), true);
 });
 
@@ -161,14 +161,14 @@ Deno.test("WelcomeScreen - deck selector has focus ring classes when multiple de
       errorMsg={null}
       decks={[
         {
-          id: "classic",
-          name: "Classic",
-          basePath: "/decks/classic",
+          id: "dungeon",
+          name: "Dungeon",
+          basePath: "/decks/dungeon",
           cards: {},
         },
         { id: "modern", name: "Modern", basePath: "/decks/modern", cards: {} },
       ]}
-      selectedDeckId="classic"
+      selectedDeckId="dungeon"
       onDeckChange={noop}
       decksLoading={false}
     />,
