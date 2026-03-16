@@ -52,7 +52,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
       <main class="max-w-3xl mx-auto px-4 py-8 space-y-12">
         {/* Overview */}
-        <section>
+        <section id="overview">
           <SectionHeading>Overview</SectionHeading>
           <Prose>
             You are a scoundrel delving into a dangerous dungeon. Each turn you
@@ -64,7 +64,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Setup */}
-        <section>
+        <section id="setup">
           <SectionHeading>Setup</SectionHeading>
           <Prose>
             Scoundrel uses a standard 52-card deck with all Jokers, Red Face
@@ -84,7 +84,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Card Types */}
-        <section>
+        <section id="card-types">
           <SectionHeading>Card Types</SectionHeading>
           <div class="space-y-4">
             <div class="flex items-start gap-4">
@@ -137,7 +137,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Turn Flow */}
-        <section>
+        <section id="turn-flow">
           <SectionHeading>Turn Flow</SectionHeading>
           <Prose>
             Flip four cards face-up to form a Room. You must face{" "}
@@ -152,7 +152,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Combat */}
-        <section>
+        <section id="combat">
           <SectionHeading>Combat</SectionHeading>
           <Prose>
             When you face a monster you choose how to fight. Barehanded means
@@ -167,7 +167,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Weapon Degradation */}
-        <section>
+        <section id="weapon-degradation">
           <SectionHeading>Weapon Degradation</SectionHeading>
           <Prose>
             Once you use a weapon against a monster, it can only be used against
@@ -183,7 +183,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Health Potions */}
-        <section>
+        <section id="health-potions">
           <SectionHeading>Health Potions</SectionHeading>
           <Prose>
             Potions restore health equal to their rank, but your health can
@@ -198,7 +198,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Room Avoidance */}
-        <section>
+        <section id="room-avoidance">
           <SectionHeading>Room Avoidance</SectionHeading>
           <Prose>
             If the room looks dangerous, you may avoid it entirely — scoop all
@@ -211,7 +211,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Game Interface */}
-        <section>
+        <section id="game-interface">
           <SectionHeading>Game Interface</SectionHeading>
           <Prose>
             Three buttons appear in the top-right corner of the screen while you
@@ -284,7 +284,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Keyboard Shortcuts */}
-        <section>
+        <section id="keyboard-shortcuts">
           <SectionHeading>Keyboard Shortcuts</SectionHeading>
           <Prose>
             You can control the game entirely from the keyboard. Action keys
@@ -332,7 +332,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         </section>
 
         {/* Scoring */}
-        <section>
+        <section id="scoring">
           <SectionHeading>Scoring</SectionHeading>
           <Prose>
             If your health reaches zero, the game is over. Find all remaining
