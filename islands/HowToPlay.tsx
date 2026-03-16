@@ -5,10 +5,17 @@ import HealthPotionDemo from "./demos/HealthPotionDemo.tsx";
 import RoomFlowDemo from "./demos/RoomFlowDemo.tsx";
 import WeaponDegradationDemo from "./demos/WeaponDegradationDemo.tsx";
 
-function SectionHeading({ children }: { children: string }) {
+function SectionHeading({ children, id }: { children: string; id: string }) {
   return (
-    <h2 class="font-heading text-torch-amber text-2xl border-b border-dungeon-border pb-2 mb-4">
+    <h2 class="group font-heading text-torch-amber text-2xl border-b border-dungeon-border pb-2 mb-4 flex items-center gap-2">
       {children}
+      <a
+        href={`#${id}`}
+        class="opacity-0 group-hover:opacity-100 transition-opacity text-parchment-dark hover:text-torch-amber font-body text-lg"
+        aria-label={`Link to ${children} section`}
+      >
+        #
+      </a>
     </h2>
   );
 }
@@ -53,7 +60,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
       <main class="max-w-3xl mx-auto px-4 py-8 space-y-12">
         {/* Overview */}
         <section id="overview">
-          <SectionHeading>Overview</SectionHeading>
+          <SectionHeading id="overview">Overview</SectionHeading>
           <Prose>
             You are a scoundrel delving into a dangerous dungeon. Each turn you
             face a room of four cards — monsters to slay, weapons to equip, and
@@ -65,7 +72,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Setup */}
         <section id="setup">
-          <SectionHeading>Setup</SectionHeading>
+          <SectionHeading id="setup">Setup</SectionHeading>
           <Prose>
             Scoundrel uses a standard 52-card deck with all Jokers, Red Face
             Cards (J, Q, K of Hearts and Diamonds), and Red Aces removed. This
@@ -85,7 +92,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Card Types */}
         <section id="card-types">
-          <SectionHeading>Card Types</SectionHeading>
+          <SectionHeading id="card-types">Card Types</SectionHeading>
           <div class="space-y-4">
             <div class="flex items-start gap-4">
               <div class="flex gap-2 shrink-0">
@@ -138,7 +145,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Turn Flow */}
         <section id="turn-flow">
-          <SectionHeading>Turn Flow</SectionHeading>
+          <SectionHeading id="turn-flow">Turn Flow</SectionHeading>
           <Prose>
             Flip four cards face-up to form a Room. You must face{" "}
             <strong class="text-torch-amber">3 of the 4</strong>{" "}
@@ -153,7 +160,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Combat */}
         <section id="combat">
-          <SectionHeading>Combat</SectionHeading>
+          <SectionHeading id="combat">Combat</SectionHeading>
           <Prose>
             When you face a monster you choose how to fight. Barehanded means
             taking the monster's full value as damage. With a weapon, you
@@ -168,7 +175,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Weapon Degradation */}
         <section id="weapon-degradation">
-          <SectionHeading>Weapon Degradation</SectionHeading>
+          <SectionHeading id="weapon-degradation">Weapon Degradation</SectionHeading>
           <Prose>
             Once you use a weapon against a monster, it can only be used against
             monsters with a{" "}
@@ -184,7 +191,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Health Potions */}
         <section id="health-potions">
-          <SectionHeading>Health Potions</SectionHeading>
+          <SectionHeading id="health-potions">Health Potions</SectionHeading>
           <Prose>
             Potions restore health equal to their rank, but your health can
             never exceed 20, and you may only use{" "}
@@ -199,7 +206,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Room Avoidance */}
         <section id="room-avoidance">
-          <SectionHeading>Room Avoidance</SectionHeading>
+          <SectionHeading id="room-avoidance">Room Avoidance</SectionHeading>
           <Prose>
             If the room looks dangerous, you may avoid it entirely — scoop all
             four cards in one motion and place them at the bottom of the
@@ -212,7 +219,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Game Interface */}
         <section id="game-interface">
-          <SectionHeading>Game Interface</SectionHeading>
+          <SectionHeading id="game-interface">Game Interface</SectionHeading>
           <Prose>
             Three buttons appear in the top-right corner of the screen while you
             are playing.
@@ -285,7 +292,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Keyboard Shortcuts */}
         <section id="keyboard-shortcuts">
-          <SectionHeading>Keyboard Shortcuts</SectionHeading>
+          <SectionHeading id="keyboard-shortcuts">Keyboard Shortcuts</SectionHeading>
           <Prose>
             You can control the game entirely from the keyboard. Action keys
             only work when the corresponding action is available.
@@ -333,7 +340,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
 
         {/* Scoring */}
         <section id="scoring">
-          <SectionHeading>Scoring</SectionHeading>
+          <SectionHeading id="scoring">Scoring</SectionHeading>
           <Prose>
             If your health reaches zero, the game is over. Find all remaining
             monsters in the Dungeon and subtract their values from your health —
