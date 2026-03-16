@@ -53,13 +53,16 @@ export function WelcomeScreen(
             />
           </div>
           {decks.length > 1 && (
-            <div class="mb-4">
+            <div class="mb-4 flex items-center gap-2">
+              <span class="text-parchment-dark font-body text-sm whitespace-nowrap">
+                Deck:
+              </span>
               <select
                 value={selectedDeckId}
                 disabled={decksLoading}
                 onChange={(e) =>
                   onDeckChange((e.target as HTMLSelectElement).value)}
-                class="w-full px-4 py-2 rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment font-body focus:outline-none focus:border-torch-amber transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex-1 px-4 py-2 rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment font-body focus:outline-none focus:border-torch-amber focus:ring-1 focus:ring-torch-amber/50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {decks.map((deck) => (
                   <option key={deck.id} value={deck.id}>

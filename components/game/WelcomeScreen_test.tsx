@@ -150,3 +150,29 @@ Deno.test("WelcomeScreen - deck selector shown when multiple decks", () => {
   assertEquals(html.includes("Classic"), true);
   assertEquals(html.includes("Modern"), true);
 });
+
+Deno.test("WelcomeScreen - deck selector has focus ring classes when multiple decks", () => {
+  const html = render(
+    <WelcomeScreen
+      playerName=""
+      onPlayerNameChange={noop}
+      onStartGame={noop}
+      loading={false}
+      errorMsg={null}
+      decks={[
+        {
+          id: "classic",
+          name: "Classic",
+          basePath: "/decks/classic",
+          cards: {},
+        },
+        { id: "modern", name: "Modern", basePath: "/decks/modern", cards: {} },
+      ]}
+      selectedDeckId="classic"
+      onDeckChange={noop}
+      decksLoading={false}
+    />,
+  );
+  assertEquals(html.includes("focus:ring-1"), true);
+  assertEquals(html.includes("focus:ring-torch-amber/50"), true);
+});
