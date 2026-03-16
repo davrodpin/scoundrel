@@ -1,5 +1,7 @@
 import { useState } from "preact/hooks";
 import { cardBackPath } from "@scoundrel/game";
+import { deckCardBackPath } from "@scoundrel/game";
+import type { DeckInfo } from "@scoundrel/game";
 import { deckLayerOffsets, DUNGEON_MAX_CARDS } from "./deck_volume_utils.ts";
 
 type DungeonPileProps = {
@@ -7,14 +9,17 @@ type DungeonPileProps = {
   interactive?: boolean;
   onClick?: () => void;
   pending?: boolean;
+  deck?: DeckInfo;
 };
 
 export function DungeonPile(
-  { count, interactive = false, onClick, pending = false }: DungeonPileProps,
+  { count, interactive = false, onClick, pending = false, deck }:
+    DungeonPileProps,
 ) {
   const [loaded, setLoaded] = useState(false);
   const cursorClass = interactive ? "cursor-pointer hover:scale-105" : "";
   const pendingClass = pending ? "animate-dungeon-draw" : "";
+  const backSrc = deck ? deckCardBackPath(deck) : cardBackPath();
 
   return (
     <div class="hidden md:flex flex-col items-center gap-1">
@@ -39,7 +44,7 @@ export function DungeonPile(
                 />
               ))}
               <img
-                src={cardBackPath()}
+                src={backSrc}
                 alt="Dungeon pile"
                 draggable={false}
                 onLoad={() => setLoaded(true)}
