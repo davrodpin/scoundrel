@@ -19,8 +19,8 @@ export function WelcomeScreen(
 ) {
   const trimmedName = playerName.trim();
   return (
-    <div class="min-h-screen bg-dungeon-bg flex flex-col items-center justify-center">
-      <div class="text-center">
+    <div class="min-h-dvh bg-dungeon-bg flex flex-col items-center">
+      <div class="flex-1 flex flex-col items-center justify-center text-center">
         <h1 class="font-heading text-5xl text-parchment mb-4">Scoundrel</h1>
         <p class="text-parchment-dark font-body mb-8">
           A Single Player Rogue-like Card Game
@@ -71,7 +71,7 @@ export function WelcomeScreen(
           )}
         </div>
       </div>
-      <footer class="absolute bottom-4 text-parchment-dark/50 font-body text-xs text-center px-4 max-w-lg">
+      <footer class="mt-auto pb-4 text-parchment-dark/50 font-body text-xs text-center px-4 max-w-lg">
         This is an unofficial fan-made implementation. Scoundrel was designed
         {" "}
         <a
