@@ -26,3 +26,27 @@ Deno.test("HowToPlay - embedded still shows main content", () => {
   assertEquals(html.includes("Card Types"), true);
   assertEquals(html.includes("Combat"), true);
 });
+
+Deno.test("HowToPlay - section headings render anchor links for all 11 sections", () => {
+  const html = render(<HowToPlay />);
+  const anchors = [
+    "#overview",
+    "#setup",
+    "#card-types",
+    "#turn-flow",
+    "#combat",
+    "#weapon-degradation",
+    "#health-potions",
+    "#room-avoidance",
+    "#game-interface",
+    "#keyboard-shortcuts",
+    "#scoring",
+  ];
+  for (const anchor of anchors) {
+    assertEquals(
+      html.includes(`href="${anchor}"`),
+      true,
+      `Missing anchor link for ${anchor}`,
+    );
+  }
+});
