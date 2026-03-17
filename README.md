@@ -149,13 +149,6 @@ on this codebase.
 
 ### Claude Code
 
-Claude Code is a terminal UI (TUI) that gives Claude an agentic loop with access
-to your file system, shell, and git. Launch it from any worktree:
-
-```sh
-claude
-```
-
 `CLAUDE.md` files throughout the project provide Claude with context at each
 directory level. The root `CLAUDE.md` defines coding standards, the tech stack,
 error handling conventions, and which skills to load for each type of task.
