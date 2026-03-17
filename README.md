@@ -37,6 +37,7 @@ cd scoundrel
 git -C .bare worktree add ../main main
 cd main
 deno install --allow-scripts
+deno task prisma:generate
 ```
 
 To run integration tests, configure a local database:
@@ -45,7 +46,6 @@ To run integration tests, configure a local database:
 cp .env.template .env
 # Edit .env and set DATABASE_URL to your local PostgreSQL connection string
 deno task prisma:migrate
-deno task prisma:generate
 ```
 
 ### Run
