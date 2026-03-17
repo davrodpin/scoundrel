@@ -5,6 +5,8 @@ Zach Gage and Kurt Bieg. You explore a dungeon built from a shuffled deck of
 playing cards — defeating monsters, collecting weapons, and managing your health
 until the dungeon runs out or you do.
 
+**[Play now](https://scoundrel.ever-forward.deno.net)**
+
 Full rules: [docs/SCOUNDREL.md](docs/SCOUNDREL.md)
 
 ## Tech Stack
