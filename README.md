@@ -34,8 +34,10 @@ Full rules: [docs/SCOUNDREL.md](docs/SCOUNDREL.md)
 Clone the repository and install dependencies:
 
 ```sh
-git clone https://github.com/davrodpin/scoundrel.git
-cd scoundrel/main
+git clone --bare https://github.com/davrodpin/scoundrel.git scoundrel/.bare
+cd scoundrel
+git -C .bare worktree add ../main main
+cd main
 deno install --allow-scripts
 ```
 
@@ -140,15 +142,7 @@ scoundrel/
 └── fix/some-bug/       # isolated worktree for a bugfix branch
 ```
 
-To set this up from a fresh clone:
-
-```sh
-git clone --bare <url> scoundrel/.bare
-cd scoundrel
-git -C .bare worktree add ../main main
-cd main
-deno install --allow-scripts
-```
+See [Setup](#setup) for the clone commands.
 
 This layout allows multiple agents (or developers) to work on separate branches
 simultaneously without interfering with each other. Each worktree has its own
@@ -164,8 +158,8 @@ deno task worktree:cleanup feat/my-feature
 
 ### Claude Code
 
-Claude Code is a terminal UI (TUI) that gives Claude an agentic loop with
-access to your file system, shell, and git. Launch it from any worktree:
+Claude Code is a terminal UI (TUI) that gives Claude an agentic loop with access
+to your file system, shell, and git. Launch it from any worktree:
 
 ```sh
 claude
@@ -192,22 +186,22 @@ Skills live in `.claude/skills/`.
 
 ### Claude Settings (`.claude/settings.json`)
 
-The settings file pre-authorizes common operations so the agent can work
-without prompting for every file read or `git` command:
+The settings file pre-authorizes common operations so the agent can work without
+prompting for every file read or `git` command:
 
 - File tools (`Read`, `Edit`, `Write`, `Glob`, `Grep`) are permitted on `./**`
   and `../**`
-- Shell commands are restricted to a named allowlist: `git`, `deno`, `gh`,
-  `cp`, `ls`, `mkdir`, `printf`, `grep`, `cat`, `find`, `cd`
+- Shell commands are restricted to a named allowlist: `git`, `deno`, `gh`, `cp`,
+  `ls`, `mkdir`, `printf`, `grep`, `cat`, `find`, `cd`
 - `additionalDirectories: ["../"]` extends the agent's working directory scope
   to the parent of `main/`, which covers sibling worktrees
 
-> **Warning:** The `additionalDirectories` setting references `../` so the
-> agent can read and write files across sibling worktrees. This only works
-> correctly when the repository is set up using the bare repo + worktree layout
-> described above. If you clone the repository normally (e.g., `git clone` into
-> a single directory), `../` will point outside the project boundary and the
-> agent may read or modify unrelated files. Always use the documented layout.
+> **Warning:** The `additionalDirectories` setting references `../` so the agent
+> can read and write files across sibling worktrees. This only works correctly
+> when the repository is set up using the bare repo + worktree layout described
+> above. If you clone the repository normally (e.g., `git clone` into a single
+> directory), `../` will point outside the project boundary and the agent may
+> read or modify unrelated files. Always use the documented layout.
 
 ### Hook: Compound Command Prevention
 
