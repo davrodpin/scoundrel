@@ -29,6 +29,34 @@ Full rules: [docs/SCOUNDREL.md](docs/SCOUNDREL.md)
 
 ### Setup
 
+### Repository Layout
+
+The repository uses a bare repo + worktree layout. The bare repository (the git
+object store) lives in `.bare/`, and every working directory — including `main`
+— is a git worktree pointing back to it:
+
+```
+scoundrel/
+├── .bare/              # bare git repository (source of truth)
+├── main/               # worktree tracking the main branch
+├── feat/some-feature/  # isolated worktree for a feature branch
+└── fix/some-bug/       # isolated worktree for a bugfix branch
+```
+
+This layout allows multiple agents (or developers) to work on separate branches
+simultaneously without interfering with each other. Each worktree has its own
+working tree and index; they all share the same git history in `.bare`.
+
+New worktrees are created and torn down using Deno tasks that wrap the
+`git worktree` commands with project-specific setup:
+
+```sh
+deno task worktree:setup feat/my-feature
+deno task worktree:cleanup feat/my-feature
+```
+
+## How to setup the local repository
+
 Clone the repository and install dependencies:
 
 ```sh
@@ -51,23 +79,13 @@ deno task prisma:migrate
 ### Run
 
 ```sh
-deno task dev
+# The "--tunnel" flag injects all environment variables to the local environment, including DATABASE_URL
+deno task --tunnel dev
 ```
 
 ### Common tasks
 
-| Task                         | Description                                   |
-| ---------------------------- | --------------------------------------------- |
-| `deno task dev`              | Start the development server with hot reload  |
-| `deno task build`            | Build the production bundle                   |
-| `deno task start`            | Start the production server                   |
-| `deno task check`            | Format check, lint, and type check            |
-| `deno task test`             | Run all tests                                 |
-| `deno task test:unit`        | Run unit tests only                           |
-| `deno task test:integration` | Run integration tests (requires DATABASE_URL) |
-| `deno task prisma:generate`  | Regenerate the Prisma client                  |
-| `deno task prisma:migrate`   | Apply pending database migrations             |
-| `deno task prisma:studio`    | Open Prisma Studio                            |
+Run `deno task` to see the full list of supported tasks.
 
 ## Project Structure
 
@@ -125,34 +143,6 @@ This project is developed using
 Anthropic's CLI for agentic software development. The `.claude/` directory
 contains the configuration, skills, and hooks that define how the agent operates
 on this codebase.
-
-### Repository Layout
-
-The repository uses a bare repo + worktree layout. The bare repository (the git
-object store) lives in `.bare/`, and every working directory — including `main`
-— is a git worktree pointing back to it:
-
-```
-scoundrel/
-├── .bare/              # bare git repository (source of truth)
-├── main/               # worktree tracking the main branch
-├── feat/some-feature/  # isolated worktree for a feature branch
-└── fix/some-bug/       # isolated worktree for a bugfix branch
-```
-
-See [Setup](#setup) for the clone commands.
-
-This layout allows multiple agents (or developers) to work on separate branches
-simultaneously without interfering with each other. Each worktree has its own
-working tree and index; they all share the same git history in `.bare`.
-
-New worktrees are created and torn down using Deno tasks that wrap the
-`git worktree` commands with project-specific setup:
-
-```sh
-deno task worktree:setup feat/my-feature
-deno task worktree:cleanup feat/my-feature
-```
 
 ### Claude Code
 
