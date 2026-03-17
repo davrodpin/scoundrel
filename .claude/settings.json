@@ -1,0 +1,55 @@
+{
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Read(../**)",
+      "Edit(./**)",
+      "Edit(../**)",
+      "Write(./**)",
+      "Write(../**)",
+      "Search(./**)",
+      "Search(../**)",
+      "Grep(../**)",
+      "Grep(./**)",
+      "Glob(../**)",
+      "Glob(./**)",
+      "LS(../**)",
+      "LS(./**)",
+      "MultiEdit(../**)",
+      "MultiEdit(./**)",
+      "Bash(git *)",
+      "Bash(deno *)",
+      "Bash(cd *)",
+      "Bash(cat *)",
+      "Bash(cp *)",
+      "Bash(find *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(gh *)",
+      "Bash(printf *)",
+      "Bash(grep *)",
+      "WebSearch",
+      "WebFetch(domain:docs.deno.com)",
+      "WebFetch(domain:www.prisma.io)",
+      "WebFetch(domain:deno.com)",
+      "Bash(printf:*)"
+    ],
+    "additionalDirectories": [
+      "../"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/davpin/dev/github.com/davrodpin/scoundrel/main/.claude/hooks/check-no-compound-commands.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
