@@ -25,9 +25,7 @@ Full rules: [docs/SCOUNDREL.md](docs/SCOUNDREL.md)
 
 ### Prerequisites
 
-- [Deno](https://docs.deno.com/runtime/getting_started/installation/) v2+
-- PostgreSQL (required only for integration tests; not needed to run the app in
-  development)
+- [Deno](https://docs.deno.com/runtime/getting_started/installation/) v2.7.5
 
 ### Setup
 
