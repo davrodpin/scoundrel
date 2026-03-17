@@ -127,14 +127,17 @@ Every `lib/` module is registered in `deno.json` under an `@scoundrel/*` alias:
 
 ## Contributing
 
-- Run `deno task check` before committing. This enforces formatting, linting,
-  and type correctness.
-- Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-  (`feat:`, `fix:`, `refactor:`, `docs:`, etc.).
-- Every change — including documentation — goes through a feature branch via the
-  git-workflow skill described below. Never commit directly to `main`.
-- New features and bug fixes require tests written before the implementation
-  (see TDD workflow below).
+This project uses
+[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) skills to
+define its development workflows. Before making any changes, read the relevant
+skill files in `.claude/skills/`:
+
+| Skill           | File                                                                                 | When to Read                      |
+| --------------- | ------------------------------------------------------------------------------------ | --------------------------------- |
+| Git Workflow    | [`.claude/skills/git-workflow/SKILL.md`](.claude/skills/git-workflow/SKILL.md)       | Every change (branch, commit, PR) |
+| TDD Development | [`.claude/skills/tdd-development/SKILL.md`](.claude/skills/tdd-development/SKILL.md) | Every code change (tests first)   |
+| Game Frontend   | [`.claude/skills/game-frontend/SKILL.md`](.claude/skills/game-frontend/SKILL.md)     | UI/component work                 |
+| Game Rules      | [`.claude/skills/game-rules/SKILL.md`](.claude/skills/game-rules/SKILL.md)           | Game engine logic                 |
 
 ## Built with Agentic AI
 
