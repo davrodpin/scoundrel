@@ -27,16 +27,29 @@ const SECRET_KEY = "cc712d79632ad0075b79f65509ceb063a9d87396";
 // Prevent loading the script more than once across re-mounts.
 let scriptAppended = false;
 
-// Returns the SDK only when it is fully initialised — i.e. when the object
-// sitting on globalThis actually exposes the expected methods. The CDN script
-// may temporarily set window.GameAnalytics to a stub/queue during its own
-// bootstrap, so we validate before returning.
+// Returns the SDK only when it is fully ready to accept events — i.e. when the
+// object on globalThis exposes addDesignEvent. We check addDesignEvent rather
+// than initialize because some SDK versions remove the initialize method after
+// it has been called, which would cause getSDK() to return undefined for every
+// subsequent track call (silent no-ops).
 function getSDK(): GameAnalyticsSDK | undefined {
   const ga = (globalThis as Record<string, unknown>)["GameAnalytics"];
   if (typeof ga !== "object" || ga === null) return undefined;
   const obj = ga as Record<string, unknown>;
-  if (typeof obj["initialize"] !== "function") return undefined;
+  if (typeof obj["addDesignEvent"] !== "function") return undefined;
   return ga as GameAnalyticsSDK;
+}
+
+// Calls initialize() directly, bypassing getSDK(). Used during bootstrap
+// because addDesignEvent (the getSDK sentinel) may not exist until after
+// initialize() has run — but initialize() itself is available immediately
+// after the CDN script loads.
+function callInitialize(): void {
+  const ga = (globalThis as Record<string, unknown>)["GameAnalytics"];
+  if (typeof ga !== "object" || ga === null) return;
+  const obj = ga as Record<string, unknown>;
+  if (typeof obj["initialize"] !== "function") return;
+  (ga as GameAnalyticsSDK).initialize(GAME_KEY, SECRET_KEY);
 }
 
 // Loads the GA SDK script dynamically and calls initialize once it is ready.
@@ -45,7 +58,8 @@ function getSDK(): GameAnalyticsSDK | undefined {
 export function initAnalytics(): void {
   const sdk = getSDK();
   if (sdk) {
-    sdk.initialize(GAME_KEY, SECRET_KEY);
+    // SDK already loaded and ready (e.g. component remounted).
+    callInitialize();
     return;
   }
 
@@ -58,10 +72,7 @@ export function initAnalytics(): void {
   const script = document.createElement("script");
   script.async = true;
   script.src = SDK_URL;
-  script.onload = () => {
-    const loadedSdk = getSDK();
-    if (loadedSdk) loadedSdk.initialize(GAME_KEY, SECRET_KEY);
-  };
+  script.onload = () => callInitialize();
   document.head.appendChild(script);
 }
 
