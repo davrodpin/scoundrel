@@ -27,6 +27,17 @@ import { MobileCardActionOverlay } from "../components/game/MobileCardActionOver
 import { MobileTopBar } from "../components/game/MobileTopBar.tsx";
 import { MobileAvoidRoomButton } from "../components/game/MobileAvoidRoomButton.tsx";
 import { getErrorMessage, resolveLoadGameError } from "./game_resume_utils.ts";
+import {
+  initAnalytics,
+  trackAction,
+  trackError,
+  trackGameAbandon,
+  trackGameComplete,
+  trackGameEnd,
+  trackGameFail,
+  trackGameStart,
+  trackPageView,
+} from "./analytics.ts";
 import { getAllCardImagePaths } from "@scoundrel/game";
 import { getAllDeckCardImagePaths } from "@scoundrel/game";
 import type { DeckInfo, DeckManifest, DeckMetadata } from "@scoundrel/game";
@@ -60,6 +71,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const availableDecks = useSignal<DeckInfo[]>([]);
   const selectedDeckId = useSignal("dungeon");
   const decksLoading = useSignal(true);
+  const abandonFired = useSignal(false);
 
   async function fetchLeaderboard() {
     leaderboardLoading.value = true;
@@ -122,6 +134,39 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     if (initialGameId) {
       loadGame(initialGameId);
     }
+  }, []);
+
+  useEffect(() => {
+    initAnalytics();
+    trackPageView("Play");
+  }, []);
+
+  useEffect(() => {
+    function fireAbandon() {
+      if (abandonFired.value) return;
+      const view = gameView.value;
+      if (!view || view.phase.kind === "game_over") return;
+      abandonFired.value = true;
+      trackGameAbandon(view.dungeonCount);
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "hidden") {
+        fireAbandon();
+      }
+    }
+
+    function handleBeforeUnload() {
+      fireAbandon();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    globalThis.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      globalThis.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, []);
 
   useEffect(() => {
@@ -280,6 +325,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
         errorMsg.value = getErrorMessage(errData);
+        trackError("warning", "CreateGameFailed");
         return;
       }
       const view: GameView = await res.json();
@@ -288,6 +334,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       selectedCardIndex.value = null;
       errorMsg.value = null;
       showLeaderboard.value = false;
+      abandonFired.value = false;
+      trackGameStart();
 
       // Preload card images for the selected deck
       const activeDeck = availableDecks.value.find(
@@ -302,6 +350,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       }
     } catch {
       errorMsg.value = "Failed to create game";
+      trackError("warning", "CreateGameFailed");
     } finally {
       pendingAction.value = { kind: "idle" };
     }
@@ -324,6 +373,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
 
       if (!res.ok) {
         errorMsg.value = getErrorMessage(data);
+        trackError("warning", `API:${res.status}`);
         return;
       }
 
@@ -334,6 +384,18 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       focusedCardIndex.value = null;
 
       if (newView.phase.kind === "game_over") {
+        const { reason } = newView.phase;
+        const score = newView.score ?? 0;
+        if (reason === "dungeon_cleared") {
+          trackGameComplete(score);
+        } else {
+          trackGameFail(score);
+        }
+        trackGameEnd(
+          newView.health,
+          newView.turnNumber,
+          reason === "dead" ? newView.dungeonCount : undefined,
+        );
         await fetchLeaderboardWithRank(newView.gameId);
       }
 
@@ -351,6 +413,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       }
     } catch {
       errorMsg.value = "Network error";
+      trackError("error", "NetworkError");
     } finally {
       pendingAction.value = { kind: "idle" };
     }
@@ -362,6 +425,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   }
 
   function handleAvoidRoom() {
+    const view = gameView.value;
+    if (view) trackAction("Action:AvoidRoom", view.turnNumber);
     pendingAction.value = { kind: "avoid_room" };
     dispatch({ type: "avoid_room" });
   }
@@ -378,6 +443,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   function handleFightWithWeapon() {
     const idx = selectedCardIndex.value;
     if (idx === null) return;
+    const view = gameView.value;
+    if (view) trackAction("Action:FightWeapon", view.turnNumber);
     pendingAction.value = {
       kind: "choose_card",
       cardIndex: idx,
@@ -389,6 +456,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   function handleFightBarehanded() {
     const idx = selectedCardIndex.value;
     if (idx === null) return;
+    const view = gameView.value;
+    if (view) trackAction("Action:FightBarehanded", view.turnNumber);
     pendingAction.value = {
       kind: "choose_card",
       cardIndex: idx,
@@ -400,6 +469,11 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   function handleEquipWeapon() {
     const idx = selectedCardIndex.value;
     if (idx === null) return;
+    const view = gameView.value;
+    if (view) {
+      const card = (view.room as Card[])[idx];
+      if (card) trackAction("Action:EquipWeapon", card.rank);
+    }
     pendingAction.value = {
       kind: "choose_card",
       cardIndex: idx,
@@ -411,6 +485,11 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   function handleDrinkPotion() {
     const idx = selectedCardIndex.value;
     if (idx === null) return;
+    const view = gameView.value;
+    if (view) {
+      const card = (view.room as Card[])[idx];
+      if (card) trackAction("Action:DrinkPotion", card.rank);
+    }
     pendingAction.value = {
       kind: "choose_card",
       cardIndex: idx,
