@@ -335,7 +335,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       errorMsg.value = null;
       showLeaderboard.value = false;
       abandonFired.value = false;
-      trackGameStart();
+      trackGameStart(selectedDeckId.value);
 
       // Preload card images for the selected deck
       const activeDeck = availableDecks.value.find(

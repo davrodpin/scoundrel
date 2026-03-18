@@ -43,7 +43,7 @@ function removeMockQueue() {
 Deno.test("analytics — functions do not throw when SDK is not loaded", () => {
   removeMockQueue();
   initAnalytics();
-  trackGameStart();
+  trackGameStart("dungeon");
   trackGameComplete(10);
   trackGameFail(-5);
   trackGameAbandon(20);
@@ -69,12 +69,14 @@ Deno.test(
 );
 
 Deno.test(
-  "analytics — trackGameStart fires Start progression (1) for Dungeon",
+  "analytics — trackGameStart fires Start progression (1) for Dungeon and deck design event",
   () => {
     const mock = installMockQueue();
-    trackGameStart();
+    trackGameStart("classic");
     assertEquals(mock.calls["addProgressionEvent"].length, 1);
     assertEquals(mock.calls["addProgressionEvent"][0], [1, "Dungeon"]);
+    assertEquals(mock.calls["addDesignEvent"].length, 1);
+    assertEquals(mock.calls["addDesignEvent"][0], ["GameStart:Deck:classic"]);
     removeMockQueue();
   },
 );

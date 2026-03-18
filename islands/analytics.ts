@@ -76,10 +76,11 @@ export function initAnalytics(): void {
   document.head.appendChild(script);
 }
 
-export function trackGameStart(): void {
+export function trackGameStart(deckId: string): void {
   const queue = getQueue();
   if (!queue) return;
   queue("addProgressionEvent", GA_PROGRESSION_START, "Dungeon");
+  queue("addDesignEvent", `GameStart:Deck:${deckId}`);
 }
 
 export function trackGameComplete(score: number): void {
