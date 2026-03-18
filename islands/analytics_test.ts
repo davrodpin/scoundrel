@@ -1,5 +1,6 @@
 import { assertEquals } from "@std/assert";
 import {
+  detectEnvironment,
   initAnalytics,
   trackAction,
   trackError,
@@ -178,5 +179,129 @@ Deno.test(
     // warning maps to EGAErrorSeverity.Warning = 3
     assertEquals(mock.calls["addErrorEvent"][0], [3, "API:422"]);
     removeMockQueue();
+  },
+);
+
+// detectEnvironment tests
+
+Deno.test(
+  "detectEnvironment — returns 'local' when globalThis.location is undefined",
+  () => {
+    // In Deno test environment globalThis.location is undefined by default
+    assertEquals(detectEnvironment(), "local");
+  },
+);
+
+Deno.test("detectEnvironment — returns 'local' for localhost", () => {
+  Object.defineProperty(globalThis, "location", {
+    value: { hostname: "localhost" },
+    configurable: true,
+    writable: true,
+  });
+  try {
+    assertEquals(detectEnvironment(), "local");
+  } finally {
+    Object.defineProperty(globalThis, "location", {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+  }
+});
+
+Deno.test("detectEnvironment — returns 'local' for 127.0.0.1", () => {
+  Object.defineProperty(globalThis, "location", {
+    value: { hostname: "127.0.0.1" },
+    configurable: true,
+    writable: true,
+  });
+  try {
+    assertEquals(detectEnvironment(), "local");
+  } finally {
+    Object.defineProperty(globalThis, "location", {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+  }
+});
+
+Deno.test(
+  "detectEnvironment — returns 'production' for scoundrel.deno.dev",
+  () => {
+    Object.defineProperty(globalThis, "location", {
+      value: { hostname: "scoundrel.deno.dev" },
+      configurable: true,
+      writable: true,
+    });
+    try {
+      assertEquals(detectEnvironment(), "production");
+    } finally {
+      Object.defineProperty(globalThis, "location", {
+        value: undefined,
+        configurable: true,
+        writable: true,
+      });
+    }
+  },
+);
+
+Deno.test(
+  "detectEnvironment — returns 'preview' for other *.deno.dev subdomains",
+  () => {
+    Object.defineProperty(globalThis, "location", {
+      value: { hostname: "foo-abc123.deno.dev" },
+      configurable: true,
+      writable: true,
+    });
+    try {
+      assertEquals(detectEnvironment(), "preview");
+    } finally {
+      Object.defineProperty(globalThis, "location", {
+        value: undefined,
+        configurable: true,
+        writable: true,
+      });
+    }
+  },
+);
+
+Deno.test("detectEnvironment — returns 'production' for custom domains", () => {
+  Object.defineProperty(globalThis, "location", {
+    value: { hostname: "play.scoundrel.example.com" },
+    configurable: true,
+    writable: true,
+  });
+  try {
+    assertEquals(detectEnvironment(), "production");
+  } finally {
+    Object.defineProperty(globalThis, "location", {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+  }
+});
+
+Deno.test(
+  "analytics — initAnalytics calls configureBuild before initialize",
+  () => {
+    const callOrder: string[] = [];
+    (globalThis as Record<string, unknown>)["GameAnalytics"] = function (
+      ...args: unknown[]
+    ): void {
+      const [method] = args;
+      if (typeof method === "string") callOrder.push(method);
+    };
+    try {
+      initAnalytics();
+      const configureBuildIndex = callOrder.indexOf("configureBuild");
+      const initializeIndex = callOrder.indexOf("initialize");
+      assertEquals(configureBuildIndex !== -1, true);
+      assertEquals(initializeIndex !== -1, true);
+      assertEquals(configureBuildIndex < initializeIndex, true);
+    } finally {
+      removeMockQueue();
+    }
   },
 );

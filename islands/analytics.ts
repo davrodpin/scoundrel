@@ -45,11 +45,25 @@ function getQueue(): GameAnalyticsQueue | undefined {
   return ga as GameAnalyticsQueue;
 }
 
+// Derives the current deployment environment from the hostname.
+// Used to tag every GA event with a build dimension for dashboard filtering.
+export function detectEnvironment(): string {
+  if (typeof globalThis.location === "undefined") return "local";
+  const host = globalThis.location.hostname;
+  if (host === "localhost" || host === "127.0.0.1") return "local";
+  if (host === "scoundrel.deno.dev") return "production";
+  if (host.endsWith(".deno.dev")) return "preview";
+  return "production";
+}
+
 // Calls initialize via the command queue. Safe to call once the CDN script
 // has loaded — the queue is ready immediately when the script executes.
+// configureBuild must be called before initialize so the build dimension
+// is attached to every subsequent event in the session.
 function callInitialize(): void {
   const queue = getQueue();
   if (!queue) return;
+  queue("configureBuild", detectEnvironment());
   queue("initialize", GAME_KEY, SECRET_KEY);
 }
 
