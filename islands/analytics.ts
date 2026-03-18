@@ -64,7 +64,10 @@ function callInitialize(): void {
   const queue = getQueue();
   if (!queue) return;
   queue("configureBuild", detectEnvironment());
-  queue("initialize", GAME_KEY, SECRET_KEY);
+  setTimeout(() => {
+    const q = getQueue();
+    if (q) q("initialize", GAME_KEY, SECRET_KEY);
+  }, 0);
 }
 
 // Loads the GA SDK script dynamically and calls initialize once it is ready.

@@ -57,9 +57,10 @@ Deno.test("analytics — functions do not throw when SDK is not loaded", () => {
 
 Deno.test(
   "analytics — initAnalytics calls initialize with correct keys",
-  () => {
+  async () => {
     const mock = installMockQueue();
     initAnalytics();
+    await new Promise((resolve) => setTimeout(resolve, 0));
     assertEquals(mock.calls["initialize"].length, 1);
     assertEquals(mock.calls["initialize"][0], [
       "983a1294a3ad74128112312af79b4556",
@@ -285,7 +286,7 @@ Deno.test("detectEnvironment — returns 'production' for custom domains", () =>
 
 Deno.test(
   "analytics — initAnalytics calls configureBuild before initialize",
-  () => {
+  async () => {
     const callOrder: string[] = [];
     (globalThis as Record<string, unknown>)["GameAnalytics"] = function (
       ...args: unknown[]
@@ -295,6 +296,7 @@ Deno.test(
     };
     try {
       initAnalytics();
+      await new Promise((resolve) => setTimeout(resolve, 0));
       const configureBuildIndex = callOrder.indexOf("configureBuild");
       const initializeIndex = callOrder.indexOf("initialize");
       assertEquals(configureBuildIndex !== -1, true);
