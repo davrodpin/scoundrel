@@ -1,5 +1,6 @@
 import { useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
+import { trackPageView } from "./analytics.ts";
 import type {
   LeaderboardEntry,
   LeaderboardRank,
@@ -16,6 +17,10 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
   const entries = useSignal<LeaderboardEntry[]>([]);
   const loading = useSignal(true);
   const playerRank = useSignal<LeaderboardRank | null>(null);
+
+  useEffect(() => {
+    trackPageView("Leaderboard");
+  }, []);
 
   useEffect(() => {
     async function load() {

@@ -1,9 +1,11 @@
+import { useEffect } from "preact/hooks";
 import SvgCard from "../components/how-to-play/SvgCard.tsx";
 import SvgCardBack from "../components/how-to-play/SvgCardBack.tsx";
 import CombatDemo from "./demos/CombatDemo.tsx";
 import HealthPotionDemo from "./demos/HealthPotionDemo.tsx";
 import RoomFlowDemo from "./demos/RoomFlowDemo.tsx";
 import WeaponDegradationDemo from "./demos/WeaponDegradationDemo.tsx";
+import { trackPageView } from "./analytics.ts";
 
 function SectionHeading({ children, id }: { children: string; id: string }) {
   return (
@@ -33,6 +35,10 @@ type HowToPlayProps = {
 };
 
 export default function HowToPlay({ embedded = false }: HowToPlayProps) {
+  useEffect(() => {
+    trackPageView("HowToPlay");
+  }, []);
+
   return (
     <div
       class={`${embedded ? "" : "min-h-screen"} bg-dungeon-bg text-parchment`}
