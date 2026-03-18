@@ -1,6 +1,10 @@
-// Type declarations for the GameAnalytics JS SDK loaded via CDN script tag.
-// String-typed parameters avoid relying on SDK enums at compile time.
-type GAProgressionStatus = "Start" | "Complete" | "Fail";
+// The GA SDK v4 uses a command-queue pattern:
+//   window.GameAnalytics("methodName", arg1, arg2, ...)
+// The window.gameanalytics namespace holds enum constants used as arguments.
+//
+// EGAProgressionStatus: Start=1, Complete=2, Fail=3
+// EGAErrorSeverity:     Debug=1, Info=2, Warning=3, Error=4, Critical=5
+
 export type GAErrorSeverity =
   | "debug"
   | "info"
@@ -8,57 +12,53 @@ export type GAErrorSeverity =
   | "error"
   | "critical";
 
-type GameAnalyticsSDK = {
-  initialize(gameKey: string, secretKey: string): void;
-  addProgressionEvent(
-    status: GAProgressionStatus,
-    progression01: string,
-    score?: number,
-  ): void;
-  addDesignEvent(eventId: string, value?: number): void;
-  addErrorEvent(severity: GAErrorSeverity, message: string): void;
-};
+// Command-queue function type. The first argument is the method name; the rest
+// are forwarded verbatim to the underlying SDK method.
+type GameAnalyticsQueue = (method: string, ...args: unknown[]) => void;
 
 const SDK_URL =
   "https://download.gameanalytics.com/js/GameAnalytics-4.4.6.min.js";
 const GAME_KEY = "983a1294a3ad74128112312af79b4556";
 const SECRET_KEY = "cc712d79632ad0075b79f65509ceb063a9d87396";
 
+// EGAProgressionStatus numeric values (stable across GA SDK v4.x).
+const GA_PROGRESSION_START = 1;
+const GA_PROGRESSION_COMPLETE = 2;
+const GA_PROGRESSION_FAIL = 3;
+
+// EGAErrorSeverity numeric values mapped from our string-based public type.
+const GA_SEVERITY: Record<GAErrorSeverity, number> = {
+  debug: 1,
+  info: 2,
+  warning: 3,
+  error: 4,
+  critical: 5,
+};
+
 // Prevent loading the script more than once across re-mounts.
 let scriptAppended = false;
 
-// Returns the SDK only when it is fully ready to accept events — i.e. when the
-// object on globalThis exposes addDesignEvent. We check addDesignEvent rather
-// than initialize because some SDK versions remove the initialize method after
-// it has been called, which would cause getSDK() to return undefined for every
-// subsequent track call (silent no-ops).
-function getSDK(): GameAnalyticsSDK | undefined {
+// Returns the command-queue function when the GA SDK script has loaded.
+function getQueue(): GameAnalyticsQueue | undefined {
   const ga = (globalThis as Record<string, unknown>)["GameAnalytics"];
-  if (typeof ga !== "object" || ga === null) return undefined;
-  const obj = ga as Record<string, unknown>;
-  if (typeof obj["addDesignEvent"] !== "function") return undefined;
-  return ga as GameAnalyticsSDK;
+  if (typeof ga !== "function") return undefined;
+  return ga as GameAnalyticsQueue;
 }
 
-// Calls initialize() directly, bypassing getSDK(). Used during bootstrap
-// because addDesignEvent (the getSDK sentinel) may not exist until after
-// initialize() has run — but initialize() itself is available immediately
-// after the CDN script loads.
+// Calls initialize via the command queue. Safe to call once the CDN script
+// has loaded — the queue is ready immediately when the script executes.
 function callInitialize(): void {
-  const ga = (globalThis as Record<string, unknown>)["GameAnalytics"];
-  if (typeof ga !== "object" || ga === null) return;
-  const obj = ga as Record<string, unknown>;
-  if (typeof obj["initialize"] !== "function") return;
-  (ga as GameAnalyticsSDK).initialize(GAME_KEY, SECRET_KEY);
+  const queue = getQueue();
+  if (!queue) return;
+  queue("initialize", GAME_KEY, SECRET_KEY);
 }
 
 // Loads the GA SDK script dynamically and calls initialize once it is ready.
-// If the SDK is already present (e.g. script ran synchronously), initialize
-// is called immediately instead.
+// If the command queue is already present (e.g. script ran synchronously or
+// component remounted), initialize is called immediately.
 export function initAnalytics(): void {
-  const sdk = getSDK();
-  if (sdk) {
-    // SDK already loaded and ready (e.g. component remounted).
+  const queue = getQueue();
+  if (queue) {
     callInitialize();
     return;
   }
@@ -77,34 +77,34 @@ export function initAnalytics(): void {
 }
 
 export function trackGameStart(): void {
-  const sdk = getSDK();
-  if (!sdk) return;
-  sdk.addProgressionEvent("Start", "Dungeon");
+  const queue = getQueue();
+  if (!queue) return;
+  queue("addProgressionEvent", GA_PROGRESSION_START, "Dungeon");
 }
 
 export function trackGameComplete(score: number): void {
-  const sdk = getSDK();
-  if (!sdk) return;
-  sdk.addProgressionEvent("Complete", "Dungeon", score);
+  const queue = getQueue();
+  if (!queue) return;
+  queue("addProgressionEvent", GA_PROGRESSION_COMPLETE, "Dungeon", score);
 }
 
 export function trackGameFail(score: number): void {
-  const sdk = getSDK();
-  if (!sdk) return;
-  sdk.addProgressionEvent("Fail", "Dungeon", score);
+  const queue = getQueue();
+  if (!queue) return;
+  queue("addProgressionEvent", GA_PROGRESSION_FAIL, "Dungeon", score);
 }
 
 export function trackGameAbandon(dungeonCount: number): void {
-  const sdk = getSDK();
-  if (!sdk) return;
-  sdk.addProgressionEvent("Fail", "DungeonAbandoned");
-  sdk.addDesignEvent("Abandon:CardsRemaining", dungeonCount);
+  const queue = getQueue();
+  if (!queue) return;
+  queue("addProgressionEvent", GA_PROGRESSION_FAIL, "DungeonAbandoned");
+  queue("addDesignEvent", "Abandon:CardsRemaining", dungeonCount);
 }
 
 export function trackAction(eventId: string, value: number): void {
-  const sdk = getSDK();
-  if (!sdk) return;
-  sdk.addDesignEvent(eventId, value);
+  const queue = getQueue();
+  if (!queue) return;
+  queue("addDesignEvent", eventId, value);
 }
 
 export function trackGameEnd(
@@ -112,23 +112,23 @@ export function trackGameEnd(
   turnsPlayed: number,
   cardsRemaining?: number,
 ): void {
-  const sdk = getSDK();
-  if (!sdk) return;
-  sdk.addDesignEvent("GameEnd:Health", health);
-  sdk.addDesignEvent("GameEnd:TurnsPlayed", turnsPlayed);
+  const queue = getQueue();
+  if (!queue) return;
+  queue("addDesignEvent", "GameEnd:Health", health);
+  queue("addDesignEvent", "GameEnd:TurnsPlayed", turnsPlayed);
   if (cardsRemaining !== undefined) {
-    sdk.addDesignEvent("GameEnd:CardsRemaining", cardsRemaining);
+    queue("addDesignEvent", "GameEnd:CardsRemaining", cardsRemaining);
   }
 }
 
 export function trackPageView(pageName: string): void {
-  const sdk = getSDK();
-  if (!sdk) return;
-  sdk.addDesignEvent(`Page:${pageName}`);
+  const queue = getQueue();
+  if (!queue) return;
+  queue("addDesignEvent", `Page:${pageName}`);
 }
 
 export function trackError(severity: GAErrorSeverity, message: string): void {
-  const sdk = getSDK();
-  if (!sdk) return;
-  sdk.addErrorEvent(severity, message);
+  const queue = getQueue();
+  if (!queue) return;
+  queue("addErrorEvent", GA_SEVERITY[severity], message);
 }
