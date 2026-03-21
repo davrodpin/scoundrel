@@ -4,10 +4,6 @@ import {
   saveDeckPreference,
 } from "./deck_preference.ts";
 
-function assert(condition: boolean, msg: string): void {
-  if (!condition) throw new Error(`Assertion failed: ${msg}`);
-}
-
 function assertEquals<T>(actual: T, expected: T): void {
   if (actual !== expected) {
     throw new Error(
