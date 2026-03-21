@@ -51,7 +51,7 @@ const STEPS: Step[] = [
     lastSlainRank: 2,
     blocked: true,
     message:
-      "13 > 2, so weapon cannot be used. Must fight King barehanded — 13 damage!",
+      "13 > 2, so weapon cannot be used. You must fight the King barehanded — 13 damage! (You can always choose to fight any monster barehanded, even when your weapon could be used.)",
   },
 ];
 

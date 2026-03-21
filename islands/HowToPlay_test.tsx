@@ -27,6 +27,15 @@ Deno.test("HowToPlay - embedded still shows main content", () => {
   assertEquals(html.includes("Combat"), true);
 });
 
+Deno.test("HowToPlay - weapon degradation section clarifies barehanded is always an option", () => {
+  const html = render(<HowToPlay />);
+  assertEquals(
+    html.includes("always choose to fight barehanded"),
+    true,
+    "Weapon degradation section should clarify that fighting barehanded is always an option",
+  );
+});
+
 Deno.test("HowToPlay - section headings render anchor links for all 11 sections", () => {
   const html = render(<HowToPlay />);
   const anchors = [

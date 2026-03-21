@@ -190,7 +190,12 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
             <strong class="text-torch-amber">lower or equal rank</strong>{" "}
             than the last monster it slew. The weapon stays equipped even when
             it can no longer be used — it might still be useful for weaker
-            monsters later.
+            monsters later. Remember, you can{" "}
+            <strong class="text-torch-amber">
+              always choose to fight barehanded
+            </strong>{" "}
+            instead of using your weapon, even against monsters your weapon
+            could handle.
           </Prose>
           <div class="mt-4">
             <WeaponDegradationDemo />
