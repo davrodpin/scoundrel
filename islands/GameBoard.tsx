@@ -47,6 +47,11 @@ import {
   isPendingAvoidRoom,
   type PendingAction,
 } from "./pending_action.ts";
+import {
+  getInitialDeckId,
+  loadDeckPreference,
+  saveDeckPreference,
+} from "./deck_preference.ts";
 
 type GameBoardProps = { gameId?: string };
 
@@ -69,7 +74,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const resumeError = useSignal<string | null>(null);
   const copiedLink = useSignal(false);
   const availableDecks = useSignal<DeckInfo[]>([]);
-  const selectedDeckId = useSignal("dungeon");
+  const selectedDeckId = useSignal(loadDeckPreference() ?? "dungeon");
   const decksLoading = useSignal(true);
   const abandonFired = useSignal(false);
 
@@ -175,7 +180,10 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         const manifestRes = await fetch("/decks/manifest.json");
         if (!manifestRes.ok) return;
         const manifest = await manifestRes.json() as DeckManifest;
-        selectedDeckId.value = manifest.defaultDeck;
+        selectedDeckId.value = getInitialDeckId(
+          manifest.decks,
+          manifest.defaultDeck,
+        );
 
         const deckInfos: DeckInfo[] = [];
         for (const deckId of manifest.decks) {
@@ -552,6 +560,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         selectedDeckId={selectedDeckId.value}
         onDeckChange={(id) => {
           selectedDeckId.value = id;
+          saveDeckPreference(id);
         }}
         decksLoading={decksLoading.value}
       />
