@@ -86,3 +86,26 @@ Deno.test("LeaderboardTable - no dungeon link for extraEntry when showDungeonLin
   );
   assertEquals(html.includes('href="/play/game-123"'), false);
 });
+
+Deno.test("LeaderboardTable - uses entryRanks for rank display when provided", () => {
+  const html = render(
+    <LeaderboardTable
+      entries={[entry, entry2]}
+      highlightGameId={null}
+      entryRanks={[5, 23]}
+    />,
+  );
+  assertEquals(html.includes(">5<"), true);
+  assertEquals(html.includes(">23<"), true);
+});
+
+Deno.test("LeaderboardTable - uses sequential index when entryRanks is not provided", () => {
+  const html = render(
+    <LeaderboardTable
+      entries={[entry, entry2]}
+      highlightGameId={null}
+    />,
+  );
+  assertEquals(html.includes(">1<"), true);
+  assertEquals(html.includes(">2<"), true);
+});
