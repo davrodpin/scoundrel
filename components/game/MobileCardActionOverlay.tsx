@@ -69,7 +69,7 @@ export function MobileCardActionOverlay(
           onClick={(e: MouseEvent) => e.stopPropagation()}
         >
           {/* Selected card */}
-          <CardImage card={card} deck={deck} />
+          <CardImage card={card} deck={deck} sizeClass="w-[clamp(130px,35vw,200px)]" />
 
           {/* Enabled action buttons */}
           <div class="flex flex-col gap-2 w-full">

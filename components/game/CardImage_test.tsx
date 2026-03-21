@@ -43,3 +43,11 @@ Deno.test("CardImage - uses responsive mobile width class", () => {
   assertEquals(html.includes("w-[clamp(70px,20vw,100px)]"), true);
   assertEquals(html.includes("md:w-[clamp(140px,28vw,230px)]"), true);
 });
+
+Deno.test("CardImage - sizeClass overrides default width", () => {
+  const html = render(
+    <CardImage card={card} sizeClass="w-[clamp(130px,35vw,200px)]" />,
+  );
+  assertEquals(html.includes("w-[clamp(130px,35vw,200px)]"), true);
+  assertEquals(html.includes("w-[clamp(70px,20vw,100px)]"), false);
+});
