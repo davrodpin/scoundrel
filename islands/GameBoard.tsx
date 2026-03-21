@@ -518,6 +518,17 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     }).catch(() => {});
   }
 
+  function handleBackToMenu() {
+    if (!globalThis.confirm("Leave the dungeon? Your progress will be lost.")) {
+      return;
+    }
+    gameView.value = null;
+    selectedCardIndex.value = null;
+    focusedCardIndex.value = null;
+    pendingAction.value = null;
+    errorMsg.value = null;
+  }
+
   // Resume loading state
   if (resumeLoading.value) {
     return (
@@ -676,6 +687,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             healFlash={healFlash.value}
             actions={actions}
             toolButtons={{
+              onBackToMenu: handleBackToMenu,
               onCopyLink: handleCopyLink,
               onToggleLeaderboard: handleToggleLeaderboard,
               onToggleRules: handleToggleRules,
@@ -760,6 +772,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           playerName={state.playerName}
           damageFlash={damageFlash.value}
           healFlash={healFlash.value}
+          onBackToMenuClick={handleBackToMenu}
           onRulesClick={handleToggleRules}
           onLeaderboardClick={handleToggleLeaderboard}
           onCopyLinkClick={handleCopyLink}

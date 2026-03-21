@@ -52,3 +52,10 @@ Deno.test("MobileTopBar - copy link button shows copied state", () => {
   const html = render(<MobileTopBar {...baseProps} copiedLink />);
   assertEquals(html.includes(`aria-label="Link copied!"`), true);
 });
+
+Deno.test("MobileTopBar - renders back to menu button", () => {
+  const html = render(
+    <MobileTopBar {...baseProps} onBackToMenuClick={noop} />,
+  );
+  assertEquals(html.includes(`aria-label="Back to main menu"`), true);
+});

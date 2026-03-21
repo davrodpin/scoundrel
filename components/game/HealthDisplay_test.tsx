@@ -238,3 +238,39 @@ Deno.test("HealthDisplay - enabled Drink Potion button uses text-white", () => {
   );
   assertEquals(html.includes("text-white"), true);
 });
+
+Deno.test("HealthDisplay - renders back to menu button when toolButtons provided", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      toolButtons={{
+        onCopyLink: noop,
+        onToggleLeaderboard: noop,
+        onToggleRules: noop,
+        onBackToMenu: noop,
+        copiedLink: false,
+      }}
+    />,
+  );
+  assertEquals(html.includes(`aria-label="Back to main menu"`), true);
+});
+
+Deno.test("HealthDisplay - back to menu button has Leave Dungeon tooltip", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      toolButtons={{
+        onCopyLink: noop,
+        onToggleLeaderboard: noop,
+        onToggleRules: noop,
+        onBackToMenu: noop,
+        copiedLink: false,
+      }}
+    />,
+  );
+  assertEquals(html.includes("Leave Dungeon"), true);
+});

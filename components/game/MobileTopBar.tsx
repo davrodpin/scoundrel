@@ -4,6 +4,7 @@ type MobileTopBarProps = {
   playerName: string;
   damageFlash?: boolean;
   healFlash?: boolean;
+  onBackToMenuClick?: () => void;
   onRulesClick: () => void;
   onLeaderboardClick: () => void;
   onCopyLinkClick: () => void;
@@ -17,6 +18,7 @@ export function MobileTopBar(
     playerName,
     damageFlash,
     healFlash,
+    onBackToMenuClick,
     onRulesClick,
     onLeaderboardClick,
     onCopyLinkClick,
@@ -57,6 +59,31 @@ export function MobileTopBar(
 
       {/* Icon buttons — inline, no fixed positioning */}
       <div class="flex gap-1 flex-shrink-0">
+        {/* Back to menu */}
+        {onBackToMenuClick && (
+          <button
+            type="button"
+            class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
+            onClick={onBackToMenuClick}
+            aria-label="Back to main menu"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="w-5 h-5"
+            >
+              <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+              <polyline points="10 17 5 12 10 7" />
+              <line x1="15" y1="12" x2="5" y2="12" />
+            </svg>
+          </button>
+        )}
+
         {/* Leaderboard */}
         <button
           type="button"
