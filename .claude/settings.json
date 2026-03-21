@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/davpin/dev/github.com/davrodpin/scoundrel/main/.claude/hooks/check-no-compound-commands.sh"
+            "command": "bash .claude/hooks/check-no-compound-commands.sh"
           }
         ]
       }
