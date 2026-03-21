@@ -36,7 +36,9 @@ export function LeaderboardTable(
                   : "text-parchment"
               }`}
             >
-              <td class="py-2 text-parchment-dark">{entryRanks ? entryRanks[i] : i + 1}</td>
+              <td class="py-2 text-parchment-dark">
+                {entryRanks ? entryRanks[i] : i + 1}
+              </td>
               <td class="py-2 truncate max-w-[180px]">
                 {isHighlighted
                   ? (
