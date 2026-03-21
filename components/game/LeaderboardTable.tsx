@@ -5,10 +5,11 @@ type LeaderboardTableProps = {
   highlightGameId: string | null;
   extraEntry?: { entry: LeaderboardEntry; rank: number } | null;
   showDungeonLink?: boolean;
+  entryRanks?: number[];
 };
 
 export function LeaderboardTable(
-  { entries, highlightGameId, extraEntry, showDungeonLink = false }:
+  { entries, highlightGameId, extraEntry, showDungeonLink = false, entryRanks }:
     LeaderboardTableProps,
 ) {
   const showExtraEntry = extraEntry != null &&
@@ -35,7 +36,7 @@ export function LeaderboardTable(
                   : "text-parchment"
               }`}
             >
-              <td class="py-2 text-parchment-dark">{i + 1}</td>
+              <td class="py-2 text-parchment-dark">{entryRanks ? entryRanks[i] : i + 1}</td>
               <td class="py-2 truncate max-w-[180px]">
                 {isHighlighted
                   ? (
