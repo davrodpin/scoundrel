@@ -72,7 +72,7 @@ export function MobileCardActionOverlay(
           <CardImage
             card={card}
             deck={deck}
-            sizeClass="w-[clamp(130px,35vw,200px)]"
+            sizeClass="w-[clamp(160px,45vw,260px)]"
           />
 
           {/* Enabled action buttons */}
