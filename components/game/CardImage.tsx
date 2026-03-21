@@ -14,6 +14,7 @@ type CardImageProps = {
   disabled?: boolean;
   animationClass?: string;
   deck?: DeckInfo;
+  sizeClass?: string;
 };
 
 export function CardImage(
@@ -27,6 +28,7 @@ export function CardImage(
     disabled,
     animationClass,
     deck,
+    sizeClass,
   }: CardImageProps,
 ) {
   const [loaded, setLoaded] = useState(false);
@@ -50,6 +52,9 @@ export function CardImage(
     borderClass = "border-dungeon-border";
   }
 
+  const widthClass = sizeClass ??
+    "w-[clamp(70px,20vw,100px)] md:w-[clamp(140px,28vw,230px)]";
+
   return (
     <button
       type="button"
@@ -60,7 +65,7 @@ export function CardImage(
         }
         : undefined}
       disabled={disabled}
-      class={`w-[clamp(70px,20vw,100px)] md:w-[clamp(140px,28vw,230px)] rounded-sm border transition-transform duration-200 bg-dungeon-surface/30 ${borderClass} ${
+      class={`${widthClass} rounded-sm border transition-transform duration-200 bg-dungeon-surface/30 ${borderClass} ${
         interactive
           ? "cursor-pointer hover:-translate-y-1 hover:border-torch-amber"
           : ""

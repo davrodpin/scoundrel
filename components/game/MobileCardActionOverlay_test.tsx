@@ -126,6 +126,17 @@ Deno.test("MobileCardActionOverlay - action buttons use text-xs", () => {
   assertEquals(html.includes("text-xs"), true);
 });
 
+Deno.test("MobileCardActionOverlay - renders card at larger preview size", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+    />,
+  );
+  assertEquals(html.includes("w-[clamp(160px,45vw,260px)]"), true);
+});
+
 Deno.test("MobileCardActionOverlay - overlay is vertically centered", () => {
   const html = render(
     <MobileCardActionOverlay
