@@ -83,12 +83,12 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
           <div class="mb-4">
             <input
               type="text"
-              placeholder="Search for a fallen hero\u2026"
+              placeholder="Search for a fallen hero…"
               value={searchQuery.value}
               onInput={(e) => {
                 searchQuery.value = (e.target as HTMLInputElement).value;
               }}
-              class="w-full bg-dungeon-bg border border-dungeon-border rounded-sm px-3 py-2 text-parchment font-body text-sm placeholder:text-parchment-dark/50 focus:border-torch-amber focus:outline-none transition-colors duration-200"
+              class="w-full bg-dungeon-bg border border-dungeon-border rounded-sm px-3 py-2 text-parchment font-body text-base placeholder:text-parchment-dark/50 focus:border-torch-amber focus:outline-none transition-colors duration-200"
             />
           </div>
 
