@@ -525,7 +525,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     gameView.value = null;
     selectedCardIndex.value = null;
     focusedCardIndex.value = null;
-    pendingAction.value = null;
+    pendingAction.value = { kind: "idle" };
     errorMsg.value = null;
   }
 
