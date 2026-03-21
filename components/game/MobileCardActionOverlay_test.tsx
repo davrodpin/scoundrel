@@ -134,7 +134,7 @@ Deno.test("MobileCardActionOverlay - renders card at larger preview size", () =>
       onCancel={noop}
     />,
   );
-  assertEquals(html.includes("w-[clamp(130px,35vw,200px)]"), true);
+  assertEquals(html.includes("w-[clamp(160px,45vw,260px)]"), true);
 });
 
 Deno.test("MobileCardActionOverlay - overlay is vertically centered", () => {
