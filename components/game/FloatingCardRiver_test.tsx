@@ -190,6 +190,11 @@ Deno.test("FloatingCardRiver - mobile ribbon is positioned at bottom", () => {
   assertEquals(html.includes("bottom-0"), true);
 });
 
+Deno.test("FloatingCardRiver - mobile animation container is not width-constrained", () => {
+  const html = render(<FloatingCardRiver decks={[]} />);
+  assertEquals(html.includes("min-w-max"), true);
+});
+
 Deno.test("FloatingCardRiver - river lanes have dark background", () => {
   const html = render(<FloatingCardRiver decks={[]} />);
   assertEquals(html.includes("bg-river-dark"), true);

@@ -32,7 +32,7 @@ export function WelcomeScreen(
 ) {
   const trimmedName = playerName.trim();
   return (
-    <div class="relative overflow-hidden min-h-dvh bg-dungeon-bg flex flex-col items-center pb-[100px] md:pb-0">
+    <div class="relative overflow-hidden min-h-dvh bg-dungeon-bg flex flex-col items-center pb-[140px] md:pb-0">
       <FloatingCardRiver decks={decks} />
       <div class="relative z-10 flex-1 flex flex-col items-center justify-center text-center">
         <h1 class="font-heading text-5xl text-parchment mb-4">Scoundrel</h1>

@@ -97,10 +97,10 @@ export function FloatingCardRiver({ decks }: Props) {
 
   useEffect(() => {
     const pool = buildCardPool(decks);
-    const picked = shuffleAndPick(pool, 32);
+    const picked = shuffleAndPick(pool, 36);
     setLeftCards(generateCardLayout(picked.slice(0, 12)));
     setRightCards(generateCardLayout(picked.slice(12, 24)));
-    setMobileCards(generateCardLayout(picked.slice(24, 32)));
+    setMobileCards(generateCardLayout(picked.slice(24, 36)));
   }, [decks.length]);
 
   return (
@@ -145,11 +145,12 @@ export function FloatingCardRiver({ decks }: Props) {
         </div>
       </div>
       {/* Mobile: horizontal ribbon pinned to bottom */}
-      <div class="flex md:hidden absolute bottom-0 left-0 right-0 bg-river-dark h-[100px] overflow-hidden">
-        <div class="animate-card-river-horizontal flex will-change-transform">
+      <div class="flex md:hidden absolute bottom-0 left-0 right-0 bg-river-dark h-[140px] overflow-hidden">
+        <div class="animate-card-river-horizontal flex min-w-max will-change-transform">
           {[...mobileCards, ...mobileCards].map((card, i) => (
             <div
               key={i}
+              class="flex-shrink-0"
               style={`margin-right: ${
                 Math.round(card.gapY / 2)
               }px; margin-top: ${card.offsetX % 20}px`}
@@ -158,7 +159,7 @@ export function FloatingCardRiver({ decks }: Props) {
                 src={card.imagePath}
                 alt=""
                 loading="lazy"
-                class={`w-[65px] rounded-sm flex-shrink-0 ${card.rotationClass}`}
+                class={`w-[90px] rounded-sm ${card.rotationClass}`}
               />
             </div>
           ))}
