@@ -696,7 +696,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       const resp = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, email }),
+        body: JSON.stringify({ message, email, gameId: state?.gameId }),
       });
       if (!resp.ok) {
         const data = await resp.json().catch(() => null);

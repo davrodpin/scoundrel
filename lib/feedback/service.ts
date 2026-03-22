@@ -15,7 +15,7 @@ export function createFeedbackService(
   async function submitFeedback(
     request: FeedbackRequest,
   ): Promise<FeedbackResult> {
-    const { message, email } = request;
+    const { message, email, gameId } = request;
     const truncatedTitle = message.length > 60 ? message.slice(0, 60) : message;
     const title = `[Player Feedback] ${truncatedTitle}`;
 
@@ -27,6 +27,10 @@ export function createFeedbackService(
 
     if (email) {
       bodyParts.push("", "## Contact", "", email);
+    }
+
+    if (gameId) {
+      bodyParts.push("", "## Game ID", "", gameId);
     }
 
     bodyParts.push("", "---", `*Submitted: ${new Date().toUTCString()}*`);

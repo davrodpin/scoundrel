@@ -5,6 +5,7 @@ import { z } from "zod";
 const feedbackSchema = z.object({
   message: z.string().min(1).max(2000).trim(),
   email: z.string().email().optional(),
+  gameId: z.string().uuid().optional(),
 });
 
 export const handler = define.handlers({

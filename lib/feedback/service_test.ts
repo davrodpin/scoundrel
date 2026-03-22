@@ -169,6 +169,41 @@ Deno.test("submitFeedback — returns issueNumber and issueUrl on success", asyn
   );
 });
 
+Deno.test("submitFeedback — includes gameId in body when provided", async () => {
+  let capturedBody: Record<string, unknown> = {};
+  globalThis.fetch = (_input: RequestInfo | URL, init?: RequestInit) => {
+    capturedBody = JSON.parse(init?.body as string);
+    return Promise.resolve(makeSuccessResponse(42));
+  };
+
+  const service = createFeedbackService(TEST_CONFIG);
+  await service.submitFeedback({
+    message: "My feedback",
+    gameId: "abc-123",
+  });
+
+  assertEquals(
+    (capturedBody["body"] as string).includes("abc-123"),
+    true,
+  );
+});
+
+Deno.test("submitFeedback — omits gameId section when not provided", async () => {
+  let capturedBody: Record<string, unknown> = {};
+  globalThis.fetch = (_input: RequestInfo | URL, init?: RequestInit) => {
+    capturedBody = JSON.parse(init?.body as string);
+    return Promise.resolve(makeSuccessResponse(42));
+  };
+
+  const service = createFeedbackService(TEST_CONFIG);
+  await service.submitFeedback({ message: "My feedback" });
+
+  assertEquals(
+    (capturedBody["body"] as string).includes("Game ID"),
+    false,
+  );
+});
+
 Deno.test("submitFeedback — throws FeedbackSubmissionError on GitHub API failure", async () => {
   globalThis.fetch = () => Promise.resolve(makeErrorResponse(422));
 
