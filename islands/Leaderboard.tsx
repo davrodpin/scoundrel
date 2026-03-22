@@ -68,7 +68,7 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
   return (
     <div class="min-h-screen bg-dungeon-bg text-parchment p-4 md:p-8">
       <div class="max-w-lg mx-auto">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-2">
           <h1 class="font-heading text-3xl text-torch-amber">
             The Gravekeeper's Ledger
           </h1>
@@ -80,7 +80,9 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
           </a>
         </div>
 
-        <BuyMeCoffeeButton />
+        <div class="mb-3">
+          <BuyMeCoffeeButton />
+        </div>
 
         <div class="bg-dungeon-surface border border-dungeon-border rounded-sm p-4">
           <div class="mb-4">
