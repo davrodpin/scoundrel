@@ -24,6 +24,7 @@ function makeMockPrismaClient(): MockPrisma {
     },
     leaderboardEntry: {
       findMany: () => Promise.resolve([]),
+      findFirst: () => Promise.resolve(null),
       findUnique: () => Promise.resolve(null),
       upsert: () => Promise.resolve(),
     },
