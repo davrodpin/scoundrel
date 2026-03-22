@@ -80,6 +80,8 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
           </a>
         </div>
 
+        <BuyMeCoffeeButton />
+
         <div class="bg-dungeon-surface border border-dungeon-border rounded-sm p-4">
           <div class="mb-4">
             <input
@@ -115,7 +117,6 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
               />
             )}
         </div>
-        <BuyMeCoffeeButton />
       </div>
     </div>
   );
