@@ -93,14 +93,12 @@ type Props = {
 export function FloatingCardRiver({ decks }: Props) {
   const [leftCards, setLeftCards] = useState<CardLayout[]>([]);
   const [rightCards, setRightCards] = useState<CardLayout[]>([]);
-  const [mobileCards, setMobileCards] = useState<CardLayout[]>([]);
 
   useEffect(() => {
     const pool = buildCardPool(decks);
-    const picked = shuffleAndPick(pool, 32);
+    const picked = shuffleAndPick(pool, 24);
     setLeftCards(generateCardLayout(picked.slice(0, 12)));
     setRightCards(generateCardLayout(picked.slice(12, 24)));
-    setMobileCards(generateCardLayout(picked.slice(24, 32)));
   }, [decks.length]);
 
   return (
@@ -144,26 +142,7 @@ export function FloatingCardRiver({ decks }: Props) {
           </div>
         </div>
       </div>
-      {/* Mobile: horizontal river ribbon */}
-      <div class="flex md:hidden absolute top-0 left-0 right-0 overflow-hidden bg-river-dark h-[120px]">
-        <div class="animate-card-river-horizontal flex will-change-transform">
-          {[...mobileCards, ...mobileCards].map((card, i) => (
-            <div
-              key={i}
-              style={`margin-left: ${card.gapY}px; margin-top: ${
-                card.offsetX % 30
-              }px`}
-            >
-              <img
-                src={card.imagePath}
-                alt=""
-                loading="lazy"
-                class={`w-[clamp(70px,20vw,80px)] rounded-sm flex-shrink-0 ${card.rotationClass}`}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Mobile: animation hidden — river lanes only on desktop */}
     </div>
   );
 }
