@@ -210,7 +210,7 @@ export function HealthDisplay(
                   type="button"
                   onClick={toolButtons.onBackToMenu}
                   class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
-                  aria-label="Back to main menu"
+                  aria-label="Flee the Dungeon"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -229,7 +229,7 @@ export function HealthDisplay(
                 </button>
                 <div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 whitespace-nowrap">
                   <div class="bg-dungeon-surface border border-dungeon-border text-parchment text-xs font-body px-3 py-1.5 rounded-sm">
-                    Leave Dungeon
+                    Flee the Dungeon
                   </div>
                   <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-dungeon-border" />
                 </div>

@@ -234,10 +234,39 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         <section id="game-interface">
           <SectionHeading id="game-interface">Game Interface</SectionHeading>
           <Prose>
-            Three buttons appear in the top-right corner of the screen while you
+            Four buttons appear in the top-right corner of the screen while you
             are playing.
           </Prose>
           <div class="mt-4 space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="shrink-0 w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="w-5 h-5"
+                >
+                  <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+                  <polyline points="10 17 5 12 10 7" />
+                  <line x1="15" y1="12" x2="5" y2="12" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-heading text-torch-amber text-lg">
+                  Flee the Dungeon
+                </h3>
+                <Prose>
+                  Abandons your current run and returns to the main menu. Your
+                  progress will be lost — only the truly faint of heart would
+                  use this.
+                </Prose>
+              </div>
+            </div>
+
             <div class="flex items-start gap-4">
               <div class="shrink-0 w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment font-heading text-lg">
                 ?

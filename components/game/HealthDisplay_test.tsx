@@ -254,10 +254,10 @@ Deno.test("HealthDisplay - renders back to menu button when toolButtons provided
       }}
     />,
   );
-  assertEquals(html.includes(`aria-label="Back to main menu"`), true);
+  assertEquals(html.includes(`aria-label="Flee the Dungeon"`), true);
 });
 
-Deno.test("HealthDisplay - back to menu button has Leave Dungeon tooltip", () => {
+Deno.test("HealthDisplay - back to menu button has Flee the Dungeon tooltip", () => {
   const html = render(
     <HealthDisplay
       health={15}
@@ -272,5 +272,5 @@ Deno.test("HealthDisplay - back to menu button has Leave Dungeon tooltip", () =>
       }}
     />,
   );
-  assertEquals(html.includes("Leave Dungeon"), true);
+  assertEquals(html.includes("Flee the Dungeon"), true);
 });
