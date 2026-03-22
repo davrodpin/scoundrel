@@ -17,6 +17,7 @@ type ToolButtons = {
   onCopyLink: () => void;
   onToggleLeaderboard: () => void;
   onToggleRules: () => void;
+  onToggleFeedback?: () => void;
   copiedLink: boolean;
 };
 
@@ -290,7 +291,7 @@ export function HealthDisplay(
                   type="button"
                   class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
                   onClick={toolButtons.onToggleLeaderboard}
-                  aria-label="The Gravekeeper's Ledger"
+                  aria-label="Death Ledger"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -303,7 +304,7 @@ export function HealthDisplay(
                 </button>
                 <div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 whitespace-nowrap">
                   <div class="bg-dungeon-surface border border-dungeon-border text-parchment text-xs font-body px-3 py-1.5 rounded-sm">
-                    The Gravekeeper's Ledger
+                    Death Ledger
                   </div>
                   <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-dungeon-border" />
                 </div>
@@ -326,6 +327,37 @@ export function HealthDisplay(
                   <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-dungeon-border" />
                 </div>
               </div>
+
+              {/* Feedback button */}
+              {toolButtons.onToggleFeedback && (
+                <div class="relative group">
+                  <button
+                    type="button"
+                    class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
+                    onClick={toolButtons.onToggleFeedback}
+                    aria-label="Send feedback"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="w-5 h-5"
+                    >
+                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                    </svg>
+                  </button>
+                  <div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200 whitespace-nowrap">
+                    <div class="bg-dungeon-surface border border-dungeon-border text-parchment text-xs font-body px-3 py-1.5 rounded-sm">
+                      Send Feedback
+                    </div>
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-dungeon-border" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

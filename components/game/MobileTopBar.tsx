@@ -8,6 +8,7 @@ type MobileTopBarProps = {
   onRulesClick: () => void;
   onLeaderboardClick: () => void;
   onCopyLinkClick: () => void;
+  onFeedbackClick?: () => void;
   copiedLink: boolean;
 };
 
@@ -22,6 +23,7 @@ export function MobileTopBar(
     onRulesClick,
     onLeaderboardClick,
     onCopyLinkClick,
+    onFeedbackClick,
     copiedLink,
   }: MobileTopBarProps,
 ) {
@@ -89,7 +91,7 @@ export function MobileTopBar(
           type="button"
           class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
           onClick={onLeaderboardClick}
-          aria-label="The Gravekeeper's Ledger"
+          aria-label="Death Ledger"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -149,6 +151,29 @@ export function MobileTopBar(
         >
           ?
         </button>
+
+        {/* Feedback */}
+        {onFeedbackClick && (
+          <button
+            type="button"
+            class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
+            onClick={onFeedbackClick}
+            aria-label="Send feedback"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="w-5 h-5"
+            >
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );

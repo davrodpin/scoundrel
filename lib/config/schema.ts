@@ -19,6 +19,12 @@ export const configSchema = z.object({
   cleanup: z.object({
     retentionDays: z.number().int().positive().default(30),
   }).default({}),
+  feedback: z.object({
+    githubToken: z.string().min(1),
+    githubRepo: z.string().default("davrodpin/scoundrel"),
+    githubLabel: z.string().default("feedback"),
+    maxMessageLength: z.number().int().positive().default(2000),
+  }).optional(),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;

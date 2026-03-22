@@ -6,6 +6,8 @@ export const ERROR_MESSAGES: Record<string, string> = {
   InvalidJsonError: "Invalid request. Please try again.",
   InternalError: "Something went wrong. Please try again.",
   PayloadTooLargeError: "Request too large. Please try again.",
+  FeedbackSubmissionError: "Could not deliver your message. Please try again.",
+  FeedbackDisabledError: "Feedback is currently unavailable.",
 };
 
 export function getErrorMessage(data: unknown): string {

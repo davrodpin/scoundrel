@@ -32,7 +32,7 @@ export function LeaderboardPanel(
         {/* Header */}
         <div class="flex items-center justify-between px-5 py-4 border-b border-dungeon-border">
           <h2 class="font-heading text-xl text-torch-amber">
-            The Gravekeeper's Ledger
+            Death Ledger
           </h2>
           <button
             type="button"
