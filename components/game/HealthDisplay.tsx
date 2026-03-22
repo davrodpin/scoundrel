@@ -17,7 +17,7 @@ type ToolButtons = {
   onCopyLink: () => void;
   onToggleLeaderboard: () => void;
   onToggleRules: () => void;
-  onToggleFeedback: () => void;
+  onToggleFeedback?: () => void;
   copiedLink: boolean;
 };
 
@@ -329,7 +329,7 @@ export function HealthDisplay(
               </div>
 
               {/* Feedback button */}
-              <div class="relative group">
+              {toolButtons.onToggleFeedback && <div class="relative group">
                 <button
                   type="button"
                   class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
@@ -355,7 +355,7 @@ export function HealthDisplay(
                   </div>
                   <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-dungeon-border" />
                 </div>
-              </div>
+              </div>}
             </div>
           </div>
         )}
