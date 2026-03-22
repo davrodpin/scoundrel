@@ -86,6 +86,15 @@ export function generateCardLayout(cards: RiverCard[]): CardLayout[] {
   });
 }
 
+export function handlePageShow(
+  event: PageTransitionEvent,
+  onRestart: () => void,
+): void {
+  if (event.persisted) {
+    onRestart();
+  }
+}
+
 type Props = {
   decks: DeckInfo[];
 };
@@ -94,6 +103,7 @@ export function FloatingCardRiver({ decks }: Props) {
   const [leftCards, setLeftCards] = useState<CardLayout[]>([]);
   const [rightCards, setRightCards] = useState<CardLayout[]>([]);
   const [mobileCards, setMobileCards] = useState<CardLayout[]>([]);
+  const [animationGeneration, setAnimationGeneration] = useState(0);
 
   useEffect(() => {
     const pool = buildCardPool(decks);
@@ -103,13 +113,23 @@ export function FloatingCardRiver({ decks }: Props) {
     setMobileCards(generateCardLayout(picked.slice(24, 36)));
   }, [decks.length]);
 
+  useEffect(() => {
+    const listener = (e: PageTransitionEvent) =>
+      handlePageShow(e, () => setAnimationGeneration((g) => g + 1));
+    globalThis.addEventListener("pageshow", listener);
+    return () => globalThis.removeEventListener("pageshow", listener);
+  }, []);
+
   return (
     <div aria-hidden="true" class="pointer-events-none">
       {/* Desktop: two flanking river lanes */}
       <div class="hidden md:flex absolute inset-0 overflow-hidden justify-between">
         {/* Left lane - drift downward */}
         <div class="bg-river-dark w-[clamp(300px,32vw,460px)] overflow-hidden self-stretch">
-          <div class="animate-card-river-down will-change-transform">
+          <div
+            key={animationGeneration}
+            class="animate-card-river-down will-change-transform"
+          >
             {[...leftCards, ...leftCards].map((card, i) => (
               <div
                 key={i}
@@ -127,7 +147,10 @@ export function FloatingCardRiver({ decks }: Props) {
         </div>
         {/* Right lane - drift upward */}
         <div class="bg-river-dark w-[clamp(300px,32vw,460px)] overflow-hidden self-stretch">
-          <div class="animate-card-river-up will-change-transform">
+          <div
+            key={animationGeneration}
+            class="animate-card-river-up will-change-transform"
+          >
             {[...rightCards, ...rightCards].map((card, i) => (
               <div
                 key={i}
@@ -146,7 +169,10 @@ export function FloatingCardRiver({ decks }: Props) {
       </div>
       {/* Mobile: horizontal ribbon pinned to bottom */}
       <div class="flex md:hidden absolute bottom-0 left-0 right-0 bg-river-dark h-[140px] overflow-hidden">
-        <div class="animate-card-river-horizontal flex min-w-max will-change-transform">
+        <div
+          key={animationGeneration}
+          class="animate-card-river-horizontal flex min-w-max will-change-transform"
+        >
           {[...mobileCards, ...mobileCards].map((card, i) => (
             <div
               key={i}

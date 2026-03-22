@@ -6,6 +6,7 @@ import {
   buildCardPool,
   FloatingCardRiver,
   generateCardLayout,
+  handlePageShow,
   shuffleAndPick,
 } from "./FloatingCardRiver.tsx";
 import type { DeckInfo } from "@scoundrel/game";
@@ -243,4 +244,22 @@ Deno.test("generateCardLayout - preserves imagePath and deckId from source", () 
     assertEquals(layout[i].imagePath, sampleCards[i].imagePath);
     assertEquals(layout[i].deckId, sampleCards[i].deckId);
   }
+});
+
+// --- handlePageShow tests ---
+
+Deno.test("handlePageShow - calls onRestart when event is persisted", () => {
+  let restarted = false;
+  handlePageShow({ persisted: true } as PageTransitionEvent, () => {
+    restarted = true;
+  });
+  assertEquals(restarted, true);
+});
+
+Deno.test("handlePageShow - does not call onRestart when event is not persisted", () => {
+  let restarted = false;
+  handlePageShow({ persisted: false } as PageTransitionEvent, () => {
+    restarted = true;
+  });
+  assertEquals(restarted, false);
 });
