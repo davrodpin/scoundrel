@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import type { DeckInfo } from "@scoundrel/game";
-import BuyMeCoffeeButton from "../../islands/BuyMeCoffeeButton.tsx";
+import BuyMeCoffeeButton from "./BuyMeCoffeeButton.tsx";
 
 type WelcomeScreenProps = {
   playerName: string;
