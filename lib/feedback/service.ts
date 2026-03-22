@@ -16,9 +16,7 @@ export function createFeedbackService(
     request: FeedbackRequest,
   ): Promise<FeedbackResult> {
     const { message, email } = request;
-    const truncatedTitle = message.length > 60
-      ? message.slice(0, 60)
-      : message;
+    const truncatedTitle = message.length > 60 ? message.slice(0, 60) : message;
     const title = `[Player Feedback] ${truncatedTitle}`;
 
     const bodyParts = [
