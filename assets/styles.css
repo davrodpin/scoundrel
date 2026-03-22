@@ -28,6 +28,10 @@
   --animate-equip-glow: equip-glow 0.8s ease-in-out infinite;
   --animate-potion-drink: potion-drink 0.7s ease-in-out infinite;
   --animate-room-avoid: room-avoid 0.7s ease-in-out infinite;
+
+  --animate-card-river-down: card-river-down 35s linear infinite;
+  --animate-card-river-up: card-river-up 40s linear infinite;
+  --animate-card-river-horizontal: card-river-horizontal 25s linear infinite;
 }
 
 @keyframes damage-flash {
@@ -134,5 +138,40 @@
   50% {
     opacity: 0.55;
     transform: scale(0.96);
+  }
+}
+
+@keyframes card-river-down {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes card-river-up {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes card-river-horizontal {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-river-down,
+  .animate-card-river-up,
+  .animate-card-river-horizontal {
+    animation-play-state: paused !important;
   }
 }

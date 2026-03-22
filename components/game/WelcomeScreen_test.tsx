@@ -164,6 +164,21 @@ Deno.test("WelcomeScreen - renders Buy me a coffee button", () => {
   assertEquals(html.includes("data-bmc-container"), true);
 });
 
+Deno.test("WelcomeScreen - renders FloatingCardRiver container", () => {
+  const html = render(
+    <WelcomeScreen
+      playerName=""
+      onPlayerNameChange={noop}
+      onStartGame={noop}
+      loading={false}
+      errorMsg={null}
+      {...defaultDeckProps}
+    />,
+  );
+  assertEquals(html.includes('aria-hidden="true"'), true);
+  assertEquals(html.includes("pointer-events-none"), true);
+});
+
 Deno.test("WelcomeScreen - deck selector has focus ring classes when multiple decks", () => {
   const html = render(
     <WelcomeScreen
