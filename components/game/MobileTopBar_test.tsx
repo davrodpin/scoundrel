@@ -57,5 +57,5 @@ Deno.test("MobileTopBar - renders back to menu button", () => {
   const html = render(
     <MobileTopBar {...baseProps} onBackToMenuClick={noop} />,
   );
-  assertEquals(html.includes(`aria-label="Back to main menu"`), true);
+  assertEquals(html.includes(`aria-label="Flee the Dungeon"`), true);
 });

@@ -522,7 +522,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   }
 
   function handleBackToMenu() {
-    if (!globalThis.confirm("Leave the dungeon? Your progress will be lost.")) {
+    if (!globalThis.confirm("Flee the dungeon? Your progress will be lost.")) {
       return;
     }
     gameView.value = null;

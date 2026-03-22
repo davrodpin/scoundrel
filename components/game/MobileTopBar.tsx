@@ -65,7 +65,7 @@ export function MobileTopBar(
             type="button"
             class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
             onClick={onBackToMenuClick}
-            aria-label="Back to main menu"
+            aria-label="Flee the Dungeon"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
