@@ -1,3 +1,5 @@
+import BuyMeCoffeeButton from "./BuyMeCoffeeButton.tsx";
+
 type LeaderboardPositionText = { label: string; percent: string };
 
 export function getLeaderboardPositionText(
@@ -129,6 +131,7 @@ export function GameOverOverlay(
             </a>
           </div>
         </div>
+        <BuyMeCoffeeButton />
       </div>
     </div>
   );

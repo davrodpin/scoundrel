@@ -9,6 +9,7 @@ import type {
 import { LeaderboardTable } from "../components/game/LeaderboardTable.tsx";
 import { getLeaderboardStatusMessage } from "../components/game/leaderboard_panel_utils.ts";
 import { filterLeaderboardEntries } from "./leaderboard_search_utils.ts";
+import BuyMeCoffeeButton from "../components/game/BuyMeCoffeeButton.tsx";
 
 type LeaderboardProps = {
   gameId?: string;
@@ -67,7 +68,7 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
   return (
     <div class="min-h-screen bg-dungeon-bg text-parchment p-4 md:p-8">
       <div class="max-w-lg mx-auto">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-2">
           <h1 class="font-heading text-3xl text-torch-amber">
             The Gravekeeper's Ledger
           </h1>
@@ -77,6 +78,10 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
           >
             &larr; Back
           </a>
+        </div>
+
+        <div class="mb-3">
+          <BuyMeCoffeeButton />
         </div>
 
         <div class="bg-dungeon-surface border border-dungeon-border rounded-sm p-4">
