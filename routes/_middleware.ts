@@ -23,7 +23,12 @@ import {
 
 const tracer = getTracer();
 
-const pool = new pg.Pool({ connectionString: config.db.url });
+const pool = new pg.Pool({
+  connectionString: config.db.url,
+  max: 5,
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 30000,
+});
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 const engine = createGameEngine();
