@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { deckCardImagePath } from "@scoundrel/game";
 import type { DeckInfo } from "@scoundrel/game";
 import type { Rank, Suit } from "@scoundrel/engine";
@@ -103,7 +103,9 @@ export function FloatingCardRiver({ decks }: Props) {
   const [leftCards, setLeftCards] = useState<CardLayout[]>([]);
   const [rightCards, setRightCards] = useState<CardLayout[]>([]);
   const [mobileCards, setMobileCards] = useState<CardLayout[]>([]);
-  const [animationGeneration, setAnimationGeneration] = useState(0);
+  const leftAnimRef = useRef<HTMLDivElement>(null);
+  const rightAnimRef = useRef<HTMLDivElement>(null);
+  const mobileAnimRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const pool = buildCardPool(decks);
@@ -115,7 +117,16 @@ export function FloatingCardRiver({ decks }: Props) {
 
   useEffect(() => {
     const listener = (e: PageTransitionEvent) =>
-      handlePageShow(e, () => setAnimationGeneration((g) => g + 1));
+      handlePageShow(e, () => {
+        for (const ref of [leftAnimRef, rightAnimRef, mobileAnimRef]) {
+          const el = ref.current;
+          if (el) {
+            el.style.animation = "none";
+            void el.offsetHeight;
+            el.style.animation = "";
+          }
+        }
+      });
     globalThis.addEventListener("pageshow", listener);
     return () => globalThis.removeEventListener("pageshow", listener);
   }, []);
@@ -127,7 +138,7 @@ export function FloatingCardRiver({ decks }: Props) {
         {/* Left lane - drift downward */}
         <div class="bg-river-dark w-[clamp(300px,32vw,460px)] overflow-hidden self-stretch">
           <div
-            key={animationGeneration}
+            ref={leftAnimRef}
             class="animate-card-river-down will-change-transform"
           >
             {[...leftCards, ...leftCards].map((card, i) => (
@@ -148,7 +159,7 @@ export function FloatingCardRiver({ decks }: Props) {
         {/* Right lane - drift upward */}
         <div class="bg-river-dark w-[clamp(300px,32vw,460px)] overflow-hidden self-stretch">
           <div
-            key={animationGeneration}
+            ref={rightAnimRef}
             class="animate-card-river-up will-change-transform"
           >
             {[...rightCards, ...rightCards].map((card, i) => (
@@ -170,7 +181,7 @@ export function FloatingCardRiver({ decks }: Props) {
       {/* Mobile: horizontal ribbon pinned to bottom */}
       <div class="flex md:hidden absolute bottom-0 left-0 right-0 bg-river-dark h-[140px] overflow-hidden">
         <div
-          key={animationGeneration}
+          ref={mobileAnimRef}
           class="animate-card-river-horizontal flex min-w-max will-change-transform"
         >
           {[...mobileCards, ...mobileCards].map((card, i) => (
