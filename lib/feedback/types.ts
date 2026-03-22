@@ -1,6 +1,7 @@
 export type FeedbackRequest = {
   message: string;
   email?: string;
+  gameId?: string;
 };
 
 export type FeedbackResult = {
