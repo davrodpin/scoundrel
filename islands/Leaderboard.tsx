@@ -9,6 +9,7 @@ import type {
 import { LeaderboardTable } from "../components/game/LeaderboardTable.tsx";
 import { getLeaderboardStatusMessage } from "../components/game/leaderboard_panel_utils.ts";
 import { filterLeaderboardEntries } from "./leaderboard_search_utils.ts";
+import BuyMeCoffeeButton from "../components/game/BuyMeCoffeeButton.tsx";
 
 type LeaderboardProps = {
   gameId?: string;
@@ -114,6 +115,7 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
               />
             )}
         </div>
+        <BuyMeCoffeeButton />
       </div>
     </div>
   );
