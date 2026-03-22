@@ -234,7 +234,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         <section id="game-interface">
           <SectionHeading id="game-interface">Game Interface</SectionHeading>
           <Prose>
-            Four buttons appear in the top-right corner of the screen while you
+            Five buttons appear in the top-right corner of the screen while you
             are playing.
           </Prose>
           <div class="mt-4 space-y-4">
@@ -326,6 +326,34 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                   Copies a shareable URL for your current game to the clipboard.
                   Anyone with the link can view your run and resume it if it is
                   still in progress.
+                </Prose>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4">
+              <div class="shrink-0 w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="w-5 h-5"
+                >
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-heading text-torch-amber text-lg">
+                  Send Feedback
+                </h3>
+                <Prose>
+                  Opens a panel where you can whisper a message to the innkeeper
+                  — bug reports, ideas, or anything else on your mind. Anonymous
+                  by default; an optional email field lets you leave a way to be
+                  reached.
                 </Prose>
               </div>
             </div>
