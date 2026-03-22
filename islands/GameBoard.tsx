@@ -185,19 +185,22 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           manifest.defaultDeck,
         );
 
-        const deckInfos: DeckInfo[] = [];
-        for (const deckId of manifest.decks) {
-          const deckRes = await fetch(`/decks/${deckId}/deck.json`);
-          if (!deckRes.ok) continue;
-          const meta = await deckRes.json() as DeckMetadata;
-          deckInfos.push({
-            id: deckId,
-            name: meta.name,
-            basePath: `/decks/${deckId}`,
-            cards: meta.cards,
-          });
-        }
-        availableDecks.value = deckInfos;
+        const deckResults = await Promise.all(
+          manifest.decks.map(async (deckId) => {
+            const deckRes = await fetch(`/decks/${deckId}/deck.json`);
+            if (!deckRes.ok) return null;
+            const meta = await deckRes.json() as DeckMetadata;
+            return {
+              id: deckId,
+              name: meta.name,
+              basePath: `/decks/${deckId}`,
+              cards: meta.cards,
+            } satisfies DeckInfo;
+          }),
+        );
+        availableDecks.value = deckResults.filter(
+          (d): d is DeckInfo => d !== null,
+        );
       } catch {
         // Non-critical — fall back to no decks loaded
       } finally {
