@@ -86,6 +86,23 @@ export function generateCardLayout(cards: RiverCard[]): CardLayout[] {
   });
 }
 
+export function findAnimationClass(
+  classList: Iterable<string>,
+): string | undefined {
+  return [...classList].find((c) => c.startsWith("animate-card-river-"));
+}
+
+export function restartAnimation(el: HTMLElement): void {
+  const animClass = findAnimationClass(el.classList);
+  if (!animClass) return;
+  el.classList.remove(animClass);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      el.classList.add(animClass);
+    });
+  });
+}
+
 export function handlePageShow(
   event: PageTransitionEvent,
   onRestart: () => void,
@@ -119,12 +136,7 @@ export function FloatingCardRiver({ decks }: Props) {
     const listener = (e: PageTransitionEvent) =>
       handlePageShow(e, () => {
         for (const ref of [leftAnimRef, rightAnimRef, mobileAnimRef]) {
-          const el = ref.current;
-          if (el) {
-            el.style.animation = "none";
-            void el.offsetHeight;
-            el.style.animation = "";
-          }
+          if (ref.current) restartAnimation(ref.current);
         }
       });
     globalThis.addEventListener("pageshow", listener);

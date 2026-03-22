@@ -4,6 +4,7 @@ import { assertEquals } from "@std/assert";
 import { render } from "npm:preact-render-to-string@6.6.5";
 import {
   buildCardPool,
+  findAnimationClass,
   FloatingCardRiver,
   generateCardLayout,
   handlePageShow,
@@ -244,6 +245,42 @@ Deno.test("generateCardLayout - preserves imagePath and deckId from source", () 
     assertEquals(layout[i].imagePath, sampleCards[i].imagePath);
     assertEquals(layout[i].deckId, sampleCards[i].deckId);
   }
+});
+
+// --- handlePageShow tests ---
+
+// --- findAnimationClass tests ---
+
+Deno.test("findAnimationClass - finds animate-card-river-down", () => {
+  assertEquals(
+    findAnimationClass(["animate-card-river-down", "will-change-transform"]),
+    "animate-card-river-down",
+  );
+});
+
+Deno.test("findAnimationClass - finds animate-card-river-up", () => {
+  assertEquals(
+    findAnimationClass(["bg-river-dark", "animate-card-river-up"]),
+    "animate-card-river-up",
+  );
+});
+
+Deno.test("findAnimationClass - finds animate-card-river-horizontal", () => {
+  assertEquals(
+    findAnimationClass(["flex", "min-w-max", "animate-card-river-horizontal"]),
+    "animate-card-river-horizontal",
+  );
+});
+
+Deno.test("findAnimationClass - returns undefined when no animation class present", () => {
+  assertEquals(
+    findAnimationClass(["will-change-transform", "flex"]),
+    undefined,
+  );
+});
+
+Deno.test("findAnimationClass - returns undefined for empty list", () => {
+  assertEquals(findAnimationClass([]), undefined);
 });
 
 // --- handlePageShow tests ---
