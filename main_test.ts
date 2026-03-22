@@ -99,7 +99,6 @@ Deno.test(
   },
 );
 
-// Dev and prod produce different output
 Deno.test(
   "dev and prod formatters produce different output",
   () => {
