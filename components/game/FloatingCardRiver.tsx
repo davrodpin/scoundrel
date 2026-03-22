@@ -9,21 +9,31 @@ type RiverCard = {
   deckId: string;
 };
 
+export type CardLayout = RiverCard & {
+  offsetX: number;
+  gapY: number;
+  rotationClass: string;
+};
+
 const MONSTER_SUITS: Suit[] = ["clubs", "spades"];
 const MONSTER_RANKS: Rank[] = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 const PIP_SUITS: Suit[] = ["diamonds", "hearts"];
 const PIP_RANKS: Rank[] = [2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-const ROTATIONS = [
-  "rotate-2",
-  "-rotate-2",
+const ROTATION_CLASSES = [
   "rotate-1",
-  "-rotate-3",
+  "rotate-2",
   "rotate-3",
   "-rotate-1",
-  "rotate-2",
   "-rotate-2",
+  "-rotate-3",
 ];
+
+// Left column cards start around x=10, right column around x=150.
+// Jitter of ±20px makes each placement feel organic.
+const LEFT_BASE_X = 10;
+const RIGHT_BASE_X = 150;
+const JITTER = 20;
 
 export function buildCardPool(decks: DeckInfo[]): RiverCard[] {
   const pool: RiverCard[] = [];
@@ -59,69 +69,98 @@ export function shuffleAndPick<T>(pool: T[], count: number): T[] {
   return arr.slice(0, Math.min(count, arr.length));
 }
 
+export function generateCardLayout(cards: RiverCard[]): CardLayout[] {
+  return cards.map((card, i) => {
+    const isLeft = i % 2 === 0;
+    const baseX = isLeft ? LEFT_BASE_X : RIGHT_BASE_X;
+    const jitter = Math.floor(Math.random() * (JITTER * 2 + 1)) - JITTER;
+    const gapY = 8 + Math.floor(Math.random() * 33);
+    const rotationClass =
+      ROTATION_CLASSES[Math.floor(Math.random() * ROTATION_CLASSES.length)];
+    return {
+      ...card,
+      offsetX: baseX + jitter,
+      gapY,
+      rotationClass,
+    };
+  });
+}
+
 type Props = {
   decks: DeckInfo[];
 };
 
 export function FloatingCardRiver({ decks }: Props) {
-  const [leftCards, setLeftCards] = useState<RiverCard[]>([]);
-  const [rightCards, setRightCards] = useState<RiverCard[]>([]);
-  const [mobileCards, setMobileCards] = useState<RiverCard[]>([]);
+  const [leftCards, setLeftCards] = useState<CardLayout[]>([]);
+  const [rightCards, setRightCards] = useState<CardLayout[]>([]);
+  const [mobileCards, setMobileCards] = useState<CardLayout[]>([]);
 
   useEffect(() => {
     const pool = buildCardPool(decks);
-    const picked = shuffleAndPick(pool, 22);
-    setLeftCards(picked.slice(0, 8));
-    setRightCards(picked.slice(8, 16));
-    setMobileCards(picked.slice(16, 22));
+    const picked = shuffleAndPick(pool, 32);
+    setLeftCards(generateCardLayout(picked.slice(0, 12)));
+    setRightCards(generateCardLayout(picked.slice(12, 24)));
+    setMobileCards(generateCardLayout(picked.slice(24, 32)));
   }, [decks.length]);
 
   return (
     <div aria-hidden="true" class="pointer-events-none">
-      {/* Desktop: two flanking vertical columns */}
+      {/* Desktop: two flanking river lanes */}
       <div class="hidden md:flex absolute inset-0 overflow-hidden justify-between">
-        {/* Left column - drift downward */}
-        <div class="w-[80px] ml-4 lg:ml-12 opacity-[0.35] overflow-hidden self-stretch">
-          <div class="animate-card-river-down flex flex-col gap-3 will-change-transform">
+        {/* Left lane - drift downward */}
+        <div class="bg-river-dark w-[clamp(300px,32vw,460px)] overflow-hidden self-stretch">
+          <div class="animate-card-river-down will-change-transform">
             {[...leftCards, ...leftCards].map((card, i) => (
-              <img
+              <div
                 key={i}
-                src={card.imagePath}
-                alt=""
-                loading="lazy"
-                class={`w-full rounded-sm ${ROTATIONS[i % ROTATIONS.length]}`}
-              />
+                style={`margin-top: ${card.gapY}px; margin-left: ${card.offsetX}px`}
+              >
+                <img
+                  src={card.imagePath}
+                  alt=""
+                  loading="lazy"
+                  class={`w-[clamp(140px,28vw,230px)] rounded-sm ${card.rotationClass}`}
+                />
+              </div>
             ))}
           </div>
         </div>
-        {/* Right column - drift upward */}
-        <div class="w-[80px] mr-4 lg:mr-12 opacity-[0.35] overflow-hidden self-stretch">
-          <div class="animate-card-river-up flex flex-col gap-3 will-change-transform">
+        {/* Right lane - drift upward */}
+        <div class="bg-river-dark w-[clamp(300px,32vw,460px)] overflow-hidden self-stretch">
+          <div class="animate-card-river-up will-change-transform">
             {[...rightCards, ...rightCards].map((card, i) => (
-              <img
+              <div
                 key={i}
-                src={card.imagePath}
-                alt=""
-                loading="lazy"
-                class={`w-full rounded-sm ${ROTATIONS[i % ROTATIONS.length]}`}
-              />
+                style={`margin-top: ${card.gapY}px; margin-left: ${card.offsetX}px`}
+              >
+                <img
+                  src={card.imagePath}
+                  alt=""
+                  loading="lazy"
+                  class={`w-[clamp(140px,28vw,230px)] rounded-sm ${card.rotationClass}`}
+                />
+              </div>
             ))}
           </div>
         </div>
       </div>
-      {/* Mobile: horizontal ribbon near the top */}
-      <div class="flex md:hidden absolute top-12 left-0 right-0 overflow-hidden opacity-[0.30]">
-        <div class="animate-card-river-horizontal flex gap-2 will-change-transform">
+      {/* Mobile: horizontal river ribbon */}
+      <div class="flex md:hidden absolute top-0 left-0 right-0 overflow-hidden bg-river-dark h-[120px]">
+        <div class="animate-card-river-horizontal flex will-change-transform">
           {[...mobileCards, ...mobileCards].map((card, i) => (
-            <img
+            <div
               key={i}
-              src={card.imagePath}
-              alt=""
-              loading="lazy"
-              class={`w-[50px] rounded-sm flex-shrink-0 ${
-                ROTATIONS[i % ROTATIONS.length]
-              }`}
-            />
+              style={`margin-left: ${card.gapY}px; margin-top: ${
+                card.offsetX % 30
+              }px`}
+            >
+              <img
+                src={card.imagePath}
+                alt=""
+                loading="lazy"
+                class={`w-[clamp(70px,20vw,80px)] rounded-sm flex-shrink-0 ${card.rotationClass}`}
+              />
+            </div>
           ))}
         </div>
       </div>

@@ -5,6 +5,7 @@ import { render } from "npm:preact-render-to-string@6.6.5";
 import {
   buildCardPool,
   FloatingCardRiver,
+  generateCardLayout,
   shuffleAndPick,
 } from "./FloatingCardRiver.tsx";
 import type { DeckInfo } from "@scoundrel/game";
@@ -182,4 +183,54 @@ Deno.test("FloatingCardRiver - desktop columns are hidden on mobile", () => {
 Deno.test("FloatingCardRiver - mobile ribbon is hidden on desktop", () => {
   const html = render(<FloatingCardRiver decks={[]} />);
   assertEquals(html.includes("flex md:hidden"), true);
+});
+
+Deno.test("FloatingCardRiver - river lanes have dark background", () => {
+  const html = render(<FloatingCardRiver decks={[]} />);
+  assertEquals(html.includes("bg-river-dark"), true);
+});
+
+// --- generateCardLayout tests ---
+
+const sampleCards = [
+  { imagePath: "/a.jpg", deckId: "d" },
+  { imagePath: "/b.jpg", deckId: "d" },
+  { imagePath: "/c.jpg", deckId: "d" },
+  { imagePath: "/e.jpg", deckId: "d" },
+];
+
+Deno.test("generateCardLayout - returns same number of entries as input", () => {
+  const layout = generateCardLayout(sampleCards);
+  assertEquals(layout.length, sampleCards.length);
+});
+
+Deno.test("generateCardLayout - each entry has offsetX, gapY, rotationClass", () => {
+  const layout = generateCardLayout(sampleCards);
+  for (const entry of layout) {
+    assertEquals(typeof entry.offsetX, "number");
+    assertEquals(typeof entry.gapY, "number");
+    assertEquals(typeof entry.rotationClass, "string");
+  }
+});
+
+Deno.test("generateCardLayout - gapY is between 8 and 40 inclusive", () => {
+  const cards = Array.from({ length: 20 }, (_, i) => ({
+    imagePath: `/img/${i}.jpg`,
+    deckId: "d",
+  }));
+  for (let run = 0; run < 50; run++) {
+    const layout = generateCardLayout(cards);
+    for (const entry of layout) {
+      assertEquals(entry.gapY >= 8, true);
+      assertEquals(entry.gapY <= 40, true);
+    }
+  }
+});
+
+Deno.test("generateCardLayout - preserves imagePath and deckId from source", () => {
+  const layout = generateCardLayout(sampleCards);
+  for (let i = 0; i < sampleCards.length; i++) {
+    assertEquals(layout[i].imagePath, sampleCards[i].imagePath);
+    assertEquals(layout[i].deckId, sampleCards[i].deckId);
+  }
 });
