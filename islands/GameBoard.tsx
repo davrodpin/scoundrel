@@ -21,6 +21,7 @@ import { GameSection } from "../components/game/GameSection.tsx";
 import { GameOverOverlay } from "../components/game/GameOverOverlay.tsx";
 import { RulesPanel } from "../components/game/RulesPanel.tsx";
 import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
+import { FeedbackPanel } from "../components/game/FeedbackPanel.tsx";
 import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
 import { MobileDungeonButton } from "../components/game/MobileDungeonButton.tsx";
 import { MobileCardActionOverlay } from "../components/game/MobileCardActionOverlay.tsx";
@@ -77,6 +78,10 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const selectedDeckId = useSignal(loadDeckPreference() ?? "dungeon");
   const decksLoading = useSignal(true);
   const abandonFired = useSignal(false);
+  const showFeedback = useSignal(false);
+  const feedbackSubmitting = useSignal(false);
+  const feedbackSubmitted = useSignal(false);
+  const feedbackError = useSignal<string | null>(null);
 
   async function fetchLeaderboard() {
     leaderboardLoading.value = true;
@@ -216,6 +221,11 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
 
       if (e.key === "Escape") {
+        if (showFeedback.value) {
+          showFeedback.value = false;
+          e.preventDefault();
+          return;
+        }
         if (showRules.value) {
           showRules.value = false;
           e.preventDefault();
@@ -562,22 +572,34 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const state = gameView.value;
   if (!state) {
     return (
-      <WelcomeScreen
-        playerName={playerName.value}
-        onPlayerNameChange={(name) => {
-          playerName.value = name;
-        }}
-        onStartGame={startNewGame}
-        loading={isLoading}
-        errorMsg={errorMsg.value}
-        decks={availableDecks.value}
-        selectedDeckId={selectedDeckId.value}
-        onDeckChange={(id) => {
-          selectedDeckId.value = id;
-          saveDeckPreference(id);
-        }}
-        decksLoading={decksLoading.value}
-      />
+      <>
+        <WelcomeScreen
+          playerName={playerName.value}
+          onPlayerNameChange={(name) => {
+            playerName.value = name;
+          }}
+          onStartGame={startNewGame}
+          loading={isLoading}
+          errorMsg={errorMsg.value}
+          decks={availableDecks.value}
+          selectedDeckId={selectedDeckId.value}
+          onDeckChange={(id) => {
+            selectedDeckId.value = id;
+            saveDeckPreference(id);
+          }}
+          decksLoading={decksLoading.value}
+          onToggleFeedback={handleToggleFeedback}
+        />
+        <FeedbackPanel
+          open={showFeedback.value}
+          onClose={handleCloseFeedback}
+          onSubmit={handleSubmitFeedback}
+          submitting={feedbackSubmitting.value}
+          submitted={feedbackSubmitted.value}
+          errorMsg={feedbackError.value}
+          maxMessageLength={2000}
+        />
+      </>
     );
   }
 
@@ -651,6 +673,48 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     showLeaderboard.value = false;
   }
 
+  function handleToggleFeedback() {
+    showFeedback.value = !showFeedback.value;
+    showRules.value = false;
+    showLeaderboard.value = false;
+    if (!showFeedback.value) return;
+    feedbackSubmitted.value = false;
+    feedbackError.value = null;
+  }
+
+  function handleCloseFeedback() {
+    showFeedback.value = false;
+  }
+
+  async function handleSubmitFeedback(
+    message: string,
+    email?: string,
+  ): Promise<void> {
+    feedbackSubmitting.value = true;
+    feedbackError.value = null;
+    try {
+      const resp = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, email }),
+      });
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => null);
+        feedbackError.value = getErrorMessage(data);
+        return;
+      }
+      feedbackSubmitted.value = true;
+      setTimeout(() => {
+        showFeedback.value = false;
+        feedbackSubmitted.value = false;
+      }, 2000);
+    } catch {
+      feedbackError.value = "Something went wrong. Please try again.";
+    } finally {
+      feedbackSubmitting.value = false;
+    }
+  }
+
   const isDrawPhase = state.phase.kind === "drawing";
   const isDungeonInteractive = isDrawPhase && state.dungeonCount > 0 &&
     !isLoading;
@@ -677,6 +741,17 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
         onClose={handleCloseLeaderboard}
       />
 
+      {/* Feedback panel */}
+      <FeedbackPanel
+        open={showFeedback.value}
+        onClose={handleCloseFeedback}
+        onSubmit={handleSubmitFeedback}
+        submitting={feedbackSubmitting.value}
+        submitted={feedbackSubmitted.value}
+        errorMsg={feedbackError.value}
+        maxMessageLength={2000}
+      />
+
       {/* ── DESKTOP LAYOUT (hidden on mobile) ── */}
       <div class="hidden md:flex md:flex-col md:items-center w-full">
         {/* Shared container: Health Display + game grid share the same width */}
@@ -694,6 +769,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
               onCopyLink: handleCopyLink,
               onToggleLeaderboard: handleToggleLeaderboard,
               onToggleRules: handleToggleRules,
+              onToggleFeedback: handleToggleFeedback,
               copiedLink: copiedLink.value,
             }}
           />
@@ -779,6 +855,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           onRulesClick={handleToggleRules}
           onLeaderboardClick={handleToggleLeaderboard}
           onCopyLinkClick={handleCopyLink}
+          onFeedbackClick={handleToggleFeedback}
           copiedLink={copiedLink.value}
         />
 
@@ -881,6 +958,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             e.gameId === state.gameId
           )}
           gameId={state.gameId}
+          onToggleFeedback={handleToggleFeedback}
         />
       )}
     </div>

@@ -22,5 +22,15 @@ export function loadConfigFromEnv(): unknown {
     cleanup: {
       retentionDays: parseOptionalInt(Deno.env.get("GAME_RETENTION_DAYS")),
     },
+    feedback: Deno.env.get("SCOUNDREL_GITHUB_TOKEN")
+      ? {
+        githubToken: Deno.env.get("SCOUNDREL_GITHUB_TOKEN"),
+        githubRepo: Deno.env.get("FEEDBACK_GITHUB_REPO"),
+        githubLabel: Deno.env.get("FEEDBACK_GITHUB_LABEL"),
+        maxMessageLength: parseOptionalInt(
+          Deno.env.get("FEEDBACK_MAX_MESSAGE_LENGTH"),
+        ),
+      }
+      : undefined,
   };
 }

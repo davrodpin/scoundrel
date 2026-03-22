@@ -8,6 +8,7 @@ import {
   createGameService,
   createPrismaGameRepository,
 } from "@scoundrel/game-service";
+import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
 import { getTracer, trace } from "@scoundrel/telemetry";
 import { define } from "@/utils.ts";
@@ -39,6 +40,14 @@ const gameService = createGameService(engine, repository, {
 }, tracer);
 
 const logger = getLogger(["scoundrel", "http"]);
+
+const feedbackService = config.feedback
+  ? createFeedbackService({
+    githubToken: config.feedback.githubToken,
+    githubRepo: config.feedback.githubRepo,
+    githubLabel: config.feedback.githubLabel,
+  })
+  : null;
 
 const cleanupService = createCleanupService(repository, {
   retentionDays: config.cleanup.retentionDays,
@@ -174,6 +183,7 @@ const bodySizeMiddleware = define.middleware((ctx) => {
 const diMiddleware = define.middleware((ctx) => {
   ctx.state.config = config;
   ctx.state.gameService = gameService;
+  ctx.state.feedbackService = feedbackService;
   return ctx.next();
 });
 

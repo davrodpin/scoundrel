@@ -12,6 +12,7 @@ type WelcomeScreenProps = {
   selectedDeckId: string;
   onDeckChange: (deckId: string) => void;
   decksLoading: boolean;
+  onToggleFeedback: () => void;
 };
 
 export function WelcomeScreen(
@@ -25,6 +26,7 @@ export function WelcomeScreen(
     selectedDeckId,
     onDeckChange,
     decksLoading,
+    onToggleFeedback,
   }: WelcomeScreenProps,
 ) {
   const trimmedName = playerName.trim();
@@ -95,6 +97,14 @@ export function WelcomeScreen(
             >
               The Gravekeeper's Ledger
             </a>
+            <span class="text-parchment-dark/50 text-sm">·</span>
+            <button
+              type="button"
+              onClick={onToggleFeedback}
+              class="text-sm font-body text-parchment-dark hover:text-torch-amber transition-colors duration-200"
+            >
+              Send Feedback
+            </button>
           </div>
           <BuyMeCoffeeButton />
           {errorMsg && (

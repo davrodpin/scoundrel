@@ -34,6 +34,7 @@ type GameOverOverlayProps = {
   topPercent?: number | null;
   isInTopN?: boolean;
   gameId?: string;
+  onToggleFeedback?: () => void;
 };
 
 export function GameOverOverlay(
@@ -47,6 +48,7 @@ export function GameOverOverlay(
     topPercent,
     isInTopN,
     gameId,
+    onToggleFeedback,
   }: GameOverOverlayProps,
 ) {
   const title = reason === "dead" ? "You Have Fallen" : "Dungeon Cleared";
@@ -131,6 +133,17 @@ export function GameOverOverlay(
             </a>
           </div>
         </div>
+        {onToggleFeedback && (
+          <div class="mt-4">
+            <button
+              type="button"
+              onClick={onToggleFeedback}
+              class="text-sm font-body text-parchment-dark hover:text-torch-amber transition-colors duration-200"
+            >
+              Send Feedback
+            </button>
+          </div>
+        )}
         <BuyMeCoffeeButton />
       </div>
     </div>
