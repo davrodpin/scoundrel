@@ -89,13 +89,15 @@ export function createGameService(
         span.setAttribute("game.id", gameId);
         span.setAttribute("action.type", actionType);
         try {
-          const latestEvent = await repository.getLatestEvent(gameId);
+          const [latestEvent, rawPlayerName] = await Promise.all([
+            repository.getLatestEvent(gameId),
+            repository.getPlayerName(gameId),
+          ]);
           if (!latestEvent) {
             throw new AppError("GameNotFoundError", 404, { gameId });
           }
 
-          const playerName = await repository.getPlayerName(gameId) ??
-            config.defaultPlayerName;
+          const playerName = rawPlayerName ?? config.defaultPlayerName;
 
           const syntheticEvents = new Array(latestEvent.sequence + 1);
           syntheticEvents[latestEvent.sequence] = latestEvent.payload;
@@ -154,14 +156,16 @@ export function createGameService(
                 async (checkSpan) => {
                   try {
                     const score = engine.getScore(newState);
-                    await repository.updateStatus(gameId, "completed", score);
+                    await Promise.all([
+                      repository.updateStatus(gameId, "completed", score),
+                      repository.createLeaderboardEntry(
+                        gameId,
+                        playerName,
+                        score,
+                        new Date(),
+                      ),
+                    ]);
                     logger.info("Game completed", { gameId, score });
-                    await repository.createLeaderboardEntry(
-                      gameId,
-                      playerName,
-                      score,
-                      new Date(),
-                    );
                     logger.info("Leaderboard entry created", {
                       gameId,
                       score,
@@ -206,14 +210,16 @@ export function createGameService(
               async (checkSpan) => {
                 try {
                   const score = engine.getScore(newState);
-                  await repository.updateStatus(gameId, "completed", score);
+                  await Promise.all([
+                    repository.updateStatus(gameId, "completed", score),
+                    repository.createLeaderboardEntry(
+                      gameId,
+                      playerName,
+                      score,
+                      new Date(),
+                    ),
+                  ]);
                   logger.info("Game completed", { gameId, score });
-                  await repository.createLeaderboardEntry(
-                    gameId,
-                    playerName,
-                    score,
-                    new Date(),
-                  );
                   logger.info("Leaderboard entry created", { gameId, score });
                 } catch (err) {
                   checkSpan.recordException(err as Error);
@@ -247,13 +253,15 @@ export function createGameService(
         if (!uuidSchema.safeParse(gameId).success) {
           throw new AppError("GameNotFoundError", 404, { gameId });
         }
-        const latestEvent = await repository.getLatestEvent(gameId);
+        const [latestEvent, rawPlayerName] = await Promise.all([
+          repository.getLatestEvent(gameId),
+          repository.getPlayerName(gameId),
+        ]);
         if (!latestEvent) {
           throw new AppError("GameNotFoundError", 404, { gameId });
         }
 
-        const playerName = await repository.getPlayerName(gameId) ??
-          config.defaultPlayerName;
+        const playerName = rawPlayerName ?? config.defaultPlayerName;
 
         const syntheticEvents = new Array(latestEvent.sequence + 1);
         syntheticEvents[latestEvent.sequence] = latestEvent.payload;

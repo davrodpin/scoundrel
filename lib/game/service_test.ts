@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertLess, assertRejects } from "@std/assert";
 import { AppError } from "@scoundrel/errors";
 import { createSpyTracer } from "../telemetry/testing.ts";
 import type {
@@ -889,3 +889,205 @@ Deno.test("getLeaderboardRank passes completedAt from entry to repository", asyn
 
   assertEquals(capturedCompletedAt!.toISOString(), completedAtIso);
 });
+
+// ---------------------------------------------------------------------------
+// Parallel DB call tests
+// ---------------------------------------------------------------------------
+
+const DELAY_MS = 20;
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+Deno.test(
+  "submitAction — getLatestEvent and getPlayerName run concurrently",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const createdEvent = makeCreatedEvent(makeInitialState(gameId));
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [{ sequence: 0, payload: createdEvent }]);
+
+    const starts: number[] = [];
+
+    const repository: GameRepository = {
+      ...createMockRepository(storedEvents),
+      getLatestEvent: async (_id: string) => {
+        starts.push(Date.now());
+        await sleep(DELAY_MS);
+        const events = storedEvents.get(_id);
+        if (!events || events.length === 0) return null;
+        return events[events.length - 1];
+      },
+      getPlayerName: async (_id: string) => {
+        starts.push(Date.now());
+        await sleep(DELAY_MS);
+        return "Hero";
+      },
+    };
+
+    const engine = createMockEngine();
+    const service = createGameService(
+      engine,
+      repository,
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const t0 = Date.now();
+    await service.submitAction(gameId, { type: "draw_card" });
+    const elapsed = Date.now() - t0;
+
+    assertEquals(starts.length, 2, "both DB calls must be made");
+    // If concurrent, both calls start within a few ms of each other.
+    // If serial, the second call starts at least DELAY_MS after the first.
+    const gap = Math.abs(starts[1] - starts[0]);
+    assertLess(
+      gap,
+      DELAY_MS,
+      `calls should start near-simultaneously but gap was ${gap}ms`,
+    );
+    assertLess(
+      elapsed,
+      DELAY_MS * 2 - 5,
+      `expected parallel execution (~${DELAY_MS}ms) but elapsed=${elapsed}ms`,
+    );
+  },
+);
+
+Deno.test(
+  "getGame — getLatestEvent and getPlayerName run concurrently",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const createdEvent = makeCreatedEvent(makeInitialState(gameId));
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [{ sequence: 0, payload: createdEvent }]);
+
+    const starts: number[] = [];
+
+    const repository: GameRepository = {
+      ...createMockRepository(storedEvents),
+      getLatestEvent: async (_id: string) => {
+        starts.push(Date.now());
+        await sleep(DELAY_MS);
+        const events = storedEvents.get(_id);
+        if (!events || events.length === 0) return null;
+        return events[events.length - 1];
+      },
+      getPlayerName: async (_id: string) => {
+        starts.push(Date.now());
+        await sleep(DELAY_MS);
+        return "Hero";
+      },
+    };
+
+    const engine = createMockEngine();
+    const service = createGameService(
+      engine,
+      repository,
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const t0 = Date.now();
+    await service.getGame(gameId);
+    const elapsed = Date.now() - t0;
+
+    assertEquals(starts.length, 2, "both DB calls must be made");
+    const gap = Math.abs(starts[1] - starts[0]);
+    assertLess(
+      gap,
+      DELAY_MS,
+      `calls should start near-simultaneously but gap was ${gap}ms`,
+    );
+    assertLess(
+      elapsed,
+      DELAY_MS * 2 - 5,
+      `expected parallel execution (~${DELAY_MS}ms) but elapsed=${elapsed}ms`,
+    );
+  },
+);
+
+Deno.test(
+  "submitAction game over — updateStatus and createLeaderboardEntry run concurrently",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const initialState = makeInitialState(gameId);
+    const gameOverState: GameState = {
+      ...initialState,
+      phase: { kind: "game_over", reason: "dead" },
+    };
+    const createdEvent = makeCreatedEvent(initialState);
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [{ sequence: 0, payload: createdEvent }]);
+
+    const writeStarts: number[] = [];
+
+    const repository: GameRepository = {
+      ...createMockRepository(storedEvents),
+      getPlayerName: () => Promise.resolve("Hero"),
+      updateStatus: async (
+        _id: string,
+        _status: string,
+        _score: number | null,
+      ) => {
+        writeStarts.push(Date.now());
+        await sleep(DELAY_MS);
+      },
+      createLeaderboardEntry: async (
+        _id: string,
+        _name: string,
+        _score: number,
+        _date: Date,
+      ) => {
+        writeStarts.push(Date.now());
+        await sleep(DELAY_MS);
+      },
+    };
+
+    const engine = createMockEngine({
+      submitAction(): {
+        ok: true;
+        state: GameState;
+        event: ActionAppliedEvent;
+        eventLog: EventLog;
+      } | { ok: false; error: string } {
+        const event = makeActionAppliedEvent(
+          1,
+          { type: "draw_card" } as GameAction,
+          gameOverState,
+        );
+        return {
+          ok: true,
+          state: gameOverState,
+          event,
+          eventLog: { gameId, events: [createdEvent, event] },
+        };
+      },
+      getScore: () => 7,
+    });
+
+    const service = createGameService(
+      engine,
+      repository,
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const t0 = Date.now();
+    await service.submitAction(gameId, { type: "draw_card" });
+    const elapsed = Date.now() - t0;
+
+    assertEquals(writeStarts.length, 2, "both writes must occur on game over");
+    const gap = Math.abs(writeStarts[1] - writeStarts[0]);
+    assertLess(
+      gap,
+      DELAY_MS,
+      `writes should start near-simultaneously but gap was ${gap}ms`,
+    );
+    assertLess(
+      elapsed,
+      DELAY_MS * 2 - 5,
+      `expected parallel writes (~${DELAY_MS}ms) but elapsed=${elapsed}ms`,
+    );
+  },
+);
