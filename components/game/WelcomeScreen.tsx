@@ -1,5 +1,6 @@
 /** @jsxImportSource preact */
 import type { DeckInfo } from "@scoundrel/game";
+import BuyMeCoffeeButton from "../../islands/BuyMeCoffeeButton.tsx";
 
 type WelcomeScreenProps = {
   playerName: string;
@@ -95,6 +96,7 @@ export function WelcomeScreen(
               The Gravekeeper's Ledger
             </a>
           </div>
+          <BuyMeCoffeeButton />
           {errorMsg && (
             <p class="text-blood-bright font-body text-sm mt-3">{errorMsg}</p>
           )}
