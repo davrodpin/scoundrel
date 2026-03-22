@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import type { DeckInfo } from "@scoundrel/game";
 import BuyMeCoffeeButton from "./BuyMeCoffeeButton.tsx";
+import { FloatingCardRiver } from "./FloatingCardRiver.tsx";
 
 type WelcomeScreenProps = {
   playerName: string;
@@ -31,8 +32,9 @@ export function WelcomeScreen(
 ) {
   const trimmedName = playerName.trim();
   return (
-    <div class="min-h-dvh bg-dungeon-bg flex flex-col items-center">
-      <div class="flex-1 flex flex-col items-center justify-center text-center">
+    <div class="relative overflow-hidden min-h-dvh bg-dungeon-bg flex flex-col items-center pb-[140px] md:pb-0">
+      <FloatingCardRiver decks={decks} />
+      <div class="relative z-10 flex-1 flex flex-col items-center justify-center text-center">
         <h1 class="font-heading text-5xl text-parchment mb-4">Scoundrel</h1>
         <p class="text-parchment-dark font-body mb-8">
           A Single Player Rogue-like Card Game
