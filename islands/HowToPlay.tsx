@@ -293,7 +293,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
               </div>
               <div>
                 <h3 class="font-heading text-torch-amber text-lg">
-                  The Gravekeeper's Ledger
+                  Death Ledger
                 </h3>
                 <Prose>
                   Shows the top scores from all completed runs. Your current
@@ -393,7 +393,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                   ["D", "Draw a Card (drawing phase)"],
                   ["P", "Drink Potion"],
                   ["?", "Open / close Rules"],
-                  ["L", "Open / close The Gravekeeper's Ledger"],
+                  ["L", "Open / close the Death Ledger"],
                   ["C", "Copy game link"],
                 ].map(([key, description]) => (
                   <tr key={key}>

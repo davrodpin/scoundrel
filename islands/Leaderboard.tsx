@@ -70,7 +70,7 @@ export default function Leaderboard({ gameId }: LeaderboardProps) {
       <div class="max-w-lg mx-auto">
         <div class="flex items-center justify-between mb-2">
           <h1 class="font-heading text-3xl text-torch-amber">
-            The Gravekeeper's Ledger
+            Death Ledger
           </h1>
           <a
             href="/play"

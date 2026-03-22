@@ -91,7 +91,7 @@ export function MobileTopBar(
           type="button"
           class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber transition-colors duration-200"
           onClick={onLeaderboardClick}
-          aria-label="The Gravekeeper's Ledger"
+          aria-label="Death Ledger"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

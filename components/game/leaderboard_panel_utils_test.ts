@@ -4,14 +4,14 @@ import { getLeaderboardStatusMessage } from "./leaderboard_panel_utils.ts";
 Deno.test("returns loading message while loading", () => {
   assertEquals(
     getLeaderboardStatusMessage(true, 0),
-    "Opening the Gravekeeper's Ledger...",
+    "Opening the Death Ledger...",
   );
 });
 
 Deno.test("returns loading message while loading even with entries", () => {
   assertEquals(
     getLeaderboardStatusMessage(true, 5),
-    "Opening the Gravekeeper's Ledger...",
+    "Opening the Death Ledger...",
   );
 });
 

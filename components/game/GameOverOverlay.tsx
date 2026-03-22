@@ -7,18 +7,18 @@ export function getLeaderboardPositionText(
 ): LeaderboardPositionText {
   const percent = `(top ${topPercent}%)`;
   if (topPercent <= 10) {
-    return { label: "Near the top of the Gravekeeper's Ledger", percent };
+    return { label: "Near the top of the Death Ledger", percent };
   } else if (topPercent <= 25) {
-    return { label: "In the upper ranks of the Gravekeeper's Ledger", percent };
+    return { label: "In the upper ranks of the Death Ledger", percent };
   } else if (topPercent <= 50) {
-    return { label: "In the upper half of the Gravekeeper's Ledger", percent };
+    return { label: "In the upper half of the Death Ledger", percent };
   } else if (topPercent <= 75) {
-    return { label: "In the lower half of the Gravekeeper's Ledger", percent };
+    return { label: "In the lower half of the Death Ledger", percent };
   } else if (topPercent <= 90) {
-    return { label: "Near the bottom of the Gravekeeper's Ledger", percent };
+    return { label: "Near the bottom of the Death Ledger", percent };
   } else {
     return {
-      label: "Close to the bottom of the Gravekeeper's Ledger",
+      label: "Close to the bottom of the Death Ledger",
       percent,
     };
   }
@@ -76,7 +76,7 @@ export function GameOverOverlay(
           {isInTopN && rank != null
             ? (
               <div class="text-parchment-dark text-sm font-body mt-2">
-                Gravekeeper's Ledger Rank #{rank}
+                Death Ledger Rank #{rank}
               </div>
             )
             : !isInTopN && topPercent != null
@@ -104,25 +104,15 @@ export function GameOverOverlay(
           </p>
         )}
         <div class="flex flex-col gap-3 items-center">
-          <button
-            type="button"
-            class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={onNewGame}
-            disabled={loading}
-          >
-            {loading ? "Starting..." : "New Game"}
-          </button>
-          <div class="flex flex-col md:flex-row gap-3">
-            {gameId && (
-              <a
-                href={`/leaderboard?gameId=${gameId}`}
-                class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
-                  loading ? "pointer-events-none opacity-50" : ""
-                }`}
-              >
-                The Gravekeeper's Ledger
-              </a>
-            )}
+          <div class="flex gap-3">
+            <button
+              type="button"
+              class="px-6 py-3 rounded-sm border bg-torch-amber text-ink border-torch-amber hover:bg-torch-glow font-body transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={onNewGame}
+              disabled={loading}
+            >
+              {loading ? "Starting..." : "New Game"}
+            </button>
             <a
               href="/play"
               class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
@@ -132,18 +122,30 @@ export function GameOverOverlay(
               Back to Main
             </a>
           </div>
+          {(gameId || onToggleFeedback) && (
+            <div class="flex gap-3">
+              {gameId && (
+                <a
+                  href={`/leaderboard?gameId=${gameId}`}
+                  class={`px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200 ${
+                    loading ? "pointer-events-none opacity-50" : ""
+                  }`}
+                >
+                  Death Ledger
+                </a>
+              )}
+              {onToggleFeedback && (
+                <button
+                  type="button"
+                  onClick={onToggleFeedback}
+                  class="px-6 py-3 rounded-sm border border-dungeon-border text-parchment-dark hover:text-parchment hover:border-parchment-dark font-body transition-colors duration-200"
+                >
+                  Send Feedback
+                </button>
+              )}
+            </div>
+          )}
         </div>
-        {onToggleFeedback && (
-          <div class="mt-4">
-            <button
-              type="button"
-              onClick={onToggleFeedback}
-              class="text-sm font-body text-parchment-dark hover:text-torch-amber transition-colors duration-200"
-            >
-              Send Feedback
-            </button>
-          </div>
-        )}
         <BuyMeCoffeeButton />
       </div>
     </div>

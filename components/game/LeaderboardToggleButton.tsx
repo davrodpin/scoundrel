@@ -11,7 +11,7 @@ export function LeaderboardToggleButton(
         type="button"
         class="w-9 h-9 flex items-center justify-center rounded-sm bg-dungeon-surface border border-dungeon-border text-parchment hover:border-torch-amber font-heading text-lg transition-colors duration-200"
         onClick={onClick}
-        aria-label="The Gravekeeper's Ledger"
+        aria-label="Death Ledger"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -24,7 +24,7 @@ export function LeaderboardToggleButton(
       </button>
       <div class="pointer-events-none absolute top-full right-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200">
         <div class="bg-dungeon-surface border border-dungeon-border text-parchment text-xs font-body px-3 py-1.5 rounded-sm whitespace-nowrap">
-          The Gravekeeper's Ledger
+          Death Ledger
         </div>
         <div class="absolute bottom-full right-3 border-4 border-transparent border-b-dungeon-border" />
       </div>
