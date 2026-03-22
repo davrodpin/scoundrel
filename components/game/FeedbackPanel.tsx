@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 
 type FeedbackPanelProps = {
   open: boolean;
@@ -24,6 +24,13 @@ export function FeedbackPanel(
 ) {
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (submitted) {
+      setMessage("");
+      setEmail("");
+    }
+  }, [submitted]);
 
   function handleSubmit() {
     const trimmedEmail = email.trim();
