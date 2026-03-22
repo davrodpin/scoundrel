@@ -48,6 +48,6 @@ model LeaderboardEntry {
   completedAt DateTime @map("completed_at") @db.Timestamptz
 
   @@unique([gameId])
-  @@index([score(sort: Desc)])
+  @@index([score(sort: Desc), completedAt(sort: Asc)])
   @@map("leaderboard_entries")
 }
