@@ -12,6 +12,7 @@ import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
 import { getTracer, trace } from "@scoundrel/telemetry";
 import { define } from "@/utils.ts";
+import { axiom } from "../main.ts";
 import {
   captureRequestBody,
   checkBodySize,
@@ -187,10 +188,21 @@ const diMiddleware = define.middleware((ctx) => {
   return ctx.next();
 });
 
+// Fire-and-forget: flush() starts a fetch() to Axiom without awaiting it.
+// The response is already on its way to the player before the POST begins.
+const axiomFlushMiddleware = define.middleware(async (ctx) => {
+  const response = await ctx.next();
+  if (axiom) {
+    axiom.flush();
+  }
+  return response;
+});
+
 export const handler = [
   corsMiddleware,
   errorMiddleware,
   bodySizeMiddleware,
   requestLoggingMiddleware,
   diMiddleware,
+  ...(axiom ? [axiomFlushMiddleware] : []),
 ];
