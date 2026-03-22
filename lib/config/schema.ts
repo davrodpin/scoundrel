@@ -25,6 +25,10 @@ export const configSchema = z.object({
     githubLabel: z.string().default("feedback"),
     maxMessageLength: z.number().int().positive().default(2000),
   }).optional(),
+  axiom: z.object({
+    apiToken: z.string().min(1),
+    dataset: z.string().min(1),
+  }).optional(),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;

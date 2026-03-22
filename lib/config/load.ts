@@ -32,5 +32,11 @@ export function loadConfigFromEnv(): unknown {
         ),
       }
       : undefined,
+    axiom: Deno.env.get("AXIOM_API_TOKEN")
+      ? {
+        apiToken: Deno.env.get("AXIOM_API_TOKEN"),
+        dataset: Deno.env.get("AXIOM_DATASET"),
+      }
+      : undefined,
   };
 }

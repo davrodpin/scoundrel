@@ -84,3 +84,39 @@ Deno.test("cleanup.retentionDays fails validation with a non-positive integer", 
     ZodError,
   );
 });
+
+Deno.test("axiom is undefined when not provided", () => {
+  const cfg = createConfig({ db: { url: "postgres://localhost/test" } });
+  assertEquals(cfg.axiom, undefined);
+});
+
+Deno.test("axiom is parsed correctly when provided", () => {
+  const cfg = createConfig({
+    db: { url: "postgres://localhost/test" },
+    axiom: { apiToken: "token123", dataset: "my-dataset" },
+  });
+  assertEquals(cfg.axiom?.apiToken, "token123");
+  assertEquals(cfg.axiom?.dataset, "my-dataset");
+});
+
+Deno.test("axiom fails validation when apiToken is empty", () => {
+  assertThrows(
+    () =>
+      createConfig({
+        db: { url: "postgres://localhost/test" },
+        axiom: { apiToken: "", dataset: "my-dataset" },
+      }),
+    ZodError,
+  );
+});
+
+Deno.test("axiom fails validation when dataset is empty", () => {
+  assertThrows(
+    () =>
+      createConfig({
+        db: { url: "postgres://localhost/test" },
+        axiom: { apiToken: "token123", dataset: "" },
+      }),
+    ZodError,
+  );
+});
