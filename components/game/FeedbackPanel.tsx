@@ -42,7 +42,7 @@ export function FeedbackPanel(
     <>
       {/* Backdrop */}
       <div
-        class={`fixed inset-0 bg-shadow/60 z-40 transition-opacity duration-300 ${
+        class={`fixed inset-0 bg-shadow/60 z-60 transition-opacity duration-300 ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={handleClose}
@@ -50,7 +50,7 @@ export function FeedbackPanel(
 
       {/* Slide-in panel */}
       <div
-        class={`fixed top-0 right-0 h-full w-full sm:max-w-md bg-dungeon-surface border-l border-dungeon-border z-40 transition-transform duration-300 ${
+        class={`fixed top-0 right-0 h-full w-full sm:max-w-md bg-dungeon-surface border-l border-dungeon-border z-60 transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
