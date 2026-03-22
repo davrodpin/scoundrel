@@ -7,6 +7,8 @@ until the dungeon runs out or you do.
 
 **[Play now](https://scoundrel.ever-forward.deno.net)**
 
+<a href="https://www.buymeacoffee.com/davpin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy me a coffee" height="45" width="163"></a>
+
 Full rules: [docs/SCOUNDREL.md](docs/SCOUNDREL.md)
 
 ## Tech Stack
