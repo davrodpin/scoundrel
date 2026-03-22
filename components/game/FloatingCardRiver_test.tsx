@@ -175,9 +175,19 @@ Deno.test("FloatingCardRiver - desktop columns are hidden on mobile", () => {
   assertEquals(html.includes("hidden md:flex"), true);
 });
 
-Deno.test("FloatingCardRiver - no mobile ribbon rendered", () => {
+Deno.test("FloatingCardRiver - mobile ribbon is present and hidden on desktop", () => {
   const html = render(<FloatingCardRiver decks={[]} />);
-  assertEquals(html.includes("flex md:hidden"), false);
+  assertEquals(html.includes("flex md:hidden"), true);
+});
+
+Deno.test("FloatingCardRiver - mobile ribbon has card-river-horizontal animation class", () => {
+  const html = render(<FloatingCardRiver decks={[]} />);
+  assertEquals(html.includes("animate-card-river-horizontal"), true);
+});
+
+Deno.test("FloatingCardRiver - mobile ribbon is positioned at bottom", () => {
+  const html = render(<FloatingCardRiver decks={[]} />);
+  assertEquals(html.includes("bottom-0"), true);
 });
 
 Deno.test("FloatingCardRiver - river lanes have dark background", () => {
