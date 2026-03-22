@@ -290,11 +290,25 @@ export function createPrismaGameRepository(
         "db.operation": "upsert",
         "game.id": gameId,
       }, async () => {
-        await prisma.leaderboardEntry.upsert({
-          where: { gameId },
-          create: { gameId, playerName, score, completedAt },
-          update: { playerName, score, completedAt },
+        const duplicate = await prisma.leaderboardEntry.findFirst({
+          where: { playerName, score },
+          select: { id: true },
         });
+        if (duplicate) {
+          return;
+        }
+        try {
+          await prisma.leaderboardEntry.upsert({
+            where: { gameId },
+            create: { gameId, playerName, score, completedAt },
+            update: { playerName, score, completedAt },
+          });
+        } catch (err) {
+          if ((err as { code?: string }).code === "P2002") {
+            return;
+          }
+          throw err;
+        }
       });
     },
 

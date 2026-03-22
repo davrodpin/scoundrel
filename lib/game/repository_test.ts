@@ -25,6 +25,7 @@ function makeMockPrismaClient(): MockPrisma {
     },
     leaderboardEntry: {
       findMany: () => Promise.resolve([]),
+      findFirst: () => Promise.resolve(null),
       findUnique: () => Promise.resolve(null),
       upsert: () => Promise.resolve(),
       count: () => Promise.resolve(0),
@@ -448,4 +449,73 @@ Deno.test("getLeaderboardRank returns totalEntries from total count", async () =
 
   assertEquals(result.totalEntries, 7);
   assertEquals(callCount, 2);
+});
+
+Deno.test("createLeaderboardEntry skips insert when playerName+score already exists", async () => {
+  let upsertCalled = false;
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.leaderboardEntry.findFirst = () => Promise.resolve({ id: 1 });
+  mockPrisma.leaderboardEntry.upsert = () => {
+    upsertCalled = true;
+    return Promise.resolve();
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
+  );
+  await repo.createLeaderboardEntry(
+    "new-game-id",
+    "Alice",
+    10,
+    new Date(),
+  );
+
+  assertEquals(upsertCalled, false);
+});
+
+Deno.test("createLeaderboardEntry inserts when same playerName but different score", async () => {
+  let upsertCalled = false;
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.leaderboardEntry.findFirst = () => Promise.resolve(null);
+  mockPrisma.leaderboardEntry.upsert = () => {
+    upsertCalled = true;
+    return Promise.resolve();
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
+  );
+  await repo.createLeaderboardEntry(
+    "new-game-id",
+    "Alice",
+    20,
+    new Date(),
+  );
+
+  assertEquals(upsertCalled, true);
+});
+
+Deno.test("createLeaderboardEntry inserts when same score but different playerName", async () => {
+  let upsertCalled = false;
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.leaderboardEntry.findFirst = () => Promise.resolve(null);
+  mockPrisma.leaderboardEntry.upsert = () => {
+    upsertCalled = true;
+    return Promise.resolve();
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
+  );
+  await repo.createLeaderboardEntry(
+    "new-game-id",
+    "Bob",
+    10,
+    new Date(),
+  );
+
+  assertEquals(upsertCalled, true);
 });
