@@ -51,7 +51,7 @@ export function detectEnvironment(): string {
   if (typeof globalThis.location === "undefined") return "local";
   const host = globalThis.location.hostname;
   if (host === "localhost" || host === "127.0.0.1") return "local";
-  if (host === "scoundrel.ever-forward.deno.net") return "production";
+  if (host === "scoundrel.gg") return "production";
   if (/^scoundrel-.+\.ever-forward\.deno\.net$/.test(host)) return "preview";
   return "production";
 }

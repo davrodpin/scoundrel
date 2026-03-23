@@ -228,10 +228,10 @@ Deno.test("detectEnvironment — returns 'local' for 127.0.0.1", () => {
 });
 
 Deno.test(
-  "detectEnvironment — returns 'production' for scoundrel.ever-forward.deno.net",
+  "detectEnvironment — returns 'production' for scoundrel.gg",
   () => {
     Object.defineProperty(globalThis, "location", {
-      value: { hostname: "scoundrel.ever-forward.deno.net" },
+      value: { hostname: "scoundrel.gg" },
       configurable: true,
       writable: true,
     });
