@@ -89,6 +89,286 @@ export function validateEventSequence(events: StoredEvent[]): string[] {
   return issues;
 }
 
+// --- Rule consistency ---
+
+export type RuleViolation = {
+  check: string;
+  eventIndices: number[];
+  message: string;
+};
+
+function cardKey(card: Card): string {
+  return `${card.suit}:${card.rank}`;
+}
+
+function collectAllCards(state: GameState): Card[] {
+  const cards: Card[] = [
+    ...state.dungeon,
+    ...state.room,
+    ...state.discard,
+  ];
+  if (state.equippedWeapon) {
+    cards.push(state.equippedWeapon.card);
+    cards.push(...state.equippedWeapon.slainMonsters);
+  }
+  return cards;
+}
+
+function isValidScoundrelCard(card: Card): boolean {
+  if (card.suit === "clubs" || card.suit === "spades") {
+    return card.rank >= 2 && card.rank <= 14;
+  }
+  return card.rank >= 2 && card.rank <= 10;
+}
+
+const VALID_DECK_SIZE = 44;
+
+export function checkRuleConsistency(events: StoredEvent[]): RuleViolation[] {
+  const violations: RuleViolation[] = [];
+
+  if (events.length === 0) return violations;
+
+  const firstPayload = events[0].payload;
+  if (firstPayload.kind !== "game_created") return violations;
+
+  const initialState = firstPayload.initialState;
+
+  // A3: Initial deck size
+  const initialCardCount = collectAllCards(initialState).length;
+  if (initialCardCount !== VALID_DECK_SIZE) {
+    violations.push({
+      check: "A3",
+      eventIndices: [0],
+      message:
+        `Initial card count is ${initialCardCount}, expected ${VALID_DECK_SIZE}`,
+    });
+  }
+
+  // A2: Invalid cards in initial deck
+  for (const card of initialState.dungeon) {
+    if (!isValidScoundrelCard(card)) {
+      violations.push({
+        check: "A2",
+        eventIndices: [0],
+        message: `Invalid card in initial dungeon: ${
+          formatCardLong(card)
+        } (rank ${card.rank} is not valid for ${card.suit})`,
+      });
+    }
+  }
+
+  // A1: Track drawn cards across entire game
+  const drawnCards = new Map<string, number>(); // cardKey -> event index of first draw
+
+  let gameOverEventIndex: number | null = null;
+
+  for (let i = 1; i < events.length; i++) {
+    const payload = events[i].payload;
+    if (payload.kind !== "action_applied") continue;
+
+    const { action, stateAfter } = payload;
+
+    const prevPayload = events[i - 1].payload;
+    const stateBefore = prevPayload.kind === "game_created"
+      ? prevPayload.initialState
+      : prevPayload.stateAfter;
+
+    // F3: Actions after game over
+    if (gameOverEventIndex !== null) {
+      violations.push({
+        check: "F3",
+        eventIndices: [gameOverEventIndex, i],
+        message:
+          `Action "${action.type}" at event #${i} occurs after game already ended at event #${gameOverEventIndex}`,
+      });
+    }
+
+    if (stateAfter.phase.kind === "game_over" && gameOverEventIndex === null) {
+      gameOverEventIndex = i;
+    }
+
+    // B1: Card conservation
+    const totalCards = collectAllCards(stateAfter).length;
+    if (totalCards !== VALID_DECK_SIZE) {
+      violations.push({
+        check: "B1",
+        eventIndices: [i],
+        message:
+          `Card conservation violated at event #${i}: ${totalCards} cards found, expected ${VALID_DECK_SIZE}`,
+      });
+    }
+
+    // C5: Health cap
+    if (stateAfter.health > 20) {
+      violations.push({
+        check: "C5",
+        eventIndices: [i],
+        message: `Health exceeds 20 at event #${i}: ${stateAfter.health}`,
+      });
+    }
+
+    // E1: Consecutive room avoidance
+    if (action.type === "avoid_room" && stateBefore.lastRoomAvoided) {
+      violations.push({
+        check: "E1",
+        eventIndices: [i],
+        message:
+          `Room avoided at event #${i} but previous room was also avoided`,
+      });
+    }
+
+    // A1: Duplicate card drawn
+    if (action.type === "draw_card") {
+      if (stateAfter.room.length > stateBefore.room.length) {
+        const drawnCard = stateAfter.room[stateAfter.room.length - 1];
+        const key = cardKey(drawnCard);
+        const firstIdx = drawnCards.get(key);
+        if (firstIdx !== undefined) {
+          violations.push({
+            check: "A1",
+            eventIndices: [firstIdx, i],
+            message: `${
+              formatCardLong(drawnCard)
+            } drawn at event #${firstIdx} and again at event #${i}`,
+          });
+        } else {
+          drawnCards.set(key, i);
+        }
+      }
+    }
+
+    // F1: Game ends with dungeon_cleared but dungeon has cards
+    if (
+      stateAfter.phase.kind === "game_over" &&
+      stateAfter.phase.reason === "dungeon_cleared" &&
+      stateAfter.dungeon.length > 0
+    ) {
+      violations.push({
+        check: "F1",
+        eventIndices: [i],
+        message:
+          `Game ended as dungeon_cleared at event #${i} but dungeon still has ${stateAfter.dungeon.length} card(s)`,
+      });
+    }
+
+    // choose_card checks
+    if (action.type === "choose_card") {
+      const card = stateBefore.room[action.cardIndex];
+      if (!card) continue;
+
+      const cardType = getCardType(card);
+
+      if (cardType === "monster") {
+        if (action.fightWith === "barehanded") {
+          // C1: Barehanded combat damage
+          const expectedHealth = stateBefore.health - card.rank;
+          if (stateAfter.health !== expectedHealth) {
+            violations.push({
+              check: "C1",
+              eventIndices: [i],
+              message:
+                `Barehanded combat at event #${i}: expected health ${expectedHealth} (${stateBefore.health} - ${card.rank}), got ${stateAfter.health}`,
+            });
+          }
+        } else {
+          // fightWith === "weapon"
+          if (!stateBefore.equippedWeapon) {
+            violations.push({
+              check: "D2",
+              eventIndices: [i],
+              message:
+                `Fought monster with weapon at event #${i} but no weapon was equipped`,
+            });
+          } else {
+            const weapon = stateBefore.equippedWeapon;
+
+            // D1: Weapon rank constraint
+            if (weapon.slainMonsters.length > 0) {
+              const lastSlain =
+                weapon.slainMonsters[weapon.slainMonsters.length - 1];
+              if (card.rank > lastSlain.rank) {
+                violations.push({
+                  check: "D1",
+                  eventIndices: [i],
+                  message:
+                    `Weapon rank constraint violated at event #${i}: monster ${
+                      formatCardLong(card)
+                    } (rank ${card.rank}) is stronger than last slain ${
+                      formatCardLong(lastSlain)
+                    } (rank ${lastSlain.rank})`,
+                });
+              }
+            }
+
+            // C2: Weapon combat damage
+            const expectedDamage = Math.max(0, card.rank - weapon.card.rank);
+            const expectedHealth = stateBefore.health - expectedDamage;
+            if (stateAfter.health !== expectedHealth) {
+              violations.push({
+                check: "C2",
+                eventIndices: [i],
+                message:
+                  `Weapon combat at event #${i}: expected health ${expectedHealth} (${stateBefore.health} - max(0, ${card.rank} - ${weapon.card.rank})), got ${stateAfter.health}`,
+              });
+            }
+          }
+        }
+      }
+
+      if (cardType === "potion") {
+        if (stateBefore.phase.kind === "choosing") {
+          if (!stateBefore.phase.potionUsedThisTurn) {
+            // C3: First potion healing
+            const expectedHealth = Math.min(20, stateBefore.health + card.rank);
+            if (stateAfter.health !== expectedHealth) {
+              violations.push({
+                check: "C3",
+                eventIndices: [i],
+                message:
+                  `First potion at event #${i}: expected health ${expectedHealth} (min(20, ${stateBefore.health} + ${card.rank})), got ${stateAfter.health}`,
+              });
+            }
+          } else {
+            // C4: Second potion wasted
+            if (stateAfter.health !== stateBefore.health) {
+              violations.push({
+                check: "C4",
+                eventIndices: [i],
+                message:
+                  `Second potion at event #${i}: health should not change (was ${stateBefore.health}), got ${stateAfter.health}`,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // F2: Missing game end — dungeon and room empty but not game_over
+  const lastPayload = events[events.length - 1].payload;
+  const finalState = lastPayload.kind === "game_created"
+    ? lastPayload.initialState
+    : lastPayload.kind === "action_applied"
+    ? lastPayload.stateAfter
+    : null;
+
+  if (
+    finalState &&
+    finalState.phase.kind !== "game_over" &&
+    finalState.dungeon.length === 0 &&
+    finalState.room.length === 0
+  ) {
+    violations.push({
+      check: "F2",
+      eventIndices: [events.length - 1],
+      message:
+        `Game has no cards in dungeon or room but phase is "${finalState.phase.kind}" (expected game_over)`,
+    });
+  }
+
+  return violations;
+}
+
 // --- State comparison ---
 
 export function compareStates(
@@ -237,6 +517,7 @@ export type AuditReport = {
   sequenceIssues: string[];
   discrepancies: string[];
   dbStatusMismatch: string | null;
+  ruleViolations: RuleViolation[];
   finalState: GameState;
   actions: ActionEntry[] | null;
 };
@@ -262,7 +543,8 @@ export function formatAuditReport(report: AuditReport): string {
 
   const hasIssues = report.sequenceIssues.length > 0 ||
     report.discrepancies.length > 0 ||
-    report.dbStatusMismatch !== null;
+    report.dbStatusMismatch !== null ||
+    report.ruleViolations.length > 0;
 
   lines.push("=== Scoundrel Game Audit ===");
   lines.push("");
@@ -313,6 +595,16 @@ export function formatAuditReport(report: AuditReport): string {
     );
   } else {
     lines.push(`DB status check:  WARN (${report.dbStatusMismatch})`);
+  }
+
+  if (report.ruleViolations.length === 0) {
+    lines.push(`Rule consistency: OK`);
+  } else {
+    lines.push(`Rule consistency: FAIL`);
+    for (const v of report.ruleViolations) {
+      const evts = v.eventIndices.map((idx) => `#${idx}`).join(", ");
+      lines.push(`  [${v.check}] Events ${evts}: ${v.message}`);
+    }
   }
 
   if (report.actions !== null) {
@@ -392,6 +684,13 @@ export function formatAuditReport(report: AuditReport): string {
     }
     if (report.dbStatusMismatch !== null) {
       counts.push("1 status mismatch");
+    }
+    if (report.ruleViolations.length > 0) {
+      counts.push(
+        `${report.ruleViolations.length} rule violation${
+          report.ruleViolations.length !== 1 ? "s" : ""
+        }`,
+      );
     }
     lines.push(`=== Audit Complete: FAIL (${counts.join(", ")}) ===`);
   } else {
@@ -509,6 +808,7 @@ export type JsonReport = {
     sequenceIssues: string[];
     discrepancies: string[];
     dbStatusMismatch: string | null;
+    ruleViolations: RuleViolation[];
     passed: boolean;
   };
   gameState: {
@@ -555,9 +855,11 @@ export function formatJsonReport(report: AuditReport): JsonReport {
       sequenceIssues: report.sequenceIssues,
       discrepancies: report.discrepancies,
       dbStatusMismatch: report.dbStatusMismatch,
+      ruleViolations: report.ruleViolations,
       passed: report.sequenceIssues.length === 0 &&
         report.discrepancies.length === 0 &&
-        report.dbStatusMismatch === null,
+        report.dbStatusMismatch === null &&
+        report.ruleViolations.length === 0,
     },
     gameState: {
       status: formatPhaseStatus(finalState),
@@ -651,6 +953,8 @@ if (import.meta.main) {
       ? `DB says "${actualDbStatus}" but phase is "${finalState.phase.kind}"`
       : null;
 
+    const ruleViolations = checkRuleConsistency(storedEvents);
+
     const report: AuditReport = {
       gameId,
       playerName: playerName ?? "Anonymous",
@@ -659,6 +963,7 @@ if (import.meta.main) {
       sequenceIssues,
       discrepancies,
       dbStatusMismatch,
+      ruleViolations,
       finalState,
       actions: showActions ? extractActions(storedEvents) : null,
     };
@@ -670,7 +975,8 @@ if (import.meta.main) {
 
     const hasIssues = sequenceIssues.length > 0 ||
       discrepancies.length > 0 ||
-      dbStatusMismatch !== null;
+      dbStatusMismatch !== null ||
+      ruleViolations.length > 0;
     Deno.exit(hasIssues ? 2 : 0);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
