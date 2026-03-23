@@ -2,7 +2,7 @@ import pg from "pg";
 import type { GameAction } from "@scoundrel/engine";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../lib/generated/prisma/client.ts";
-import { applyAction, calculateScore } from "@scoundrel/engine";
+import { applyAction, calculateScore, getCardType } from "@scoundrel/engine";
 import type { Card, GameState } from "@scoundrel/engine";
 import { createPrismaGameRepository } from "@scoundrel/game-service";
 import type { StoredEvent } from "@scoundrel/game-service";
@@ -441,8 +441,10 @@ function describeAction(
   stateBefore: GameState,
 ): string {
   switch (action.type) {
-    case "draw_card":
-      return "Draw card";
+    case "draw_card": {
+      const card = stateBefore.dungeon[0];
+      return card ? `Draw ${formatCardLong(card)}` : "Draw card";
+    }
     case "avoid_room":
       return "Avoid room";
     case "enter_room":
@@ -450,7 +452,15 @@ function describeAction(
     case "choose_card": {
       const card = stateBefore.room[action.cardIndex];
       const cardStr = card ? formatCardLong(card) : `card #${action.cardIndex}`;
-      return `Choose ${cardStr} (${action.fightWith})`;
+      if (!card) return `Choose ${cardStr}`;
+      const type = getCardType(card);
+      if (type === "monster") {
+        return action.fightWith === "barehanded"
+          ? `Fight ${cardStr} barehanded`
+          : `Fight ${cardStr} with weapon`;
+      }
+      if (type === "weapon") return `Equip ${cardStr}`;
+      return `Drink ${cardStr}`;
     }
   }
 }
