@@ -33,7 +33,7 @@ Deno.test("missing db.url throws ZodError", () => {
 
 Deno.test("defaults applied for optional fields", () => {
   const cfg = createConfig({ db: { url: "postgres://localhost/test" } });
-  assertEquals(cfg.app.origin, "https://scoundrel.deno.dev");
+  assertEquals(cfg.app.origin, "https://scoundrel.gg");
   assertEquals(cfg.app.maxBodyBytes, 4096);
   assertEquals(cfg.app.maxPlayerNameLength, 16);
   assertEquals(cfg.game.defaultPlayerName, "Anonymous");

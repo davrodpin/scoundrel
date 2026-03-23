@@ -5,7 +5,7 @@ export const configSchema = z.object({
     url: z.string().min(1),
   }),
   app: z.object({
-    origin: z.string().default("https://scoundrel.deno.dev"),
+    origin: z.string().default("https://scoundrel.gg"),
     maxBodyBytes: z.number().int().positive().default(4096),
     maxPlayerNameLength: z.number().int().positive().default(16),
   }).default({}),
