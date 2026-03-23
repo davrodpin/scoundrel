@@ -1,5 +1,6 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import {
+  checkRuleConsistency,
   compareStates,
   extractActions,
   formatAuditReport,
@@ -11,7 +12,7 @@ import {
   validateEventSequence,
 } from "./audit-game.ts";
 import { createGameEngine } from "@scoundrel/engine";
-import type { Card, GameState } from "@scoundrel/engine";
+import type { Card, GameAction, GameState } from "@scoundrel/engine";
 import type { StoredEvent } from "@scoundrel/game-service";
 
 // --- Helpers ---
@@ -385,6 +386,7 @@ function makeReport(
     sequenceIssues: [],
     discrepancies: [],
     dbStatusMismatch: null,
+    ruleViolations: [],
     finalState: makeState(),
     actions: null,
     ...overrides,
@@ -399,6 +401,29 @@ Deno.test("formatJsonReport — passed is true when no issues", () => {
 Deno.test("formatJsonReport — passed is false with sequenceIssues", () => {
   const json = formatJsonReport(makeReport({ sequenceIssues: ["gap at 3"] }));
   assertEquals(json.validation.passed, false);
+});
+
+Deno.test("formatJsonReport — passed is false with ruleViolations", () => {
+  const json = formatJsonReport(
+    makeReport({
+      ruleViolations: [{
+        check: "A1",
+        eventIndices: [1, 5],
+        message: "duplicate draw",
+      }],
+    }),
+  );
+  assertEquals(json.validation.passed, false);
+});
+
+Deno.test("formatJsonReport — ruleViolations included in validation", () => {
+  const violations = [{
+    check: "C1",
+    eventIndices: [3],
+    message: "bad damage",
+  }];
+  const json = formatJsonReport(makeReport({ ruleViolations: violations }));
+  assertEquals(json.validation.ruleViolations, violations);
 });
 
 Deno.test("formatJsonReport — gameState health matches finalState", () => {
@@ -427,6 +452,26 @@ Deno.test("formatAuditReport — no actions section when actions is null", () =>
   const report = makeReport({ actions: null });
   const output = formatAuditReport(report);
   assertEquals(output.includes("--- Actions ---"), false);
+});
+
+Deno.test("formatAuditReport — rule consistency OK when no violations", () => {
+  const output = formatAuditReport(makeReport());
+  assertEquals(output.includes("Rule consistency:"), true);
+  assertEquals(output.includes("OK"), true);
+});
+
+Deno.test("formatAuditReport — rule consistency FAIL lists violations", () => {
+  const report = makeReport({
+    ruleViolations: [{
+      check: "A1",
+      eventIndices: [1, 5],
+      message: "7 of Clubs drawn at event #1 and again at event #5",
+    }],
+  });
+  const output = formatAuditReport(report);
+  assertEquals(output.includes("FAIL"), true);
+  assertEquals(output.includes("[A1]"), true);
+  assertEquals(output.includes("7 of Clubs drawn at event #1"), true);
 });
 
 Deno.test("formatAuditReport — actions section present when actions non-null", () => {
@@ -474,3 +519,417 @@ Deno.test(
     );
   },
 );
+
+// --- checkRuleConsistency helpers ---
+
+function makeGameCreated(state: GameState, seq = 0): StoredEvent {
+  return {
+    sequence: seq,
+    payload: {
+      kind: "game_created",
+      id: seq,
+      timestamp: "2025-01-01T00:00:00Z",
+      gameId: "test",
+      initialState: state,
+    },
+  };
+}
+
+function makeActionApplied(
+  seq: number,
+  action: GameAction,
+  stateAfter: GameState,
+): StoredEvent {
+  return {
+    sequence: seq,
+    payload: {
+      kind: "action_applied",
+      id: seq,
+      timestamp: "2025-01-01T00:00:00Z",
+      action,
+      stateAfter,
+    },
+  };
+}
+
+// Builds the 44-card valid Scoundrel deck
+function makeValidDeck(): Card[] {
+  const cards: Card[] = [];
+  for (const suit of ["clubs", "spades"] as const) {
+    for (let rank = 2; rank <= 14; rank++) {
+      cards.push({ suit, rank: rank as Card["rank"] });
+    }
+  }
+  for (const suit of ["diamonds", "hearts"] as const) {
+    for (let rank = 2; rank <= 10; rank++) {
+      cards.push({ suit, rank: rank as Card["rank"] });
+    }
+  }
+  return cards;
+}
+
+// --- checkRuleConsistency ---
+
+Deno.test("checkRuleConsistency — A3: flags wrong initial deck size", () => {
+  const state = makeState({ dungeon: [{ suit: "clubs", rank: 2 }] });
+  const events = [makeGameCreated(state)];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "A3"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — A2: flags invalid card in initial deck", () => {
+  const deck = makeValidDeck();
+  deck[0] = { suit: "hearts", rank: 11 }; // red Jack — not in Scoundrel deck
+  const state = makeState({ dungeon: deck });
+  const events = [makeGameCreated(state)];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "A2"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — A1: flags same card drawn twice", () => {
+  const card: Card = { suit: "clubs", rank: 7 };
+  const deck = makeValidDeck();
+  const state = makeState({ dungeon: deck });
+  const stateAfter1 = makeState({ room: [card] });
+  const stateAfter2 = makeState({ room: [card, card] });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(1, { type: "draw_card" }, stateAfter1),
+    makeActionApplied(2, { type: "draw_card" }, stateAfter2),
+  ];
+  const violations = checkRuleConsistency(events);
+  const a1 = violations.filter((v) => v.check === "A1");
+  assertEquals(a1.length, 1);
+  assertEquals(a1[0].eventIndices, [1, 2]);
+});
+
+Deno.test("checkRuleConsistency — A1: no violation when different cards drawn", () => {
+  const deck = makeValidDeck();
+  const state = makeState({ dungeon: deck });
+  const stateAfter1 = makeState({ room: [{ suit: "clubs", rank: 7 }] });
+  const stateAfter2 = makeState({
+    room: [{ suit: "clubs", rank: 7 }, { suit: "spades", rank: 3 }],
+  });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(1, { type: "draw_card" }, stateAfter1),
+    makeActionApplied(2, { type: "draw_card" }, stateAfter2),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.filter((v) => v.check === "A1").length,
+    0,
+  );
+});
+
+Deno.test("checkRuleConsistency — B1: flags card count != 44 after action", () => {
+  const deck = makeValidDeck();
+  const state = makeState({ dungeon: deck });
+  // stateAfter has one fewer card (43 total)
+  const stateAfter = makeState({ dungeon: deck.slice(1) });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(1, { type: "draw_card" }, stateAfter),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "B1"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — C1: flags barehanded combat damage miscalculation", () => {
+  const monster: Card = { suit: "clubs", rank: 7 };
+  const deck = makeValidDeck();
+  const state = makeState({
+    dungeon: deck,
+    room: [monster],
+    phase: { kind: "choosing", cardsChosen: 0, potionUsedThisTurn: false },
+  });
+  const wrongHealth = 15; // correct: 20 - 7 = 13
+  const stateAfter = makeState({ dungeon: deck, health: wrongHealth });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+      stateAfter,
+    ),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "C1"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — C1: no violation when barehanded damage is correct", () => {
+  const monster: Card = { suit: "clubs", rank: 7 };
+  const deck = makeValidDeck();
+  const state = makeState({
+    dungeon: deck,
+    room: [monster],
+    phase: { kind: "choosing", cardsChosen: 0, potionUsedThisTurn: false },
+  });
+  const correctHealth = 13; // 20 - 7 = 13
+  const stateAfter = makeState({
+    dungeon: deck,
+    discard: [monster],
+    health: correctHealth,
+  });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+      stateAfter,
+    ),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.filter((v) => v.check === "C1").length,
+    0,
+  );
+});
+
+Deno.test("checkRuleConsistency — C2: flags weapon combat damage miscalculation", () => {
+  const monster: Card = { suit: "clubs", rank: 9 };
+  const weapon: Card = { suit: "diamonds", rank: 5 };
+  const deck = makeValidDeck();
+  const state = makeState({
+    dungeon: deck,
+    room: [monster],
+    phase: { kind: "choosing", cardsChosen: 0, potionUsedThisTurn: false },
+    equippedWeapon: { card: weapon, slainMonsters: [] },
+  });
+  const wrongHealth = 15; // correct: 20 - max(0, 9-5) = 16
+  const stateAfter = makeState({ dungeon: deck, health: wrongHealth });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "weapon" },
+      stateAfter,
+    ),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "C2"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — C3: flags incorrect first potion healing", () => {
+  const potion: Card = { suit: "hearts", rank: 7 };
+  const deck = makeValidDeck();
+  const state = makeState({
+    dungeon: deck,
+    health: 10,
+    room: [potion],
+    phase: { kind: "choosing", cardsChosen: 0, potionUsedThisTurn: false },
+  });
+  const wrongHealth = 15; // correct: min(20, 10 + 7) = 17
+  const stateAfter = makeState({ dungeon: deck, health: wrongHealth });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+      stateAfter,
+    ),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "C3"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — C4: flags second potion changing health", () => {
+  const potion: Card = { suit: "hearts", rank: 7 };
+  const deck = makeValidDeck();
+  const state = makeState({
+    dungeon: deck,
+    health: 10,
+    room: [potion],
+    phase: { kind: "choosing", cardsChosen: 1, potionUsedThisTurn: true },
+  });
+  const wrongHealth = 17; // correct: health stays 10 (second potion wasted)
+  const stateAfter = makeState({ dungeon: deck, health: wrongHealth });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+      stateAfter,
+    ),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "C4"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — C5: flags health exceeding 20", () => {
+  const deck = makeValidDeck();
+  const state = makeState({ dungeon: deck });
+  const stateAfter = makeState({
+    dungeon: deck.slice(1),
+    room: [deck[0]],
+    health: 21,
+  });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(1, { type: "draw_card" }, stateAfter),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "C5"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — D1: flags weapon used on stronger monster than last slain", () => {
+  const monster: Card = { suit: "clubs", rank: 9 };
+  const weapon: Card = { suit: "diamonds", rank: 5 };
+  const lastSlain: Card = { suit: "spades", rank: 7 };
+  const deck = makeValidDeck();
+  const state = makeState({
+    dungeon: deck,
+    room: [monster],
+    phase: { kind: "choosing", cardsChosen: 0, potionUsedThisTurn: false },
+    equippedWeapon: { card: weapon, slainMonsters: [lastSlain] },
+  });
+  const stateAfter = makeState({ dungeon: deck, health: 16 });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "weapon" },
+      stateAfter,
+    ),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "D1"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — D1: no violation when monster rank equals last slain", () => {
+  const monster: Card = { suit: "clubs", rank: 7 };
+  const weapon: Card = { suit: "diamonds", rank: 5 };
+  const lastSlain: Card = { suit: "spades", rank: 7 };
+  const deck = makeValidDeck();
+  const state = makeState({
+    dungeon: deck,
+    room: [monster],
+    phase: { kind: "choosing", cardsChosen: 0, potionUsedThisTurn: false },
+    equippedWeapon: { card: weapon, slainMonsters: [lastSlain] },
+  });
+  const stateAfter = makeState({ dungeon: deck, health: 18 }); // 20 - max(0, 7-5) = 18
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "weapon" },
+      stateAfter,
+    ),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.filter((v) => v.check === "D1").length,
+    0,
+  );
+});
+
+Deno.test("checkRuleConsistency — E1: flags consecutive room avoidance", () => {
+  const deck = makeValidDeck();
+  const state = makeState({ dungeon: deck, lastRoomAvoided: true });
+  const stateAfter = makeState({ dungeon: deck });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(1, { type: "avoid_room" }, stateAfter),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "E1"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — F1: flags dungeon_cleared with cards remaining in dungeon", () => {
+  const deck = makeValidDeck();
+  const state = makeState({ dungeon: deck });
+  const stateAfter = makeState({
+    dungeon: [{ suit: "clubs", rank: 2 }],
+    phase: { kind: "game_over", reason: "dungeon_cleared" },
+  });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+      stateAfter,
+    ),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "F1"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — F2: flags game not ending when dungeon and room empty", () => {
+  const deck = makeValidDeck();
+  const state = makeState({ dungeon: deck });
+  const stateAfter = makeState({
+    dungeon: [],
+    room: [],
+    phase: { kind: "drawing" },
+  });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+      stateAfter,
+    ),
+  ];
+  const violations = checkRuleConsistency(events);
+  assertEquals(
+    violations.some((v) => v.check === "F2"),
+    true,
+  );
+});
+
+Deno.test("checkRuleConsistency — F3: flags action after game over", () => {
+  const deck = makeValidDeck();
+  const state = makeState({ dungeon: deck });
+  const gameOverState = makeState({
+    dungeon: [],
+    phase: { kind: "game_over", reason: "dead" },
+    health: -2,
+  });
+  const afterGameOverState = makeState({ dungeon: [] });
+  const events = [
+    makeGameCreated(state),
+    makeActionApplied(
+      1,
+      { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+      gameOverState,
+    ),
+    makeActionApplied(2, { type: "draw_card" }, afterGameOverState),
+  ];
+  const violations = checkRuleConsistency(events);
+  const f3 = violations.filter((v) => v.check === "F3");
+  assertEquals(f3.length, 1);
+  assertEquals(f3[0].eventIndices, [1, 2]);
+});
