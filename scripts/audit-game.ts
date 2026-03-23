@@ -439,6 +439,7 @@ export function parseArgs(args: string[]): CliArgs {
 function describeAction(
   action: GameAction,
   stateBefore: GameState,
+  stateAfter: GameState,
 ): string {
   switch (action.type) {
     case "draw_card": {
@@ -455,12 +456,22 @@ function describeAction(
       if (!card) return `Choose ${cardStr}`;
       const type = getCardType(card);
       if (type === "monster") {
-        return action.fightWith === "barehanded"
+        const base = action.fightWith === "barehanded"
           ? `Fight ${cardStr} barehanded`
           : `Fight ${cardStr} with weapon`;
+        const healthDelta = stateAfter.health - stateBefore.health;
+        const annotation = healthDelta === 0
+          ? "(no damage)"
+          : `(${stateBefore.health} → ${stateAfter.health} HP)`;
+        return `${base} ${annotation}`;
       }
       if (type === "weapon") return `Equip ${cardStr}`;
-      return `Drink ${cardStr}`;
+      // potion
+      const healthDelta = stateAfter.health - stateBefore.health;
+      const annotation = healthDelta === 0
+        ? "(no effect)"
+        : `(${stateBefore.health} → ${stateAfter.health} HP)`;
+      return `Drink ${cardStr} ${annotation}`;
     }
   }
 }
@@ -480,7 +491,7 @@ export function extractActions(events: StoredEvent[]): ActionEntry[] {
     entries.push({
       sequence: events[i].sequence,
       action: event.action,
-      description: describeAction(event.action, stateBefore),
+      description: describeAction(event.action, stateBefore, event.stateAfter),
     });
   }
 

@@ -268,6 +268,8 @@ Deno.test("extractActions — sequence numbers match stored event sequences", ()
 function makeChooseCardEvents(
   card: Card,
   fightWith: "weapon" | "barehanded",
+  healthAfter = 20,
+  healthBefore = 20,
 ): StoredEvent[] {
   return [
     {
@@ -278,6 +280,7 @@ function makeChooseCardEvents(
         timestamp: "2025-01-01T00:00:00Z",
         gameId: "test",
         initialState: makeState({
+          health: healthBefore,
           room: [card],
           phase: {
             kind: "choosing",
@@ -294,22 +297,49 @@ function makeChooseCardEvents(
         id: 2,
         timestamp: "2025-01-01T00:00:01Z",
         action: { type: "choose_card", cardIndex: 0, fightWith },
-        stateAfter: makeState({ room: [] }),
+        stateAfter: makeState({ room: [], health: healthAfter }),
       },
     },
   ];
 }
 
-Deno.test("extractActions — choose_card monster barehanded", () => {
-  const events = makeChooseCardEvents({ suit: "clubs", rank: 7 }, "barehanded");
+Deno.test("extractActions — choose_card monster barehanded shows health change", () => {
+  const events = makeChooseCardEvents(
+    { suit: "clubs", rank: 7 },
+    "barehanded",
+    13,
+  );
   const actions = extractActions(events);
-  assertEquals(actions[0].description, "Fight 7 of Clubs barehanded");
+  assertEquals(
+    actions[0].description,
+    "Fight 7 of Clubs barehanded (20 → 13 HP)",
+  );
 });
 
-Deno.test("extractActions — choose_card monster with weapon", () => {
-  const events = makeChooseCardEvents({ suit: "spades", rank: 10 }, "weapon");
+Deno.test("extractActions — choose_card monster with weapon shows health change", () => {
+  const events = makeChooseCardEvents(
+    { suit: "spades", rank: 10 },
+    "weapon",
+    15,
+  );
   const actions = extractActions(events);
-  assertEquals(actions[0].description, "Fight 10 of Spades with weapon");
+  assertEquals(
+    actions[0].description,
+    "Fight 10 of Spades with weapon (20 → 15 HP)",
+  );
+});
+
+Deno.test("extractActions — choose_card monster no damage taken", () => {
+  const events = makeChooseCardEvents(
+    { suit: "clubs", rank: 3 },
+    "weapon",
+    20,
+  );
+  const actions = extractActions(events);
+  assertEquals(
+    actions[0].description,
+    "Fight 3 of Clubs with weapon (no damage)",
+  );
 });
 
 Deno.test("extractActions — choose_card weapon equipped", () => {
@@ -321,13 +351,25 @@ Deno.test("extractActions — choose_card weapon equipped", () => {
   assertEquals(actions[0].description, "Equip 5 of Diamonds");
 });
 
-Deno.test("extractActions — choose_card potion drunk", () => {
+Deno.test("extractActions — choose_card potion shows health change", () => {
   const events = makeChooseCardEvents(
     { suit: "hearts", rank: 4 },
     "barehanded",
+    17,
+    13,
   );
   const actions = extractActions(events);
-  assertEquals(actions[0].description, "Drink 4 of Hearts");
+  assertEquals(actions[0].description, "Drink 4 of Hearts (13 → 17 HP)");
+});
+
+Deno.test("extractActions — choose_card potion at full health", () => {
+  const events = makeChooseCardEvents(
+    { suit: "hearts", rank: 4 },
+    "barehanded",
+    20,
+  );
+  const actions = extractActions(events);
+  assertEquals(actions[0].description, "Drink 4 of Hearts (no effect)");
 });
 
 // --- formatJsonReport ---
