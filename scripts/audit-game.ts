@@ -1,4 +1,5 @@
 import pg from "pg";
+import type { GameAction } from "@scoundrel/engine";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../lib/generated/prisma/client.ts";
 import { applyAction, calculateScore } from "@scoundrel/engine";
@@ -222,6 +223,12 @@ function getLastKnownState(events: StoredEvent[]): GameState {
 
 // --- Report formatting ---
 
+export type ActionEntry = {
+  sequence: number;
+  action: GameAction;
+  description: string;
+};
+
 export type AuditReport = {
   gameId: string;
   playerName: string;
@@ -231,6 +238,7 @@ export type AuditReport = {
   discrepancies: string[];
   dbStatusMismatch: string | null;
   finalState: GameState;
+  actions: ActionEntry[] | null;
 };
 
 function formatPhaseStatus(state: GameState): string {
@@ -305,6 +313,15 @@ export function formatAuditReport(report: AuditReport): string {
     );
   } else {
     lines.push(`DB status check:  WARN (${report.dbStatusMismatch})`);
+  }
+
+  if (report.actions !== null) {
+    lines.push("");
+    lines.push("--- Actions ---");
+    lines.push("");
+    for (const entry of report.actions) {
+      lines.push(`  #${entry.sequence}  ${entry.description}`);
+    }
   }
 
   lines.push("");
@@ -384,23 +401,192 @@ export function formatAuditReport(report: AuditReport): string {
   return lines.join("\n");
 }
 
+// --- Argument parsing ---
+
+export type CliArgs = {
+  gameId: string;
+  showActions: boolean;
+  jsonOutput: boolean;
+};
+
+export function parseArgs(args: string[]): CliArgs {
+  const KNOWN_FLAGS = new Set(["--actions", "--json"]);
+  let showActions = false;
+  let jsonOutput = false;
+  let gameId: string | undefined;
+
+  for (const arg of args) {
+    if (arg.startsWith("--")) {
+      if (!KNOWN_FLAGS.has(arg)) {
+        throw new Error(`Unrecognized flag: ${arg}`);
+      }
+      if (arg === "--actions") showActions = true;
+      if (arg === "--json") jsonOutput = true;
+    } else {
+      gameId = arg;
+    }
+  }
+
+  if (!gameId) {
+    throw new Error("GAME_ID argument is required");
+  }
+
+  return { gameId, showActions, jsonOutput };
+}
+
+// --- Action extraction ---
+
+function describeAction(
+  action: GameAction,
+  stateBefore: GameState,
+): string {
+  switch (action.type) {
+    case "draw_card":
+      return "Draw card";
+    case "avoid_room":
+      return "Avoid room";
+    case "enter_room":
+      return "Enter room";
+    case "choose_card": {
+      const card = stateBefore.room[action.cardIndex];
+      const cardStr = card ? formatCardLong(card) : `card #${action.cardIndex}`;
+      return `Choose ${cardStr} (${action.fightWith})`;
+    }
+  }
+}
+
+export function extractActions(events: StoredEvent[]): ActionEntry[] {
+  const entries: ActionEntry[] = [];
+
+  for (let i = 1; i < events.length; i++) {
+    const event = events[i].payload;
+    if (event.kind !== "action_applied") continue;
+
+    const prevPayload = events[i - 1].payload;
+    const stateBefore = prevPayload.kind === "game_created"
+      ? prevPayload.initialState
+      : prevPayload.stateAfter;
+
+    entries.push({
+      sequence: events[i].sequence,
+      action: event.action,
+      description: describeAction(event.action, stateBefore),
+    });
+  }
+
+  return entries;
+}
+
+// --- JSON report ---
+
+export type JsonReport = {
+  gameId: string;
+  playerName: string;
+  dbStatus: string;
+  totalEvents: number;
+  validation: {
+    sequenceIssues: string[];
+    discrepancies: string[];
+    dbStatusMismatch: string | null;
+    passed: boolean;
+  };
+  gameState: {
+    status: string;
+    health: number;
+    maxHealth: number;
+    score: number;
+    turn: number;
+    dungeon: { count: number };
+    discard: { count: number };
+    room: { count: number; cards: string[] };
+    equippedWeapon: {
+      card: string;
+      slainCount: number;
+      lastMonster: string | null;
+    } | null;
+  };
+  actions?: ActionEntry[];
+};
+
+export function formatJsonReport(report: AuditReport): JsonReport {
+  const { finalState } = report;
+
+  const weapon = finalState.equippedWeapon
+    ? {
+      card: formatCardLong(finalState.equippedWeapon.card),
+      slainCount: finalState.equippedWeapon.slainMonsters.length,
+      lastMonster: finalState.equippedWeapon.slainMonsters.length > 0
+        ? formatCardLong(
+          finalState.equippedWeapon.slainMonsters[
+            finalState.equippedWeapon.slainMonsters.length - 1
+          ],
+        )
+        : null,
+    }
+    : null;
+
+  const json: JsonReport = {
+    gameId: report.gameId,
+    playerName: report.playerName,
+    dbStatus: report.dbStatus,
+    totalEvents: report.totalEvents,
+    validation: {
+      sequenceIssues: report.sequenceIssues,
+      discrepancies: report.discrepancies,
+      dbStatusMismatch: report.dbStatusMismatch,
+      passed: report.sequenceIssues.length === 0 &&
+        report.discrepancies.length === 0 &&
+        report.dbStatusMismatch === null,
+    },
+    gameState: {
+      status: formatPhaseStatus(finalState),
+      health: finalState.health,
+      maxHealth: 20,
+      score: calculateScore(finalState),
+      turn: finalState.turnNumber,
+      dungeon: { count: finalState.dungeon.length },
+      discard: { count: finalState.discard.length },
+      room: {
+        count: finalState.room.length,
+        cards: finalState.room.map(formatCard),
+      },
+      equippedWeapon: weapon,
+    },
+  };
+
+  if (report.actions !== null) {
+    json.actions = report.actions;
+  }
+
+  return json;
+}
+
 // --- Main ---
 
 if (import.meta.main) {
   const databaseUrl = Deno.env.get("DATABASE_URL");
-  const gameId = Deno.args[0];
 
   if (!databaseUrl) {
     console.error("Error: DATABASE_URL environment variable is required");
-    console.error("Usage: DATABASE_URL=<url> deno task audit:game <GAME_ID>");
+    console.error(
+      "Usage: DATABASE_URL=<url> deno task audit:game [--actions] [--json] <GAME_ID>",
+    );
     Deno.exit(1);
   }
 
-  if (!gameId) {
-    console.error("Error: GAME_ID argument is required");
-    console.error("Usage: DATABASE_URL=<url> deno task audit:game <GAME_ID>");
+  let cliArgs: CliArgs;
+  try {
+    cliArgs = parseArgs(Deno.args);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`Error: ${message}`);
+    console.error(
+      "Usage: DATABASE_URL=<url> deno task audit:game [--actions] [--json] <GAME_ID>",
+    );
     Deno.exit(1);
   }
+
+  const { gameId, showActions, jsonOutput } = cliArgs;
 
   const UUID_PATTERN =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -453,9 +639,13 @@ if (import.meta.main) {
       discrepancies,
       dbStatusMismatch,
       finalState,
+      actions: showActions ? extractActions(storedEvents) : null,
     };
 
-    console.log(formatAuditReport(report));
+    const output = jsonOutput
+      ? JSON.stringify(formatJsonReport(report), null, 2)
+      : formatAuditReport(report);
+    console.log(output);
 
     const hasIssues = sequenceIssues.length > 0 ||
       discrepancies.length > 0 ||

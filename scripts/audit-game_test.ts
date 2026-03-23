@@ -1,8 +1,12 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import {
   compareStates,
+  extractActions,
+  formatAuditReport,
   formatCard,
   formatCardLong,
+  formatJsonReport,
+  parseArgs,
   replayAndCompare,
   validateEventSequence,
 } from "./audit-game.ts";
@@ -198,6 +202,132 @@ Deno.test("replayAndCompare — returns final state from last event", () => {
   const { finalState } = replayAndCompare(events);
   // After 4 draw_card actions the room should have 4 cards
   assertEquals(finalState.room.length, 4);
+});
+
+// --- parseArgs ---
+
+Deno.test("parseArgs — positional arg only", () => {
+  const args = parseArgs(["some-uuid"]);
+  assertEquals(args.gameId, "some-uuid");
+  assertEquals(args.showActions, false);
+  assertEquals(args.jsonOutput, false);
+});
+
+Deno.test("parseArgs — --actions flag", () => {
+  const args = parseArgs(["--actions", "some-uuid"]);
+  assertEquals(args.gameId, "some-uuid");
+  assertEquals(args.showActions, true);
+  assertEquals(args.jsonOutput, false);
+});
+
+Deno.test("parseArgs — --json flag", () => {
+  const args = parseArgs(["some-uuid", "--json"]);
+  assertEquals(args.gameId, "some-uuid");
+  assertEquals(args.jsonOutput, true);
+  assertEquals(args.showActions, false);
+});
+
+Deno.test("parseArgs — both flags", () => {
+  const args = parseArgs(["--actions", "--json", "some-uuid"]);
+  assertEquals(args.gameId, "some-uuid");
+  assertEquals(args.showActions, true);
+  assertEquals(args.jsonOutput, true);
+});
+
+Deno.test("parseArgs — missing gameId throws", () => {
+  assertThrows(() => parseArgs(["--actions"]), Error, "GAME_ID");
+});
+
+Deno.test("parseArgs — unrecognized flag throws", () => {
+  assertThrows(() => parseArgs(["--verbose", "some-uuid"]), Error, "--verbose");
+});
+
+// --- extractActions ---
+
+Deno.test("extractActions — returns one entry per action_applied event", () => {
+  const events = makeStoredEvents(); // game_created + 4 draw_card
+  const actions = extractActions(events);
+  assertEquals(actions.length, 4);
+});
+
+Deno.test("extractActions — draw_card has correct description", () => {
+  const events = makeStoredEvents();
+  const actions = extractActions(events);
+  assertEquals(actions[0].description, "Draw card");
+});
+
+Deno.test("extractActions — sequence numbers match stored event sequences", () => {
+  const events = makeStoredEvents();
+  const actions = extractActions(events);
+  for (let i = 0; i < actions.length; i++) {
+    assertEquals(actions[i].sequence, events[i + 1].sequence);
+  }
+});
+
+// --- formatJsonReport ---
+
+function makeReport(
+  overrides: Partial<import("./audit-game.ts").AuditReport> = {},
+): import("./audit-game.ts").AuditReport {
+  return {
+    gameId: "test-game-id",
+    playerName: "Tester",
+    dbStatus: "in_progress",
+    totalEvents: 5,
+    sequenceIssues: [],
+    discrepancies: [],
+    dbStatusMismatch: null,
+    finalState: makeState(),
+    actions: null,
+    ...overrides,
+  };
+}
+
+Deno.test("formatJsonReport — passed is true when no issues", () => {
+  const json = formatJsonReport(makeReport());
+  assertEquals(json.validation.passed, true);
+});
+
+Deno.test("formatJsonReport — passed is false with sequenceIssues", () => {
+  const json = formatJsonReport(makeReport({ sequenceIssues: ["gap at 3"] }));
+  assertEquals(json.validation.passed, false);
+});
+
+Deno.test("formatJsonReport — gameState health matches finalState", () => {
+  const json = formatJsonReport(
+    makeReport({ finalState: makeState({ health: 15 }) }),
+  );
+  assertEquals(json.gameState.health, 15);
+  assertEquals(json.gameState.maxHealth, 20);
+});
+
+Deno.test("formatJsonReport — actions absent when report.actions is null", () => {
+  const json = formatJsonReport(makeReport({ actions: null }));
+  assertEquals("actions" in json, false);
+});
+
+Deno.test("formatJsonReport — actions present when report.actions is non-null", () => {
+  const events = makeStoredEvents();
+  const actions = extractActions(events);
+  const json = formatJsonReport(makeReport({ actions }));
+  assertEquals(json.actions?.length, 4);
+});
+
+// --- formatAuditReport with actions ---
+
+Deno.test("formatAuditReport — no actions section when actions is null", () => {
+  const report = makeReport({ actions: null });
+  const output = formatAuditReport(report);
+  assertEquals(output.includes("--- Actions ---"), false);
+});
+
+Deno.test("formatAuditReport — actions section present when actions non-null", () => {
+  const events = makeStoredEvents();
+  const actions = extractActions(events);
+  const report = makeReport({ actions });
+  const output = formatAuditReport(report);
+  assertEquals(output.includes("--- Actions ---"), true);
+  assertEquals(output.includes("Draw card"), true);
 });
 
 Deno.test(
