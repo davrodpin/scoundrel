@@ -295,6 +295,10 @@ export function createPrismaGameRepository(
           select: { id: true },
         });
         if (duplicate) {
+          await prisma.leaderboardEntry.update({
+            where: { id: duplicate.id },
+            data: { gameId, completedAt },
+          });
           return;
         }
         try {
@@ -305,6 +309,16 @@ export function createPrismaGameRepository(
           });
         } catch (err) {
           if ((err as { code?: string }).code === "P2002") {
+            const existing = await prisma.leaderboardEntry.findFirst({
+              where: { playerName, score },
+              select: { id: true },
+            });
+            if (existing) {
+              await prisma.leaderboardEntry.update({
+                where: { id: existing.id },
+                data: { gameId, completedAt },
+              });
+            }
             return;
           }
           throw err;
