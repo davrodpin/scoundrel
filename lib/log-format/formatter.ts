@@ -15,9 +15,9 @@ function formatProps(
 }
 
 export function selectFormatter(
-  deploymentId: string | undefined,
+  env: "production" | "test" | "local",
 ): TextFormatter | ReturnType<typeof getJsonLinesFormatter> {
-  if (deploymentId) {
+  if (env !== "local") {
     return getJsonLinesFormatter({ properties: "flatten" });
   }
   return getAnsiColorFormatter({

@@ -14,6 +14,9 @@ const ALL_ENV_VARS = [
   "FEEDBACK_GITHUB_REPO",
   "FEEDBACK_GITHUB_LABEL",
   "FEEDBACK_MAX_MESSAGE_LENGTH",
+  "APP_ENV",
+  "GRAFANA_INSTANCE_ID",
+  "GRAFANA_API_TOKEN",
 ];
 
 Deno.test(
@@ -44,6 +47,72 @@ Deno.test(
       assertEquals(cleanup["retentionDays"], 7);
     } finally {
       Deno.env.delete("GAME_RETENTION_DAYS");
+    }
+  },
+);
+
+Deno.test(
+  {
+    name:
+      "loadConfigFromEnv returns app.env as undefined when APP_ENV is not set",
+    permissions: { env: ALL_ENV_VARS },
+  },
+  () => {
+    Deno.env.delete("APP_ENV");
+    const raw = loadConfigFromEnv() as Record<string, unknown>;
+    const app = raw["app"] as Record<string, unknown>;
+    assertEquals(app["env"], undefined);
+  },
+);
+
+Deno.test(
+  {
+    name: "loadConfigFromEnv returns app.env from APP_ENV",
+    permissions: { env: ALL_ENV_VARS },
+  },
+  () => {
+    Deno.env.set("APP_ENV", "production");
+    try {
+      const raw = loadConfigFromEnv() as Record<string, unknown>;
+      const app = raw["app"] as Record<string, unknown>;
+      assertEquals(app["env"], "production");
+    } finally {
+      Deno.env.delete("APP_ENV");
+    }
+  },
+);
+
+Deno.test(
+  {
+    name:
+      "loadConfigFromEnv returns grafana as undefined when GRAFANA_INSTANCE_ID is not set",
+    permissions: { env: ALL_ENV_VARS },
+  },
+  () => {
+    Deno.env.delete("GRAFANA_INSTANCE_ID");
+    Deno.env.delete("GRAFANA_API_TOKEN");
+    const raw = loadConfigFromEnv() as Record<string, unknown>;
+    assertEquals(raw["grafana"], undefined);
+  },
+);
+
+Deno.test(
+  {
+    name:
+      "loadConfigFromEnv returns grafana config when GRAFANA_INSTANCE_ID and GRAFANA_API_TOKEN are set",
+    permissions: { env: ALL_ENV_VARS },
+  },
+  () => {
+    Deno.env.set("GRAFANA_INSTANCE_ID", "123456");
+    Deno.env.set("GRAFANA_API_TOKEN", "glc_abc");
+    try {
+      const raw = loadConfigFromEnv() as Record<string, unknown>;
+      const grafana = raw["grafana"] as Record<string, unknown>;
+      assertEquals(grafana["instanceId"], "123456");
+      assertEquals(grafana["apiToken"], "glc_abc");
+    } finally {
+      Deno.env.delete("GRAFANA_INSTANCE_ID");
+      Deno.env.delete("GRAFANA_API_TOKEN");
     }
   },
 );

@@ -8,6 +8,7 @@ export const configSchema = z.object({
     origin: z.string().default("https://scoundrel.gg"),
     maxBodyBytes: z.number().int().positive().default(4096),
     maxPlayerNameLength: z.number().int().positive().default(16),
+    env: z.enum(["production", "test", "local"]).default("local"),
   }).default({}),
   game: z.object({
     defaultPlayerName: z.string().default("Anonymous"),
@@ -24,6 +25,10 @@ export const configSchema = z.object({
     githubRepo: z.string().default("davrodpin/scoundrel"),
     githubLabel: z.string().default("feedback"),
     maxMessageLength: z.number().int().positive().default(2000),
+  }).optional(),
+  grafana: z.object({
+    instanceId: z.string().min(1),
+    apiToken: z.string().min(1),
   }).optional(),
 });
 

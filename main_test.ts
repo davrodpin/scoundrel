@@ -18,25 +18,25 @@ function makeRecord(
   };
 }
 
-Deno.test("selectFormatter returns a formatter function in development", () => {
-  const formatter = selectFormatter(undefined);
+Deno.test("selectFormatter returns a formatter function for 'local'", () => {
+  const formatter = selectFormatter("local");
   assertEquals(typeof formatter, "function");
 });
 
-Deno.test("selectFormatter returns a formatter function in production", () => {
-  const formatter = selectFormatter("some-deployment-id");
+Deno.test("selectFormatter returns a formatter function for 'production'", () => {
+  const formatter = selectFormatter("production");
   assertEquals(typeof formatter, "function");
 });
 
 // Production path: JSON Lines format
 Deno.test("prod formatter output is valid JSON", () => {
-  const formatter = selectFormatter("some-deployment-id");
+  const formatter = selectFormatter("production");
   const output = formatter(makeRecord({ method: "POST" }));
   JSON.parse(output.trim()); // should not throw
 });
 
 Deno.test("prod formatter contains standard fields", () => {
-  const formatter = selectFormatter("some-deployment-id");
+  const formatter = selectFormatter("production");
   const output = formatter(makeRecord({}));
   const parsed = JSON.parse(output.trim());
   assertObjectMatch(parsed, {
@@ -48,7 +48,7 @@ Deno.test("prod formatter contains standard fields", () => {
 });
 
 Deno.test("prod formatter flattens structured properties to top-level keys", () => {
-  const formatter = selectFormatter("some-deployment-id");
+  const formatter = selectFormatter("production");
   const output = formatter(
     makeRecord({ method: "POST", path: "/api/games", status: 201 }),
   );
@@ -59,7 +59,7 @@ Deno.test("prod formatter flattens structured properties to top-level keys", () 
 });
 
 Deno.test("prod formatter with empty properties has only standard fields", () => {
-  const formatter = selectFormatter("some-deployment-id");
+  const formatter = selectFormatter("production");
   const output = formatter(makeRecord({}));
   const parsed = JSON.parse(output.trim());
   const keys = Object.keys(parsed);
@@ -73,11 +73,18 @@ Deno.test("prod formatter with empty properties has only standard fields", () =>
   }
 });
 
+// test env uses same JSON format as production
+Deno.test("test formatter output is also valid JSON", () => {
+  const formatter = selectFormatter("test");
+  const output = formatter(makeRecord({ method: "GET" }));
+  JSON.parse(output.trim()); // should not throw
+});
+
 // Dev path: ANSI color text format
 Deno.test(
   "dev formatter includes structured properties in output",
   () => {
-    const formatter = selectFormatter(undefined);
+    const formatter = selectFormatter("local");
     const output = formatter(
       makeRecord({ method: "POST", path: "/api/games", status: 201 }),
     );
@@ -93,7 +100,7 @@ Deno.test(
 Deno.test(
   "dev formatter omits properties section when properties is empty",
   () => {
-    const formatter = selectFormatter(undefined);
+    const formatter = selectFormatter("local");
     const output = formatter(makeRecord({}));
     assertEquals(output.includes("{"), false);
   },
@@ -103,8 +110,8 @@ Deno.test(
 Deno.test(
   "dev and prod formatters produce different output",
   () => {
-    const devFormatter = selectFormatter(undefined);
-    const prodFormatter = selectFormatter("some-deployment-id");
+    const devFormatter = selectFormatter("local");
+    const prodFormatter = selectFormatter("production");
     const record = makeRecord({ method: "POST", path: "/api/games" });
     const devOutput = devFormatter(record);
     const prodOutput = prodFormatter(record);

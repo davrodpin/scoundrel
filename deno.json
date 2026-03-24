@@ -44,6 +44,7 @@
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.12",
     "zod": "npm:zod@^3.24",
     "@logtape/logtape": "jsr:@logtape/logtape@^0.12",
+    "@logtape/otel": "jsr:@logtape/otel@^2",
     "prisma": "npm:prisma@^7",
     "@prisma/client": "npm:@prisma/client@^7",
     "@prisma/adapter-pg": "npm:@prisma/adapter-pg@^7",
