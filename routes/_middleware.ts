@@ -10,7 +10,7 @@ import {
 } from "@scoundrel/game-service";
 import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
-import { getMeter, getTracer, trace } from "@scoundrel/telemetry";
+import { flushMetrics, getMeter, getTracer, trace } from "@scoundrel/telemetry";
 import type { Counter, Histogram } from "@opentelemetry/api";
 import { define } from "@/utils.ts";
 import {
@@ -170,6 +170,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     const { counter, histogram } = getInstruments();
     counter.add(1, metricAttrs);
     histogram.record(duration, metricAttrs);
+    flushMetrics();
     logger.error("Request", {
       method,
       path,
@@ -195,6 +196,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   const { counter, histogram } = getInstruments();
   counter.add(1, metricAttrs);
   histogram.record(duration, metricAttrs);
+  flushMetrics();
 
   const data = {
     method,

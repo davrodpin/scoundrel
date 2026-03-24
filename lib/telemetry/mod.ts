@@ -6,4 +6,7 @@ export {
   trace,
 } from "./telemetry.ts";
 export type { Meter, Tracer } from "./telemetry.ts";
-export { createGrafanaMeterProvider } from "./otlp_meter_provider.ts";
+export {
+  createGrafanaMeterProvider,
+  flushMetrics,
+} from "./otlp_meter_provider.ts";
