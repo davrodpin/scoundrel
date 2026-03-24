@@ -577,6 +577,34 @@ Deno.test("turn completion: after 3rd card chosen with empty dungeon, phase is g
   assertEquals(result.phase, { kind: "game_over", reason: "dungeon_cleared" });
 });
 
+Deno.test("turn completion: room emptied before 3 cards chosen with empty dungeon triggers game_over dungeon_cleared", () => {
+  // End-game scenario: room has only 2 cards (1 leftover + 1 from a nearly-empty dungeon).
+  // After choosing both cards, the room and dungeon are empty — game must end.
+  const state = makeState({
+    health: 15,
+    room: [heart4, club3],
+    dungeon: [],
+    phase: { kind: "choosing", cardsChosen: 0, potionUsedThisTurn: false },
+  });
+  // Choose first card (cardsChosen → 1, room has 1 card left)
+  const afterFirst = applyAction(state, {
+    type: "choose_card",
+    cardIndex: 0,
+    fightWith: "barehanded",
+  });
+  assertEquals(afterFirst.phase.kind, "choosing");
+  // Choose second card (cardsChosen → 2, room is now empty, dungeon empty)
+  const afterSecond = applyAction(afterFirst, {
+    type: "choose_card",
+    cardIndex: 0,
+    fightWith: "barehanded",
+  });
+  assertEquals(afterSecond.phase, {
+    kind: "game_over",
+    reason: "dungeon_cleared",
+  });
+});
+
 Deno.test("turn completion: potionUsedThisTurn persists across choices within same turn", () => {
   // First choose a potion (sets potionUsedThisTurn to true)
   const state = makeState({
