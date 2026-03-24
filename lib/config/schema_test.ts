@@ -122,13 +122,18 @@ Deno.test("grafana config is absent when not provided", () => {
   assertEquals(cfg.grafana, undefined);
 });
 
-Deno.test("grafana config parses instanceId and apiToken", () => {
+Deno.test("grafana config parses instanceId, apiToken, and endpoint", () => {
   const cfg = createConfig({
     db: { url: "postgres://localhost/test" },
-    grafana: { instanceId: "123456", apiToken: "glc_abc" },
+    grafana: {
+      instanceId: "123456",
+      apiToken: "glc_abc",
+      endpoint: "https://otlp.grafana.net/otlp",
+    },
   });
   assertEquals(cfg.grafana?.instanceId, "123456");
   assertEquals(cfg.grafana?.apiToken, "glc_abc");
+  assertEquals(cfg.grafana?.endpoint, "https://otlp.grafana.net/otlp");
 });
 
 Deno.test("grafana config rejects empty instanceId", () => {
@@ -136,7 +141,41 @@ Deno.test("grafana config rejects empty instanceId", () => {
     () =>
       createConfig({
         db: { url: "postgres://localhost/test" },
-        grafana: { instanceId: "", apiToken: "glc_abc" },
+        grafana: {
+          instanceId: "",
+          apiToken: "glc_abc",
+          endpoint: "https://otlp.grafana.net/otlp",
+        },
+      }),
+    ZodError,
+  );
+});
+
+Deno.test("grafana config parses endpoint as a URL", () => {
+  const cfg = createConfig({
+    db: { url: "postgres://localhost/test" },
+    grafana: {
+      instanceId: "123456",
+      apiToken: "glc_abc",
+      endpoint: "https://otlp-gateway-prod-us-east-0.grafana.net/otlp",
+    },
+  });
+  assertEquals(
+    cfg.grafana?.endpoint,
+    "https://otlp-gateway-prod-us-east-0.grafana.net/otlp",
+  );
+});
+
+Deno.test("grafana config rejects non-URL endpoint", () => {
+  assertThrows(
+    () =>
+      createConfig({
+        db: { url: "postgres://localhost/test" },
+        grafana: {
+          instanceId: "123456",
+          apiToken: "glc_abc",
+          endpoint: "not-a-url",
+        },
       }),
     ZodError,
   );

@@ -17,8 +17,12 @@ Deno.env.set(
 // Always use protobuf — most efficient and fully supported by Grafana Cloud.
 Deno.env.set("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
 
-// Build the Authorization header from the Grafana credentials in config.
+// Set remaining OTLP env vars from Grafana config. Deno Deploy reserves
+// OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_DENO as dashboard names, so we
+// derive them at runtime from our own env vars instead.
 if (config.grafana) {
+  Deno.env.set("OTEL_EXPORTER_OTLP_ENDPOINT", config.grafana.endpoint);
+  Deno.env.set("OTEL_DENO", "true");
   const credentials = btoa(
     `${config.grafana.instanceId}:${config.grafana.apiToken}`,
   );

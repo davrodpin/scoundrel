@@ -17,6 +17,7 @@ const ALL_ENV_VARS = [
   "APP_ENV",
   "GRAFANA_INSTANCE_ID",
   "GRAFANA_API_TOKEN",
+  "GRAFANA_OTLP_ENDPOINT",
 ];
 
 Deno.test(
@@ -99,20 +100,26 @@ Deno.test(
 Deno.test(
   {
     name:
-      "loadConfigFromEnv returns grafana config when GRAFANA_INSTANCE_ID and GRAFANA_API_TOKEN are set",
+      "loadConfigFromEnv returns grafana config when all GRAFANA_* vars are set",
     permissions: { env: ALL_ENV_VARS },
   },
   () => {
     Deno.env.set("GRAFANA_INSTANCE_ID", "123456");
     Deno.env.set("GRAFANA_API_TOKEN", "glc_abc");
+    Deno.env.set(
+      "GRAFANA_OTLP_ENDPOINT",
+      "https://otlp.grafana.net/otlp",
+    );
     try {
       const raw = loadConfigFromEnv() as Record<string, unknown>;
       const grafana = raw["grafana"] as Record<string, unknown>;
       assertEquals(grafana["instanceId"], "123456");
       assertEquals(grafana["apiToken"], "glc_abc");
+      assertEquals(grafana["endpoint"], "https://otlp.grafana.net/otlp");
     } finally {
       Deno.env.delete("GRAFANA_INSTANCE_ID");
       Deno.env.delete("GRAFANA_API_TOKEN");
+      Deno.env.delete("GRAFANA_OTLP_ENDPOINT");
     }
   },
 );

@@ -37,6 +37,7 @@ export function loadConfigFromEnv(): unknown {
       ? {
         instanceId: Deno.env.get("GRAFANA_INSTANCE_ID"),
         apiToken: Deno.env.get("GRAFANA_API_TOKEN"),
+        endpoint: Deno.env.get("GRAFANA_OTLP_ENDPOINT"),
       }
       : undefined,
   };

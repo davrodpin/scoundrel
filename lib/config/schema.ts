@@ -29,6 +29,7 @@ export const configSchema = z.object({
   grafana: z.object({
     instanceId: z.string().min(1),
     apiToken: z.string().min(1),
+    endpoint: z.string().url(),
   }).optional(),
 });
 
