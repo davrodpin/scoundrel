@@ -15,7 +15,8 @@
     "optimize:cards": "deno run --allow-read --allow-write --allow-env --allow-run --allow-ffi scripts/optimize-cards.ts",
     "worktree:setup": "deno run --allow-run --allow-read --allow-write .claude/skills/git-workflow/scripts/worktree_setup.ts",
     "worktree:cleanup": "deno run --allow-run --allow-read .claude/skills/git-workflow/scripts/worktree_cleanup.ts",
-    "audit:game": "deno run --allow-net --allow-env --allow-read scripts/audit-game.ts"
+    "audit:game": "deno run --allow-net --allow-env --allow-read scripts/audit-game.ts",
+    "repair:stuck-games": "deno run --allow-net --allow-env --allow-read scripts/game-stuck/repair-stuck-games.ts"
   },
   "lint": {
     "rules": {
