@@ -1,4 +1,4 @@
-import { assertEquals, assertExists } from "@std/assert";
+import { assertEquals } from "@std/assert";
 import { createPrismaGameRepository } from "./repository.ts";
 import type { GameRepository, StoredEvent } from "./repository.ts";
 import type { PrismaClient } from "../generated/prisma/client.ts";
@@ -455,7 +455,7 @@ Deno.test("getLeaderboardRank returns totalEntries from total count", async () =
 Deno.test("createLeaderboardEntry updates existing entry when playerName+score duplicate found", async () => {
   let upsertCalled = false;
   // deno-lint-ignore no-explicit-any
-  let updateCalledWith: Record<string, any> | null = null;
+  const updateCalls: Record<string, any>[] = [];
   const mockPrisma = makeMockPrismaClient();
   mockPrisma.leaderboardEntry.findFirst = () => Promise.resolve({ id: 42 });
   mockPrisma.leaderboardEntry.upsert = () => {
@@ -464,7 +464,7 @@ Deno.test("createLeaderboardEntry updates existing entry when playerName+score d
   };
   // deno-lint-ignore no-explicit-any
   mockPrisma.leaderboardEntry.update = (args: Record<string, any>) => {
-    updateCalledWith = args;
+    updateCalls.push(args);
     return Promise.resolve();
   };
 
@@ -485,14 +485,17 @@ Deno.test("createLeaderboardEntry updates existing entry when playerName+score d
     false,
     "upsert should not be called for duplicates",
   );
-  assertExists(updateCalledWith, "update should have been called");
-  assertEquals(updateCalledWith.where, { id: 42 });
-  assertEquals(updateCalledWith.data, { gameId: "new-game-id", completedAt });
+  assertEquals(updateCalls.length, 1, "update should have been called");
+  assertEquals(updateCalls[0].where, { id: 42 });
+  assertEquals(updateCalls[0].data, {
+    gameId: "new-game-id",
+    completedAt,
+  });
 });
 
 Deno.test("createLeaderboardEntry updates existing entry on P2002 race condition", async () => {
   // deno-lint-ignore no-explicit-any
-  let updateCalledWith: Record<string, any> | null = null;
+  const updateCalls: Record<string, any>[] = [];
   let findFirstCallCount = 0;
   const mockPrisma = makeMockPrismaClient();
   mockPrisma.leaderboardEntry.findFirst = () => {
@@ -509,7 +512,7 @@ Deno.test("createLeaderboardEntry updates existing entry on P2002 race condition
   };
   // deno-lint-ignore no-explicit-any
   mockPrisma.leaderboardEntry.update = (args: Record<string, any>) => {
-    updateCalledWith = args;
+    updateCalls.push(args);
     return Promise.resolve();
   };
 
@@ -525,9 +528,13 @@ Deno.test("createLeaderboardEntry updates existing entry on P2002 race condition
     completedAt,
   );
 
-  assertExists(updateCalledWith, "update should have been called after P2002");
-  assertEquals(updateCalledWith.where, { id: 99 });
-  assertEquals(updateCalledWith.data, {
+  assertEquals(
+    updateCalls.length,
+    1,
+    "update should have been called after P2002",
+  );
+  assertEquals(updateCalls[0].where, { id: 99 });
+  assertEquals(updateCalls[0].data, {
     gameId: "race-game-id",
     completedAt,
   });
