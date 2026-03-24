@@ -28,6 +28,7 @@ function makeMockPrismaClient(): MockPrisma {
       findFirst: () => Promise.resolve(null),
       findUnique: () => Promise.resolve(null),
       upsert: () => Promise.resolve(),
+      update: () => Promise.resolve(),
       count: () => Promise.resolve(0),
     },
   };
@@ -451,12 +452,19 @@ Deno.test("getLeaderboardRank returns totalEntries from total count", async () =
   assertEquals(callCount, 2);
 });
 
-Deno.test("createLeaderboardEntry skips insert when playerName+score already exists", async () => {
+Deno.test("createLeaderboardEntry updates existing entry when playerName+score duplicate found", async () => {
   let upsertCalled = false;
+  // deno-lint-ignore no-explicit-any
+  const updateCalls: Record<string, any>[] = [];
   const mockPrisma = makeMockPrismaClient();
-  mockPrisma.leaderboardEntry.findFirst = () => Promise.resolve({ id: 1 });
+  mockPrisma.leaderboardEntry.findFirst = () => Promise.resolve({ id: 42 });
   mockPrisma.leaderboardEntry.upsert = () => {
     upsertCalled = true;
+    return Promise.resolve();
+  };
+  // deno-lint-ignore no-explicit-any
+  mockPrisma.leaderboardEntry.update = (args: Record<string, any>) => {
+    updateCalls.push(args);
     return Promise.resolve();
   };
 
@@ -464,14 +472,72 @@ Deno.test("createLeaderboardEntry skips insert when playerName+score already exi
     mockPrisma as unknown as PrismaClient,
     createSpyTracer().tracer,
   );
+  const completedAt = new Date("2026-01-15T12:00:00Z");
   await repo.createLeaderboardEntry(
     "new-game-id",
     "Alice",
     10,
-    new Date(),
+    completedAt,
   );
 
-  assertEquals(upsertCalled, false);
+  assertEquals(
+    upsertCalled,
+    false,
+    "upsert should not be called for duplicates",
+  );
+  assertEquals(updateCalls.length, 1, "update should have been called");
+  assertEquals(updateCalls[0].where, { id: 42 });
+  assertEquals(updateCalls[0].data, {
+    gameId: "new-game-id",
+    completedAt,
+  });
+});
+
+Deno.test("createLeaderboardEntry updates existing entry on P2002 race condition", async () => {
+  // deno-lint-ignore no-explicit-any
+  const updateCalls: Record<string, any>[] = [];
+  let findFirstCallCount = 0;
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.leaderboardEntry.findFirst = () => {
+    findFirstCallCount++;
+    if (findFirstCallCount === 1) return Promise.resolve(null);
+    return Promise.resolve({ id: 99 });
+  };
+  mockPrisma.leaderboardEntry.upsert = () => {
+    const err = new Error("Unique constraint failed") as Error & {
+      code: string;
+    };
+    err.code = "P2002";
+    return Promise.reject(err);
+  };
+  // deno-lint-ignore no-explicit-any
+  mockPrisma.leaderboardEntry.update = (args: Record<string, any>) => {
+    updateCalls.push(args);
+    return Promise.resolve();
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
+  );
+  const completedAt = new Date("2026-01-15T12:00:00Z");
+  await repo.createLeaderboardEntry(
+    "race-game-id",
+    "Alice",
+    10,
+    completedAt,
+  );
+
+  assertEquals(
+    updateCalls.length,
+    1,
+    "update should have been called after P2002",
+  );
+  assertEquals(updateCalls[0].where, { id: 99 });
+  assertEquals(updateCalls[0].data, {
+    gameId: "race-game-id",
+    completedAt,
+  });
 });
 
 Deno.test("createLeaderboardEntry inserts when same playerName but different score", async () => {
