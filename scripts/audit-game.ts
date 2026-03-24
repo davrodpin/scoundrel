@@ -217,6 +217,14 @@ export function checkRuleConsistency(events: StoredEvent[]): RuleViolation[] {
       });
     }
 
+    // When a room is avoided, its cards return to the dungeon and may be
+    // drawn again legitimately — remove them from the duplicate-draw tracker.
+    if (action.type === "avoid_room") {
+      for (const card of stateBefore.room) {
+        drawnCards.delete(cardKey(card));
+      }
+    }
+
     // A1: Duplicate card drawn
     if (action.type === "draw_card") {
       if (stateAfter.room.length > stateBefore.room.length) {
