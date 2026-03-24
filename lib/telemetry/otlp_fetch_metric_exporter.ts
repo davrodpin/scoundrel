@@ -75,20 +75,21 @@ export class OtlpFetchMetricExporter implements PushMetricExporter {
       body: JSON.stringify(payload),
     }).then((response) => {
       if (response.ok) {
+        console.info(
+          `[otlp] metrics exported (${metrics.scopeMetrics.length} scope(s))`,
+        );
         resultCallback({ code: ExportResultCode.SUCCESS });
       } else {
-        resultCallback({
-          code: ExportResultCode.FAILED,
-          error: new Error(
-            `OTLP metrics export failed with HTTP ${response.status}`,
-          ),
-        });
+        const err = new Error(
+          `OTLP metrics export failed with HTTP ${response.status}`,
+        );
+        console.error("[otlp]", err.message);
+        resultCallback({ code: ExportResultCode.FAILED, error: err });
       }
     }).catch((error: unknown) => {
-      resultCallback({
-        code: ExportResultCode.FAILED,
-        error: error instanceof Error ? error : new Error(String(error)),
-      });
+      const err = error instanceof Error ? error : new Error(String(error));
+      console.error("[otlp] metrics export network error:", err.message);
+      resultCallback({ code: ExportResultCode.FAILED, error: err });
     });
   }
 

@@ -11,6 +11,7 @@ import {
 import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
 import { getMeter, getTracer, trace } from "@scoundrel/telemetry";
+import type { Counter, Histogram } from "@opentelemetry/api";
 import { define } from "@/utils.ts";
 import {
   captureRequestBody,
@@ -23,15 +24,27 @@ import {
 } from "./_middleware_helpers.ts";
 
 const tracer = getTracer();
-const meter = getMeter();
-const requestCounter = meter.createCounter("http.server.request.count", {
-  description: "Number of HTTP requests",
-  unit: "{request}",
-});
-const requestDuration = meter.createHistogram("http.server.request.duration", {
-  description: "HTTP request duration",
-  unit: "ms",
-});
+
+// Lazily initialized on first request, after main.ts has registered the global
+// MeterProvider. Calling getMeter() at module top-level would capture the
+// no-op meter that exists before setGlobalMeterProvider() is called.
+let requestCounter: Counter | undefined;
+let requestDuration: Histogram | undefined;
+
+function getInstruments(): { counter: Counter; histogram: Histogram } {
+  if (!requestCounter) {
+    const meter = getMeter();
+    requestCounter = meter.createCounter("http.server.request.count", {
+      description: "Number of HTTP requests",
+      unit: "{request}",
+    });
+    requestDuration = meter.createHistogram("http.server.request.duration", {
+      description: "HTTP request duration",
+      unit: "ms",
+    });
+  }
+  return { counter: requestCounter, histogram: requestDuration! };
+}
 
 const UUID_SEGMENT_REGEX =
   /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
@@ -154,8 +167,9 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
       "http.route": normalizePath(path),
       "http.response.status_code": status,
     };
-    requestCounter.add(1, metricAttrs);
-    requestDuration.record(duration, metricAttrs);
+    const { counter, histogram } = getInstruments();
+    counter.add(1, metricAttrs);
+    histogram.record(duration, metricAttrs);
     logger.error("Request", {
       method,
       path,
@@ -178,8 +192,9 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     "http.route": normalizePath(path),
     "http.response.status_code": status,
   };
-  requestCounter.add(1, metricAttrs);
-  requestDuration.record(duration, metricAttrs);
+  const { counter, histogram } = getInstruments();
+  counter.add(1, metricAttrs);
+  histogram.record(duration, metricAttrs);
 
   const data = {
     method,
