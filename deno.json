@@ -44,7 +44,6 @@
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.12",
     "zod": "npm:zod@^3.24",
     "@logtape/logtape": "jsr:@logtape/logtape@^0.12",
-    "@logtape/otel": "jsr:@logtape/otel@^2",
     "prisma": "npm:prisma@^7",
     "@prisma/client": "npm:@prisma/client@^7",
     "@prisma/adapter-pg": "npm:@prisma/adapter-pg@^7",
@@ -65,7 +64,8 @@
     "@scoundrel/feedback": "./lib/feedback/mod.ts",
     "obscenity": "npm:obscenity@^0.4.6",
     "@opentelemetry/api": "npm:@opentelemetry/api@^1",
-    "@opentelemetry/sdk-logs": "npm:@opentelemetry/sdk-logs@^0.208",
+    "@opentelemetry/core": "npm:@opentelemetry/core@^2",
+    "@opentelemetry/sdk-metrics": "npm:@opentelemetry/sdk-metrics@^2",
     "@opentelemetry/resources": "npm:@opentelemetry/resources@^2"
   },
   "compilerOptions": {

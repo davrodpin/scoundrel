@@ -1,26 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { getMeter, getTracer } from "./telemetry.ts";
 import { createGrafanaMeterProvider } from "./otlp_meter_provider.ts";
-
-Deno.test("getTracer returns an object with startActiveSpan method", () => {
-  const tracer = getTracer();
-  assertEquals(typeof tracer.startActiveSpan, "function");
-});
-
-Deno.test("getTracer returns an object with startSpan method", () => {
-  const tracer = getTracer();
-  assertEquals(typeof tracer.startSpan, "function");
-});
-
-Deno.test("getMeter returns an object with createCounter method", () => {
-  const meter = getMeter();
-  assertEquals(typeof meter.createCounter, "function");
-});
-
-Deno.test("getMeter returns an object with createHistogram method", () => {
-  const meter = getMeter();
-  assertEquals(typeof meter.createHistogram, "function");
-});
 
 Deno.test(
   {

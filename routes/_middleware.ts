@@ -10,7 +10,7 @@ import {
 } from "@scoundrel/game-service";
 import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
-import { getTracer, trace } from "@scoundrel/telemetry";
+import { getMeter, getTracer, trace } from "@scoundrel/telemetry";
 import { define } from "@/utils.ts";
 import {
   captureRequestBody,
@@ -23,6 +23,22 @@ import {
 } from "./_middleware_helpers.ts";
 
 const tracer = getTracer();
+const meter = getMeter();
+const requestCounter = meter.createCounter("http.server.request.count", {
+  description: "Number of HTTP requests",
+  unit: "{request}",
+});
+const requestDuration = meter.createHistogram("http.server.request.duration", {
+  description: "HTTP request duration",
+  unit: "ms",
+});
+
+const UUID_SEGMENT_REGEX =
+  /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+
+function normalizePath(path: string): string {
+  return path.replace(UUID_SEGMENT_REGEX, "/{id}");
+}
 
 const pool = new pg.Pool({
   connectionString: config.db.url,
@@ -131,6 +147,15 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   } catch (error) {
     const duration = Date.now() - start;
     const status = extractErrorStatus(error);
+    const metricAttrs = {
+      service_name: "scoundrel",
+      environment: config.app.env,
+      "http.request.method": method,
+      "http.route": normalizePath(path),
+      "http.response.status_code": status,
+    };
+    requestCounter.add(1, metricAttrs);
+    requestDuration.record(duration, metricAttrs);
     logger.error("Request", {
       method,
       path,
@@ -146,6 +171,15 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   }
   const duration = Date.now() - start;
   const status = response.status;
+  const metricAttrs = {
+    service_name: "scoundrel",
+    environment: config.app.env,
+    "http.request.method": method,
+    "http.route": normalizePath(path),
+    "http.response.status_code": status,
+  };
+  requestCounter.add(1, metricAttrs);
+  requestDuration.record(duration, metricAttrs);
 
   const data = {
     method,
