@@ -480,7 +480,11 @@ Deno.test("createLeaderboardEntry updates existing entry when playerName+score d
     completedAt,
   );
 
-  assertEquals(upsertCalled, false, "upsert should not be called for duplicates");
+  assertEquals(
+    upsertCalled,
+    false,
+    "upsert should not be called for duplicates",
+  );
   assertExists(updateCalledWith, "update should have been called");
   assertEquals(updateCalledWith.where, { id: 42 });
   assertEquals(updateCalledWith.data, { gameId: "new-game-id", completedAt });
