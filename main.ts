@@ -18,11 +18,12 @@ Deno.env.set(
 Deno.env.set("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
 
 // Set remaining OTLP env vars from Grafana config. Deno Deploy reserves
-// OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_DENO as dashboard names, so we
-// derive them at runtime from our own env vars instead.
+// OTEL_EXPORTER_OTLP_ENDPOINT as a dashboard name, so we derive it at
+// runtime from GRAFANA_OTLP_ENDPOINT instead. OTEL_DENO is not set here
+// because Deno's built-in OTel pipeline initializes before user code runs;
+// @logtape/otel uses its own SDK exporter and reads these vars lazily.
 if (config.grafana) {
   Deno.env.set("OTEL_EXPORTER_OTLP_ENDPOINT", config.grafana.endpoint);
-  Deno.env.set("OTEL_DENO", "true");
   const credentials = btoa(
     `${config.grafana.instanceId}:${config.grafana.apiToken}`,
   );
