@@ -910,6 +910,44 @@ Deno.test("checkRuleConsistency — F2: flags game not ending when dungeon and r
   );
 });
 
+Deno.test(
+  "checkRuleConsistency — A1: no violation when avoided room card is re-drawn",
+  () => {
+    const card: Card = { suit: "clubs", rank: 7 };
+    const deck = makeValidDeck();
+    const state = makeState({ dungeon: deck });
+
+    // Card is drawn into the room
+    const stateAfterDraw = makeState({ dungeon: deck.slice(1), room: [card] });
+
+    // Room is avoided — card goes back to dungeon
+    const stateAfterAvoid = makeState({
+      dungeon: [...deck.slice(1), card],
+      room: [],
+      lastRoomAvoided: true,
+    });
+
+    // Same card is drawn again later (legitimate re-draw after avoid)
+    const stateAfterRedraw = makeState({
+      dungeon: deck.slice(1),
+      room: [card],
+    });
+
+    const events = [
+      makeGameCreated(state),
+      makeActionApplied(1, { type: "draw_card" }, stateAfterDraw),
+      makeActionApplied(2, { type: "avoid_room" }, stateAfterAvoid),
+      makeActionApplied(3, { type: "draw_card" }, stateAfterRedraw),
+    ];
+
+    const violations = checkRuleConsistency(events);
+    assertEquals(
+      violations.filter((v) => v.check === "A1").length,
+      0,
+    );
+  },
+);
+
 Deno.test("checkRuleConsistency — F3: flags action after game over", () => {
   const deck = makeValidDeck();
   const state = makeState({ dungeon: deck });
