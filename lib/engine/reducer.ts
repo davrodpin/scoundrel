@@ -164,6 +164,16 @@ function completeTurn(state: GameState): GameState {
       ? true
       : phase.potionUsedThisTurn;
 
+  // Room fully exhausted with no dungeon left (end-game short room scenario)
+  if (state.room.length === 0 && state.dungeon.length === 0) {
+    return {
+      ...state,
+      lastRoomAvoided: false,
+      turnNumber: state.turnNumber + 1,
+      phase: { kind: "game_over", reason: "dungeon_cleared" },
+    };
+  }
+
   if (newCardsChosen >= 3) {
     // Turn complete - 3 cards chosen, 1 remains in room
     if (state.dungeon.length === 0) {
