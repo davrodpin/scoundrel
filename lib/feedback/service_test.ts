@@ -71,7 +71,7 @@ Deno.test("submitFeedback — sends correct list ID in body", async () => {
   assertEquals(capturedBody["idList"], "list-abc-123");
 });
 
-Deno.test("submitFeedback — card name uses first 60 chars of message", async () => {
+Deno.test("submitFeedback — card name uses first 7 chars of gameId when provided", async () => {
   let capturedBody: Record<string, unknown> = {};
   globalThis.fetch = (_input: RequestInfo | URL, init?: RequestInit) => {
     capturedBody = JSON.parse(init?.body as string);
@@ -79,13 +79,15 @@ Deno.test("submitFeedback — card name uses first 60 chars of message", async (
   };
 
   const service = createFeedbackService(TEST_CONFIG);
-  const longMessage = "A".repeat(80);
-  await service.submitFeedback({ message: longMessage });
+  await service.submitFeedback({
+    message: "My feedback",
+    gameId: "d9018d9a-1234-5678-abcd-ef0123456789",
+  });
 
-  assertEquals(capturedBody["name"], `[Player Feedback] ${"A".repeat(60)}`);
+  assertEquals(capturedBody["name"], "Player Feedback d9018d9");
 });
 
-Deno.test("submitFeedback — card name uses full message when under 60 chars", async () => {
+Deno.test("submitFeedback — card name uses 7 random hex chars when no gameId", async () => {
   let capturedBody: Record<string, unknown> = {};
   globalThis.fetch = (_input: RequestInfo | URL, init?: RequestInit) => {
     capturedBody = JSON.parse(init?.body as string);
@@ -93,9 +95,10 @@ Deno.test("submitFeedback — card name uses full message when under 60 chars", 
   };
 
   const service = createFeedbackService(TEST_CONFIG);
-  await service.submitFeedback({ message: "Short message" });
+  await service.submitFeedback({ message: "My feedback" });
 
-  assertEquals(capturedBody["name"], "[Player Feedback] Short message");
+  const name = capturedBody["name"] as string;
+  assertEquals(/^Player Feedback [0-9a-f]{7}$/.test(name), true);
 });
 
 Deno.test("submitFeedback — includes message in card description", async () => {

@@ -16,8 +16,13 @@ export function createFeedbackService(
     request: FeedbackRequest,
   ): Promise<FeedbackResult> {
     const { message, email, gameId } = request;
-    const truncatedTitle = message.length > 60 ? message.slice(0, 60) : message;
-    const name = `[Player Feedback] ${truncatedTitle}`;
+    const shortId = gameId
+      ? gameId.slice(0, 7)
+      : Array.from(crypto.getRandomValues(new Uint8Array(4)))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("")
+        .slice(0, 7);
+    const name = `Player Feedback ${shortId}`;
 
     const descParts = [
       "## Feedback",
