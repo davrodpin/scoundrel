@@ -7,6 +7,7 @@ import {
 } from "@opentelemetry/sdk-metrics";
 import { type ExportResult, ExportResultCode } from "@opentelemetry/core";
 import type { HrTime } from "@opentelemetry/api";
+import { getLogger } from "@logtape/logtape";
 
 type OtlpAnyValue =
   | { stringValue: string }
@@ -56,6 +57,7 @@ function toOtlpTemporality(t: AggregationTemporality): number {
 export class OtlpFetchMetricExporter implements PushMetricExporter {
   readonly #url: string;
   readonly #headers: Record<string, string>;
+  readonly #logger = getLogger(["scoundrel", "telemetry"]);
 
   constructor(url: string, headers: Record<string, string>) {
     this.#url = url;
@@ -79,9 +81,9 @@ export class OtlpFetchMetricExporter implements PushMetricExporter {
       body: JSON.stringify(payload),
     }).then((response) => {
       if (response.ok) {
-        console.debug(
-          `[otlp] metrics exported (${metrics.scopeMetrics.length} scope(s))`,
-        );
+        this.#logger.debug("metrics exported {scopes} scope(s)", {
+          scopes: metrics.scopeMetrics.length,
+        });
         resultCallback({ code: ExportResultCode.SUCCESS });
       } else {
         response.text().then((body) => {

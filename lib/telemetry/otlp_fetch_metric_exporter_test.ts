@@ -6,6 +6,7 @@ import {
   type ResourceMetrics,
 } from "@opentelemetry/sdk-metrics";
 import { resourceFromAttributes } from "@opentelemetry/resources";
+import { configure, getLogger, type LogRecord } from "@logtape/logtape";
 import { OtlpFetchMetricExporter } from "./otlp_fetch_metric_exporter.ts";
 
 const SCOPE = { name: "scoundrel", version: "1.0.0" };
@@ -323,5 +324,41 @@ Deno.test(
       exporter.selectAggregationTemporality(InstrumentType.COUNTER),
       AggregationTemporality.CUMULATIVE,
     );
+  },
+);
+
+Deno.test(
+  "OtlpFetchMetricExporter.export() logs successful export at debug level, not info",
+  async () => {
+    const records: LogRecord[] = [];
+    await configure({
+      sinks: {
+        capture: (record) => records.push(record),
+      },
+      loggers: [
+        { category: ["scoundrel", "telemetry"], lowestLevel: "debug", sinks: ["capture"] },
+      ],
+      reset: true,
+    });
+
+    mockFetch(200);
+    const exporter = new OtlpFetchMetricExporter(
+      "https://otlp.grafana.net/otlp/v1/metrics",
+      { Authorization: "Basic abc123" },
+    );
+
+    await new Promise<void>((resolve) => {
+      exporter.export(makeSumResourceMetrics(), () => resolve());
+    });
+
+    const exportLog = records.find((r) =>
+      String(r.message).includes("metrics exported")
+    );
+    assertEquals(exportLog?.level, "debug");
+
+    // Reset LogTape to avoid leaking state to other tests
+    await configure({ sinks: {}, loggers: [], reset: true });
+    // Suppress the getLogger call used elsewhere in the test suite
+    getLogger(["logtape", "meta"]);
   },
 );
