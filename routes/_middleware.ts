@@ -25,15 +25,16 @@ import {
 
 const tracer = getTracer();
 
-// Lazily initialized on first request, after main.ts has registered the global
-// MeterProvider. Calling getMeter() at module top-level would capture the
-// no-op meter that exists before setGlobalMeterProvider() is called.
+// Lazily initialized on first request. getMeter() reads directly from the
+// Grafana MeterProvider (activeMeterProvider), bypassing the OTel global API
+// to avoid recording into a different provider registered first by Deno Deploy.
 let requestCounter: Counter | undefined;
 let requestDuration: Histogram | undefined;
 
-function getInstruments(): { counter: Counter; histogram: Histogram } {
+function getInstruments(): { counter: Counter; histogram: Histogram } | null {
   if (!requestCounter) {
     const meter = getMeter();
+    if (!meter) return null;
     requestCounter = meter.createCounter("http.server.request.count", {
       description: "Number of HTTP requests",
       unit: "{request}",
@@ -43,7 +44,9 @@ function getInstruments(): { counter: Counter; histogram: Histogram } {
       unit: "ms",
     });
   }
-  return { counter: requestCounter, histogram: requestDuration! };
+  return requestDuration
+    ? { counter: requestCounter!, histogram: requestDuration }
+    : null;
 }
 
 const UUID_SEGMENT_REGEX =
@@ -167,10 +170,12 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
       "http.route": normalizePath(path),
       "http.response.status_code": status,
     };
-    const { counter, histogram } = getInstruments();
-    counter.add(1, metricAttrs);
-    histogram.record(duration, metricAttrs);
-    await flushMetrics();
+    const instruments = getInstruments();
+    if (instruments) {
+      instruments.counter.add(1, metricAttrs);
+      instruments.histogram.record(duration, metricAttrs);
+      await flushMetrics();
+    }
     logger.error("Request", {
       method,
       path,
@@ -193,10 +198,12 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     "http.route": normalizePath(path),
     "http.response.status_code": status,
   };
-  const { counter, histogram } = getInstruments();
-  counter.add(1, metricAttrs);
-  histogram.record(duration, metricAttrs);
-  await flushMetrics();
+  const instruments = getInstruments();
+  if (instruments) {
+    instruments.counter.add(1, metricAttrs);
+    instruments.histogram.record(duration, metricAttrs);
+    await flushMetrics();
+  }
 
   const data = {
     method,

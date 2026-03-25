@@ -1,3 +1,4 @@
+import type { Meter } from "@opentelemetry/api";
 import { MeterProvider } from "@opentelemetry/sdk-metrics";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { OtlpFetchMetricExporter } from "./otlp_fetch_metric_exporter.ts";
@@ -24,6 +25,15 @@ export function createGrafanaMeterProvider(
  * caller continues — important on Deno Deploy where isolates may be frozen
  * as soon as the response is sent.
  */
+/**
+ * Returns a Meter directly from the active Grafana MeterProvider, bypassing
+ * the OTel global API. This avoids recording into a different provider that
+ * may have been registered first (e.g. Deno Deploy's built-in OTel support).
+ */
+export function getMeter(): Meter | undefined {
+  return activeMeterProvider?.getMeter("scoundrel", "1.0.0");
+}
+
 export function flushMetrics(): Promise<void> {
   if (!activeMeterProvider) {
     console.debug("[otlp] flushMetrics called but no active MeterProvider");

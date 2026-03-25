@@ -2,7 +2,7 @@ import { App, staticFiles } from "fresh";
 import { configure, getConsoleSink } from "@logtape/logtape";
 import { selectFormatter } from "@scoundrel/log-format";
 import { config } from "@scoundrel/config";
-import { createGrafanaMeterProvider, metrics } from "@scoundrel/telemetry";
+import { createGrafanaMeterProvider } from "@scoundrel/telemetry";
 import { type State } from "./utils.ts";
 
 export { selectFormatter };
@@ -23,7 +23,7 @@ if (config.grafana) {
   );
   // Build a fetch-based MeterProvider so metrics reach Grafana Cloud via OTLP
   // without depending on Node's http module (unavailable on Deno Deploy).
-  const meterProvider = createGrafanaMeterProvider(
+  createGrafanaMeterProvider(
     `${config.grafana.endpoint}/v1/metrics`,
     { Authorization: `Basic ${credentials}` },
     {
@@ -31,7 +31,6 @@ if (config.grafana) {
       "deployment.environment": config.app.env,
     },
   );
-  metrics.setGlobalMeterProvider(meterProvider);
   console.info("[telemetry] Grafana MeterProvider registered");
 } else {
   console.info("[telemetry] Grafana config not found, metrics disabled");
