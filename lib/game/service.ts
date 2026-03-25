@@ -1,6 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import { SpanStatusCode } from "@opentelemetry/api";
-import type { Counter, Meter, Tracer, UpDownCounter } from "@opentelemetry/api";
+import type { Counter, Meter, Tracer } from "@opentelemetry/api";
 import type { EventLog, GameEngine } from "@scoundrel/engine";
 import { AppError } from "@scoundrel/errors";
 import { isPlayerNameAllowed } from "@scoundrel/validation";
@@ -35,18 +35,18 @@ export function createGameService(
 ): GameService {
   const logger = getLogger(["scoundrel", "game"]);
 
-  let gamesInProgress: UpDownCounter | undefined;
+  let gamesInProgress: Counter | undefined;
   let gamesCompleted: Counter | undefined;
 
   function getGameInstruments(): {
-    inProgress: UpDownCounter;
+    inProgress: Counter;
     completed: Counter;
   } | null {
     if (!gamesInProgress) {
       const meter = getMeter?.();
       if (!meter) return null;
-      gamesInProgress = meter.createUpDownCounter("game.in_progress", {
-        description: "Number of games currently in progress",
+      gamesInProgress = meter.createCounter("game.in_progress", {
+        description: "Number of games started",
         unit: "{game}",
       });
       gamesCompleted = meter.createCounter("game.completed", {
@@ -192,7 +192,6 @@ export function createGameService(
                       ),
                     ]);
                     getGameInstruments()?.completed.add(1);
-                    getGameInstruments()?.inProgress.add(-1);
                     logger.info("Game completed", { gameId, score });
                     logger.info("Leaderboard entry created", {
                       gameId,
@@ -248,7 +247,6 @@ export function createGameService(
                     ),
                   ]);
                   getGameInstruments()?.completed.add(1);
-                  getGameInstruments()?.inProgress.add(-1);
                   logger.info("Game completed", { gameId, score });
                   logger.info("Leaderboard entry created", { gameId, score });
                 } catch (err) {
