@@ -234,7 +234,7 @@ Deno.test("submitAction game over increments game.completed by 1", async () => {
   assertEquals(completed[0].value, 1);
 });
 
-Deno.test("submitAction game over decrements game.in_progress by 1", async () => {
+Deno.test("submitAction game over does not emit game.in_progress", async () => {
   const { tracer } = createSpyTracer();
   const { meter, getMetrics } = createSpyMeter();
   const storedEvents = new Map<string, StoredEvent[]>();
@@ -278,8 +278,7 @@ Deno.test("submitAction game over decrements game.in_progress by 1", async () =>
 
   const newMetrics = getMetrics().slice(metricsBefore);
   const inProgress = newMetrics.filter((m) => m.name === "game.in_progress");
-  assertEquals(inProgress.length, 1);
-  assertEquals(inProgress[0].value, -1);
+  assertEquals(inProgress.length, 0);
 });
 
 Deno.test("submitAction that does not end game does not emit game.completed", async () => {
@@ -305,7 +304,7 @@ Deno.test("submitAction that does not end game does not emit game.completed", as
   assertEquals(completed.length, 0);
 });
 
-Deno.test("auto-enter-room path that ends game emits game.completed and decrements game.in_progress", async () => {
+Deno.test("auto-enter-room path that ends game emits game.completed and does not emit game.in_progress", async () => {
   const { tracer } = createSpyTracer();
   const { meter, getMetrics } = createSpyMeter();
 
@@ -373,7 +372,7 @@ Deno.test("auto-enter-room path that ends game emits game.completed and decremen
   );
   assertEquals(completed.length, 1);
   assertEquals(completed[0].value, 1);
-  assertEquals(inProgressDecrement.length, 1);
+  assertEquals(inProgressDecrement.length, 0);
 });
 
 Deno.test("createGame with undefined meter does not throw", async () => {
