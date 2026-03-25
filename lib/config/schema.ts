@@ -21,9 +21,9 @@ export const configSchema = z.object({
     retentionDays: z.number().int().positive().default(30),
   }).default({}),
   feedback: z.object({
-    githubToken: z.string().min(1),
-    githubRepo: z.string().default("davrodpin/scoundrel"),
-    githubLabel: z.string().default("feedback"),
+    trelloApiKey: z.string().min(1),
+    trelloApiToken: z.string().min(1),
+    trelloListId: z.string().min(1),
     maxMessageLength: z.number().int().positive().default(2000),
   }).optional(),
   grafana: z.object({
