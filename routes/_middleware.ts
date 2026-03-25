@@ -66,10 +66,16 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 const engine = createGameEngine();
 const repository = createPrismaGameRepository(prisma, tracer);
-const gameService = createGameService(engine, repository, {
-  defaultPlayerName: config.game.defaultPlayerName,
-  leaderboardLimit: config.game.leaderboardLimit,
-}, tracer);
+const gameService = createGameService(
+  engine,
+  repository,
+  {
+    defaultPlayerName: config.game.defaultPlayerName,
+    leaderboardLimit: config.game.leaderboardLimit,
+  },
+  tracer,
+  getMeter(),
+);
 
 const logger = getLogger(["scoundrel", "http"]);
 
