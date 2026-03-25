@@ -165,7 +165,6 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     const status = extractErrorStatus(error);
     const metricAttrs = {
       service_name: "scoundrel",
-      environment: config.app.env,
       "http.request.method": method,
       "http.route": normalizePath(path),
       "http.response.status_code": status,
@@ -193,7 +192,6 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   const status = response.status;
   const metricAttrs = {
     service_name: "scoundrel",
-    environment: config.app.env,
     "http.request.method": method,
     "http.route": normalizePath(path),
     "http.response.status_code": status,
