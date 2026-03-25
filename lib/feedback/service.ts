@@ -17,66 +17,63 @@ export function createFeedbackService(
   ): Promise<FeedbackResult> {
     const { message, email, gameId } = request;
     const truncatedTitle = message.length > 60 ? message.slice(0, 60) : message;
-    const title = `[Player Feedback] ${truncatedTitle}`;
+    const name = `[Player Feedback] ${truncatedTitle}`;
 
-    const bodyParts = [
+    const descParts = [
       "## Feedback",
       "",
       message,
     ];
 
     if (email) {
-      bodyParts.push("", "## Contact", "", email);
+      descParts.push("", "## Contact", "", email);
     }
 
     if (gameId) {
-      bodyParts.push("", "## Game ID", "", gameId);
+      descParts.push("", "## Game ID", "", gameId);
     }
 
-    bodyParts.push("", "---", `*Submitted: ${new Date().toUTCString()}*`);
+    descParts.push("", "---", `*Submitted: ${new Date().toUTCString()}*`);
 
-    const issueBody = bodyParts.join("\n");
+    const desc = descParts.join("\n");
+
+    const url = new URL("https://api.trello.com/1/cards");
+    url.searchParams.set("key", config.trelloApiKey);
+    url.searchParams.set("token", config.trelloApiToken);
 
     let response: Response;
     try {
-      response = await fetch(
-        `https://api.github.com/repos/${config.githubRepo}/issues`,
-        {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${config.githubToken}`,
-            "Content-Type": "application/json",
-            "Accept": "application/vnd.github.v3+json",
-          },
-          body: JSON.stringify({
-            title,
-            body: issueBody,
-            labels: [config.githubLabel],
-          }),
+      response = await fetch(url.toString(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          idList: config.trelloListId,
+          name,
+          desc,
+        }),
+      });
     } catch (err) {
-      logger.error("Failed to reach GitHub API", { error: String(err) });
+      logger.error("Failed to reach Trello API", { error: String(err) });
       throw new AppError("FeedbackSubmissionError", 502);
     }
 
     if (!response.ok) {
-      logger.error("GitHub API returned error", { status: response.status });
+      logger.error("Trello API returned error", { status: response.status });
       throw new AppError("FeedbackSubmissionError", 502);
     }
 
     const data = await response.json() as {
-      number: number;
-      html_url: string;
+      id: string;
+      shortUrl: string;
     };
 
-    logger.info("Feedback submitted as GitHub issue", {
-      issueNumber: data.number,
-    });
+    logger.info("Feedback submitted as Trello card", { cardId: data.id });
 
     return {
-      issueNumber: data.number,
-      issueUrl: data.html_url,
+      cardId: data.id,
+      cardUrl: data.shortUrl,
     };
   }
 

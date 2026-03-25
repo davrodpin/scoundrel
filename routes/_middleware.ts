@@ -81,9 +81,9 @@ const logger = getLogger(["scoundrel", "http"]);
 
 const feedbackService = config.feedback
   ? createFeedbackService({
-    githubToken: config.feedback.githubToken,
-    githubRepo: config.feedback.githubRepo,
-    githubLabel: config.feedback.githubLabel,
+    trelloApiKey: config.feedback.trelloApiKey,
+    trelloApiToken: config.feedback.trelloApiToken,
+    trelloListId: config.feedback.trelloListId,
   })
   : null;
 

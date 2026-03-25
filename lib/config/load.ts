@@ -23,11 +23,11 @@ export function loadConfigFromEnv(): unknown {
     cleanup: {
       retentionDays: parseOptionalInt(Deno.env.get("GAME_RETENTION_DAYS")),
     },
-    feedback: Deno.env.get("SCOUNDREL_GITHUB_TOKEN")
+    feedback: Deno.env.get("TRELLO_API_KEY")
       ? {
-        githubToken: Deno.env.get("SCOUNDREL_GITHUB_TOKEN"),
-        githubRepo: Deno.env.get("FEEDBACK_GITHUB_REPO"),
-        githubLabel: Deno.env.get("FEEDBACK_GITHUB_LABEL"),
+        trelloApiKey: Deno.env.get("TRELLO_API_KEY"),
+        trelloApiToken: Deno.env.get("TRELLO_API_TOKEN"),
+        trelloListId: Deno.env.get("TRELLO_LIST_ID"),
         maxMessageLength: parseOptionalInt(
           Deno.env.get("FEEDBACK_MAX_MESSAGE_LENGTH"),
         ),

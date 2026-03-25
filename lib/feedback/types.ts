@@ -5,14 +5,14 @@ export type FeedbackRequest = {
 };
 
 export type FeedbackResult = {
-  issueNumber: number;
-  issueUrl: string;
+  cardId: string;
+  cardUrl: string;
 };
 
 export type FeedbackServiceConfig = {
-  githubToken: string;
-  githubRepo: string;
-  githubLabel: string;
+  trelloApiKey: string;
+  trelloApiToken: string;
+  trelloListId: string;
 };
 
 export type FeedbackService = {
