@@ -79,7 +79,7 @@ export class OtlpFetchMetricExporter implements PushMetricExporter {
       body: JSON.stringify(payload),
     }).then((response) => {
       if (response.ok) {
-        console.info(
+        console.debug(
           `[otlp] metrics exported (${metrics.scopeMetrics.length} scope(s))`,
         );
         resultCallback({ code: ExportResultCode.SUCCESS });
