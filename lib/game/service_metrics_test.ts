@@ -175,7 +175,7 @@ Deno.test("createGame increments game.in_progress by 1", async () => {
     repository,
     TEST_CONFIG,
     tracer,
-    meter,
+    () => meter,
   );
 
   await service.createGame("Hero");
@@ -221,7 +221,7 @@ Deno.test("submitAction game over increments game.completed by 1", async () => {
     repository,
     TEST_CONFIG,
     tracer,
-    meter,
+    () => meter,
   );
 
   const view = await service.createGame("Hero");
@@ -269,7 +269,7 @@ Deno.test("submitAction game over decrements game.in_progress by 1", async () =>
     repository,
     TEST_CONFIG,
     tracer,
-    meter,
+    () => meter,
   );
 
   const view = await service.createGame("Hero");
@@ -293,7 +293,7 @@ Deno.test("submitAction that does not end game does not emit game.completed", as
     repository,
     TEST_CONFIG,
     tracer,
-    meter,
+    () => meter,
   );
 
   const view = await service.createGame("Hero");
@@ -358,7 +358,7 @@ Deno.test("auto-enter-room path that ends game emits game.completed and decremen
     repository,
     TEST_CONFIG,
     tracer,
-    meter,
+    () => meter,
   );
   await service.submitAction(GAME_ID, {
     type: "choose_card",

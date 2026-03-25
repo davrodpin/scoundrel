@@ -74,7 +74,7 @@ const gameService = createGameService(
     leaderboardLimit: config.game.leaderboardLimit,
   },
   tracer,
-  getMeter(),
+  getMeter,
 );
 
 const logger = getLogger(["scoundrel", "http"]);
