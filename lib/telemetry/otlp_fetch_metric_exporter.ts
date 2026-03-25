@@ -40,7 +40,11 @@ function toOtlpAttributes(
 }
 
 function hrTimeToNanoString([seconds, nanos]: HrTime): string {
-  return String(Math.floor(seconds) * 1_000_000_000 + nanos);
+  // Use BigInt to avoid precision loss: current Unix time in nanoseconds
+  // (~1.748e18) exceeds Number.MAX_SAFE_INTEGER (~9e15).
+  return (
+    BigInt(Math.floor(seconds)) * 1_000_000_000n + BigInt(nanos)
+  ).toString();
 }
 
 // SDK AggregationTemporality.DELTA=0, CUMULATIVE=1
@@ -80,11 +84,19 @@ export class OtlpFetchMetricExporter implements PushMetricExporter {
         );
         resultCallback({ code: ExportResultCode.SUCCESS });
       } else {
-        const err = new Error(
-          `OTLP metrics export failed with HTTP ${response.status}`,
-        );
-        console.error("[otlp]", err.message);
-        resultCallback({ code: ExportResultCode.FAILED, error: err });
+        response.text().then((body) => {
+          const err = new Error(
+            `OTLP metrics export failed with HTTP ${response.status}: ${body}`,
+          );
+          console.error("[otlp]", err.message);
+          resultCallback({ code: ExportResultCode.FAILED, error: err });
+        }).catch(() => {
+          const err = new Error(
+            `OTLP metrics export failed with HTTP ${response.status}`,
+          );
+          console.error("[otlp]", err.message);
+          resultCallback({ code: ExportResultCode.FAILED, error: err });
+        });
       }
     }).catch((error: unknown) => {
       const err = error instanceof Error ? error : new Error(String(error));
