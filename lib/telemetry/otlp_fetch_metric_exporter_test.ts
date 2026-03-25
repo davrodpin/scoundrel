@@ -336,7 +336,11 @@ Deno.test(
         capture: (record) => records.push(record),
       },
       loggers: [
-        { category: ["scoundrel", "telemetry"], lowestLevel: "debug", sinks: ["capture"] },
+        {
+          category: ["scoundrel", "telemetry"],
+          lowestLevel: "debug",
+          sinks: ["capture"],
+        },
       ],
       reset: true,
     });
