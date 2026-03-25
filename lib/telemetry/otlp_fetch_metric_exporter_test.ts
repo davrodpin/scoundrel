@@ -32,7 +32,7 @@ function makeSumResourceMetrics(): ResourceMetrics {
               valueType: 1,
             },
             dataPointType: DataPointType.SUM,
-            aggregationTemporality: AggregationTemporality.DELTA,
+            aggregationTemporality: AggregationTemporality.CUMULATIVE,
             dataPoints: [
               {
                 attributes: {
@@ -68,7 +68,7 @@ function makeHistogramResourceMetrics(): ResourceMetrics {
               valueType: 0,
             },
             dataPointType: DataPointType.HISTOGRAM,
-            aggregationTemporality: AggregationTemporality.DELTA,
+            aggregationTemporality: AggregationTemporality.CUMULATIVE,
             dataPoints: [
               {
                 attributes: {
@@ -164,7 +164,7 @@ Deno.test(
     const metric = parsed.resourceMetrics[0].scopeMetrics[0].metrics[0];
     assertEquals(metric.name, "http.server.request.count");
     assertEquals(metric.sum.isMonotonic, true);
-    assertEquals(metric.sum.aggregationTemporality, 1); // DELTA
+    assertEquals(metric.sum.aggregationTemporality, 2); // CUMULATIVE
     assertEquals(metric.sum.dataPoints[0].asInt, "42");
     assertEquals(
       metric.sum.dataPoints[0].attributes[0].key,
@@ -192,7 +192,7 @@ Deno.test(
 
     const metric = parsed.resourceMetrics[0].scopeMetrics[0].metrics[0];
     assertEquals(metric.name, "http.server.request.duration");
-    assertEquals(metric.histogram.aggregationTemporality, 1); // DELTA
+    assertEquals(metric.histogram.aggregationTemporality, 2); // CUMULATIVE
     assertEquals(metric.histogram.dataPoints[0].count, "15");
     assertEquals(metric.histogram.dataPoints[0].sum, 1250.5);
     assertEquals(metric.histogram.dataPoints[0].min, 3.2);
@@ -313,7 +313,7 @@ Deno.test("OtlpFetchMetricExporter.forceFlush() resolves", async () => {
 });
 
 Deno.test(
-  "OtlpFetchMetricExporter.selectAggregationTemporality() returns DELTA",
+  "OtlpFetchMetricExporter.selectAggregationTemporality() returns CUMULATIVE",
   () => {
     const exporter = new OtlpFetchMetricExporter(
       "https://otlp.grafana.net/otlp/v1/metrics",
@@ -321,7 +321,7 @@ Deno.test(
     );
     assertEquals(
       exporter.selectAggregationTemporality(InstrumentType.COUNTER),
-      AggregationTemporality.DELTA,
+      AggregationTemporality.CUMULATIVE,
     );
   },
 );

@@ -116,7 +116,9 @@ export class OtlpFetchMetricExporter implements PushMetricExporter {
   selectAggregationTemporality(
     _instrumentType: InstrumentType,
   ): AggregationTemporality {
-    return AggregationTemporality.DELTA;
+    // Grafana Cloud (Mimir) requires CUMULATIVE temporality — DELTA is rejected
+    // with HTTP 400 "invalid temporality and type combination".
+    return AggregationTemporality.CUMULATIVE;
   }
 
   #buildPayload(metrics: ResourceMetrics) {
