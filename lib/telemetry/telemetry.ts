@@ -1,10 +1,10 @@
-import { trace } from "npm:@opentelemetry/api@1";
-import type { Tracer } from "npm:@opentelemetry/api@1";
+import { trace } from "@opentelemetry/api";
+import type { Tracer } from "@opentelemetry/api";
 
 export function getTracer(): Tracer {
   return trace.getTracer("scoundrel", "1.0.0");
 }
 
-export { trace } from "npm:@opentelemetry/api@1";
-export type { Tracer } from "npm:@opentelemetry/api@1";
-export { SpanStatusCode } from "npm:@opentelemetry/api@1";
+export { metrics, trace } from "@opentelemetry/api";
+export type { Meter, Tracer } from "@opentelemetry/api";
+export { SpanStatusCode } from "@opentelemetry/api";

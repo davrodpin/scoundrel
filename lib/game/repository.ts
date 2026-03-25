@@ -1,5 +1,5 @@
-import { SpanStatusCode } from "npm:@opentelemetry/api@1";
-import type { Tracer } from "npm:@opentelemetry/api@1";
+import { SpanStatusCode } from "@opentelemetry/api";
+import type { Tracer } from "@opentelemetry/api";
 import type { GameEvent as EngineGameEvent } from "@scoundrel/engine";
 import type { Prisma, PrismaClient } from "../generated/prisma/client.ts";
 import type { LeaderboardEntry } from "./types.ts";

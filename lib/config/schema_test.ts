@@ -84,3 +84,99 @@ Deno.test("cleanup.retentionDays fails validation with a non-positive integer", 
     ZodError,
   );
 });
+
+Deno.test("app.env defaults to 'local' when not provided", () => {
+  const cfg = createConfig({ db: { url: "postgres://localhost/test" } });
+  assertEquals(cfg.app.env, "local");
+});
+
+Deno.test("app.env accepts 'production'", () => {
+  const cfg = createConfig({
+    db: { url: "postgres://localhost/test" },
+    app: { env: "production" },
+  });
+  assertEquals(cfg.app.env, "production");
+});
+
+Deno.test("app.env accepts 'test'", () => {
+  const cfg = createConfig({
+    db: { url: "postgres://localhost/test" },
+    app: { env: "test" },
+  });
+  assertEquals(cfg.app.env, "test");
+});
+
+Deno.test("app.env rejects invalid values", () => {
+  assertThrows(
+    () =>
+      createConfig({
+        db: { url: "postgres://localhost/test" },
+        app: { env: "staging" },
+      }),
+    ZodError,
+  );
+});
+
+Deno.test("grafana config is absent when not provided", () => {
+  const cfg = createConfig({ db: { url: "postgres://localhost/test" } });
+  assertEquals(cfg.grafana, undefined);
+});
+
+Deno.test("grafana config parses instanceId, apiToken, and endpoint", () => {
+  const cfg = createConfig({
+    db: { url: "postgres://localhost/test" },
+    grafana: {
+      instanceId: "123456",
+      apiToken: "glc_abc",
+      endpoint: "https://otlp.grafana.net/otlp",
+    },
+  });
+  assertEquals(cfg.grafana?.instanceId, "123456");
+  assertEquals(cfg.grafana?.apiToken, "glc_abc");
+  assertEquals(cfg.grafana?.endpoint, "https://otlp.grafana.net/otlp");
+});
+
+Deno.test("grafana config rejects empty instanceId", () => {
+  assertThrows(
+    () =>
+      createConfig({
+        db: { url: "postgres://localhost/test" },
+        grafana: {
+          instanceId: "",
+          apiToken: "glc_abc",
+          endpoint: "https://otlp.grafana.net/otlp",
+        },
+      }),
+    ZodError,
+  );
+});
+
+Deno.test("grafana config parses endpoint as a URL", () => {
+  const cfg = createConfig({
+    db: { url: "postgres://localhost/test" },
+    grafana: {
+      instanceId: "123456",
+      apiToken: "glc_abc",
+      endpoint: "https://otlp-gateway-prod-us-east-0.grafana.net/otlp",
+    },
+  });
+  assertEquals(
+    cfg.grafana?.endpoint,
+    "https://otlp-gateway-prod-us-east-0.grafana.net/otlp",
+  );
+});
+
+Deno.test("grafana config rejects non-URL endpoint", () => {
+  assertThrows(
+    () =>
+      createConfig({
+        db: { url: "postgres://localhost/test" },
+        grafana: {
+          instanceId: "123456",
+          apiToken: "glc_abc",
+          endpoint: "not-a-url",
+        },
+      }),
+    ZodError,
+  );
+});

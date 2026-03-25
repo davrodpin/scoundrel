@@ -1,2 +1,7 @@
-export { getTracer, SpanStatusCode, trace } from "./telemetry.ts";
-export type { Tracer } from "./telemetry.ts";
+export { getTracer, metrics, SpanStatusCode, trace } from "./telemetry.ts";
+export type { Meter, Tracer } from "./telemetry.ts";
+export {
+  createGrafanaMeterProvider,
+  flushMetrics,
+  getMeter,
+} from "./otlp_meter_provider.ts";

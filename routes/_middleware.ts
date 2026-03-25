@@ -10,7 +10,8 @@ import {
 } from "@scoundrel/game-service";
 import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
-import { getTracer, trace } from "@scoundrel/telemetry";
+import { flushMetrics, getMeter, getTracer, trace } from "@scoundrel/telemetry";
+import type { Counter, Histogram } from "@opentelemetry/api";
 import { define } from "@/utils.ts";
 import {
   captureRequestBody,
@@ -23,6 +24,37 @@ import {
 } from "./_middleware_helpers.ts";
 
 const tracer = getTracer();
+
+// Lazily initialized on first request. getMeter() reads directly from the
+// Grafana MeterProvider (activeMeterProvider), bypassing the OTel global API
+// to avoid recording into a different provider registered first by Deno Deploy.
+let requestCounter: Counter | undefined;
+let requestDuration: Histogram | undefined;
+
+function getInstruments(): { counter: Counter; histogram: Histogram } | null {
+  if (!requestCounter) {
+    const meter = getMeter();
+    if (!meter) return null;
+    requestCounter = meter.createCounter("http.server.request.count", {
+      description: "Number of HTTP requests",
+      unit: "{request}",
+    });
+    requestDuration = meter.createHistogram("http.server.request.duration", {
+      description: "HTTP request duration",
+      unit: "ms",
+    });
+  }
+  return requestDuration
+    ? { counter: requestCounter!, histogram: requestDuration }
+    : null;
+}
+
+const UUID_SEGMENT_REGEX =
+  /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+
+function normalizePath(path: string): string {
+  return path.replace(UUID_SEGMENT_REGEX, "/{id}");
+}
 
 const pool = new pg.Pool({
   connectionString: config.db.url,
@@ -131,6 +163,19 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   } catch (error) {
     const duration = Date.now() - start;
     const status = extractErrorStatus(error);
+    const metricAttrs = {
+      service_name: "scoundrel",
+      environment: config.app.env,
+      "http.request.method": method,
+      "http.route": normalizePath(path),
+      "http.response.status_code": status,
+    };
+    const instruments = getInstruments();
+    if (instruments) {
+      instruments.counter.add(1, metricAttrs);
+      instruments.histogram.record(duration, metricAttrs);
+      await flushMetrics();
+    }
     logger.error("Request", {
       method,
       path,
@@ -146,6 +191,19 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   }
   const duration = Date.now() - start;
   const status = response.status;
+  const metricAttrs = {
+    service_name: "scoundrel",
+    environment: config.app.env,
+    "http.request.method": method,
+    "http.route": normalizePath(path),
+    "http.response.status_code": status,
+  };
+  const instruments = getInstruments();
+  if (instruments) {
+    instruments.counter.add(1, metricAttrs);
+    instruments.histogram.record(duration, metricAttrs);
+    await flushMetrics();
+  }
 
   const data = {
     method,

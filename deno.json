@@ -63,7 +63,10 @@
     "@scoundrel/telemetry": "./lib/telemetry/mod.ts",
     "@scoundrel/feedback": "./lib/feedback/mod.ts",
     "obscenity": "npm:obscenity@^0.4.6",
-    "@opentelemetry/api": "npm:@opentelemetry/api@^1"
+    "@opentelemetry/api": "npm:@opentelemetry/api@^1",
+    "@opentelemetry/core": "npm:@opentelemetry/core@^2",
+    "@opentelemetry/sdk-metrics": "npm:@opentelemetry/sdk-metrics@^2",
+    "@opentelemetry/resources": "npm:@opentelemetry/resources@^2"
   },
   "compilerOptions": {
     "lib": [

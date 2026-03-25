@@ -13,6 +13,7 @@ export function loadConfigFromEnv(): unknown {
       maxPlayerNameLength: parseOptionalInt(
         Deno.env.get("MAX_PLAYER_NAME_LENGTH"),
       ),
+      env: Deno.env.get("APP_ENV"),
     },
     game: {
       defaultPlayerName: Deno.env.get("DEFAULT_PLAYER_NAME"),
@@ -30,6 +31,13 @@ export function loadConfigFromEnv(): unknown {
         maxMessageLength: parseOptionalInt(
           Deno.env.get("FEEDBACK_MAX_MESSAGE_LENGTH"),
         ),
+      }
+      : undefined,
+    grafana: Deno.env.get("GRAFANA_INSTANCE_ID")
+      ? {
+        instanceId: Deno.env.get("GRAFANA_INSTANCE_ID"),
+        apiToken: Deno.env.get("GRAFANA_API_TOKEN"),
+        endpoint: Deno.env.get("GRAFANA_OTLP_ENDPOINT"),
       }
       : undefined,
   };

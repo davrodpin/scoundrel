@@ -1,11 +1,11 @@
-import { SpanStatusCode } from "npm:@opentelemetry/api@1";
+import { SpanStatusCode } from "@opentelemetry/api";
 import type {
   Span,
   SpanContext,
   SpanOptions,
   SpanStatus,
   Tracer,
-} from "npm:@opentelemetry/api@1";
+} from "@opentelemetry/api";
 
 export type RecordedSpan = {
   name: string;

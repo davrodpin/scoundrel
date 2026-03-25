@@ -2,8 +2,8 @@
   "version": "5",
   "specifiers": {
     "jsr:@deno/esbuild-plugin@^1.2.0": "1.2.1",
-    "jsr:@deno/loader@~0.3.10": "0.3.12",
-    "jsr:@deno/loader@~0.3.2": "0.3.12",
+    "jsr:@deno/loader@~0.3.10": "0.3.14",
+    "jsr:@deno/loader@~0.3.2": "0.3.14",
     "jsr:@fresh/build-id@1": "1.0.1",
     "jsr:@fresh/core@2": "2.2.0",
     "jsr:@fresh/core@^2.2.0": "2.2.0",
@@ -12,7 +12,7 @@
     "jsr:@logtape/logtape@0.12": "0.12.3",
     "jsr:@logtape/logtape@0.12.3": "0.12.3",
     "jsr:@std/assert@*": "1.0.18",
-    "jsr:@std/assert@1": "1.0.18",
+    "jsr:@std/assert@1": "1.0.19",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
     "jsr:@std/dotenv@~0.225.5": "0.225.6",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
@@ -20,9 +20,9 @@
     "jsr:@std/fmt@^1.0.8": "1.0.9",
     "jsr:@std/fs@^1.0.19": "1.0.23",
     "jsr:@std/html@^1.0.5": "1.0.5",
-    "jsr:@std/http@^1.0.21": "1.0.24",
+    "jsr:@std/http@^1.0.21": "1.0.25",
     "jsr:@std/internal@^1.0.12": "1.0.12",
-    "jsr:@std/json@^1.0.2": "1.0.2",
+    "jsr:@std/json@^1.0.2": "1.0.3",
     "jsr:@std/jsonc@^1.0.2": "1.0.2",
     "jsr:@std/media-types@^1.1.0": "1.1.0",
     "jsr:@std/path@1": "1.1.4",
@@ -36,6 +36,9 @@
     "npm:@mjackson/node-fetch-server@0.7": "0.7.0",
     "npm:@opentelemetry/api@1": "1.9.0",
     "npm:@opentelemetry/api@^1.9.0": "1.9.0",
+    "npm:@opentelemetry/core@2": "2.2.0_@opentelemetry+api@1.9.0",
+    "npm:@opentelemetry/resources@2": "2.2.0_@opentelemetry+api@1.9.0",
+    "npm:@opentelemetry/sdk-metrics@2": "2.2.0_@opentelemetry+api@1.9.0",
     "npm:@preact/signals@^2.2.1": "2.7.0_preact@10.28.3",
     "npm:@preact/signals@^2.5.0": "2.7.0_preact@10.28.3",
     "npm:@prefresh/vite@^2.4.8": "2.4.11_preact@10.28.3_vite@7.3.1__@types+node@22.19.9_@types+node@22.19.9",
@@ -74,6 +77,9 @@
     },
     "@deno/loader@0.3.12": {
       "integrity": "52d3b3be0a32192efe07b0a4f1b3047077d2f2bba0f693e32f47421507f9fdb6"
+    },
+    "@deno/loader@0.3.14": {
+      "integrity": "97bc63a6cc2d27a60bcdc953f588c5213331d866d44212eebb24cebfb9b011ca"
     },
     "@fresh/build-id@1.0.1": {
       "integrity": "12a2ec25fd52ae9ec68c26848a5696cd1c9b537f7c983c7e56e4fb1e7e816c20",
@@ -131,6 +137,12 @@
         "jsr:@std/internal"
       ]
     },
+    "@std/assert@1.0.19": {
+      "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
     },
@@ -158,11 +170,20 @@
         "jsr:@std/encoding"
       ]
     },
+    "@std/http@1.0.25": {
+      "integrity": "577b4252290af1097132812b339fffdd55fb0f4aeb98ff11bdbf67998aa17193",
+      "dependencies": [
+        "jsr:@std/encoding"
+      ]
+    },
     "@std/internal@1.0.12": {
       "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
     },
     "@std/json@1.0.2": {
       "integrity": "d9e5497801c15fb679f55a2c01c7794ad7a5dfda4dd1bebab5e409cb5e0d34d4"
+    },
+    "@std/json@1.0.3": {
+      "integrity": "97d5710996293a027b7aa5f0d1f4fa29f246f269e6b5597e08807613f37d426c"
     },
     "@std/jsonc@1.0.2": {
       "integrity": "909605dae3af22bd75b1cbda8d64a32cf1fd2cf6efa3f9e224aba6d22c0f44c7",
@@ -970,6 +991,32 @@
     },
     "@opentelemetry/api@1.9.0": {
       "integrity": "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="
+    },
+    "@opentelemetry/core@2.2.0_@opentelemetry+api@1.9.0": {
+      "integrity": "sha512-FuabnnUm8LflnieVxs6eP7Z383hgQU4W1e3KJS6aOG3RxWxcHyBxH8fDMHNgu/gFx/M2jvTOW/4/PHhLz6bjWw==",
+      "dependencies": [
+        "@opentelemetry/api",
+        "@opentelemetry/semantic-conventions"
+      ]
+    },
+    "@opentelemetry/resources@2.2.0_@opentelemetry+api@1.9.0": {
+      "integrity": "sha512-1pNQf/JazQTMA0BiO5NINUzH0cbLbbl7mntLa4aJNmCCXSj0q03T5ZXXL0zw4G55TjdL9Tz32cznGClf+8zr5A==",
+      "dependencies": [
+        "@opentelemetry/api",
+        "@opentelemetry/core",
+        "@opentelemetry/semantic-conventions"
+      ]
+    },
+    "@opentelemetry/sdk-metrics@2.2.0_@opentelemetry+api@1.9.0": {
+      "integrity": "sha512-G5KYP6+VJMZzpGipQw7Giif48h6SGQ2PFKEYCybeXJsOCB4fp8azqMAAzE5lnnHK3ZVwYQrgmFbsUJO/zOnwGw==",
+      "dependencies": [
+        "@opentelemetry/api",
+        "@opentelemetry/core",
+        "@opentelemetry/resources"
+      ]
+    },
+    "@opentelemetry/semantic-conventions@1.40.0": {
+      "integrity": "sha512-cifvXDhcqMwwTlTK04GBNeIe7yyo28Mfby85QXFe1Yk8nmi36Ab/5UQwptOx84SsoGNRg+EVSjwzfSZMy6pmlw=="
     },
     "@preact/signals-core@1.13.0": {
       "integrity": "sha512-slT6XeTCAbdql61GVLlGU4x7XHI7kCZV5Um5uhE4zLX4ApgiiXc0UYFvVOKq06xcovzp7p+61l68oPi563ARKg=="
@@ -2236,6 +2283,9 @@
       "jsr:@logtape/logtape@0.12",
       "jsr:@std/assert@1",
       "npm:@opentelemetry/api@1",
+      "npm:@opentelemetry/core@2",
+      "npm:@opentelemetry/resources@2",
+      "npm:@opentelemetry/sdk-metrics@2",
       "npm:@preact/signals@^2.5.0",
       "npm:@prisma/adapter-pg@7",
       "npm:@prisma/client@7",

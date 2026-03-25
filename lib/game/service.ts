@@ -1,6 +1,6 @@
 import { getLogger } from "@logtape/logtape";
-import { SpanStatusCode } from "npm:@opentelemetry/api@1";
-import type { Tracer } from "npm:@opentelemetry/api@1";
+import { SpanStatusCode } from "@opentelemetry/api";
+import type { Tracer } from "@opentelemetry/api";
 import type { EventLog, GameEngine } from "@scoundrel/engine";
 import { AppError } from "@scoundrel/errors";
 import { isPlayerNameAllowed } from "@scoundrel/validation";

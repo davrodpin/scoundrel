@@ -10,6 +10,7 @@ until the dungeon runs out or you do.
 <a href="https://www.buymeacoffee.com/davpin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy me a coffee" height="45" width="163"></a>
 
 Full rules:
+
 - [https://scoundrel.gg/how-to-play](https://scoundrel.gg/how-to-play)
 - [docs/SCOUNDREL.md](docs/SCOUNDREL.md)
 
