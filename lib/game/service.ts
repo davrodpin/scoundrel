@@ -1,6 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import { SpanStatusCode } from "@opentelemetry/api";
-import type { Tracer } from "@opentelemetry/api";
+import type { Counter, Meter, Tracer, UpDownCounter } from "@opentelemetry/api";
 import type { EventLog, GameEngine } from "@scoundrel/engine";
 import { AppError } from "@scoundrel/errors";
 import { isPlayerNameAllowed } from "@scoundrel/validation";
@@ -31,8 +31,33 @@ export function createGameService(
   repository: GameRepository,
   config: GameServiceConfig,
   tracer: Tracer,
+  getMeter?: () => Meter | undefined,
 ): GameService {
   const logger = getLogger(["scoundrel", "game"]);
+
+  let gamesInProgress: UpDownCounter | undefined;
+  let gamesCompleted: Counter | undefined;
+
+  function getGameInstruments(): {
+    inProgress: UpDownCounter;
+    completed: Counter;
+  } | null {
+    if (!gamesInProgress) {
+      const meter = getMeter?.();
+      if (!meter) return null;
+      gamesInProgress = meter.createUpDownCounter("game.in_progress", {
+        description: "Number of games currently in progress",
+        unit: "{game}",
+      });
+      gamesCompleted = meter.createCounter("game.completed", {
+        description: "Number of completed games",
+        unit: "{game}",
+      });
+    }
+    return gamesCompleted
+      ? { inProgress: gamesInProgress!, completed: gamesCompleted }
+      : null;
+  }
 
   function withSpan<T>(
     name: string,
@@ -67,6 +92,7 @@ export function createGameService(
         "player.name": playerName,
       }, async () => {
         await repository.createGame(state.gameId, playerName, createdEvent);
+        getGameInstruments()?.inProgress.add(1);
         logger.info("Game created", { gameId: state.gameId, playerName });
         return toGameView(state, playerName);
       });
@@ -165,6 +191,8 @@ export function createGameService(
                         new Date(),
                       ),
                     ]);
+                    getGameInstruments()?.completed.add(1);
+                    getGameInstruments()?.inProgress.add(-1);
                     logger.info("Game completed", { gameId, score });
                     logger.info("Leaderboard entry created", {
                       gameId,
@@ -219,6 +247,8 @@ export function createGameService(
                       new Date(),
                     ),
                   ]);
+                  getGameInstruments()?.completed.add(1);
+                  getGameInstruments()?.inProgress.add(-1);
                   logger.info("Game completed", { gameId, score });
                   logger.info("Leaderboard entry created", { gameId, score });
                 } catch (err) {
