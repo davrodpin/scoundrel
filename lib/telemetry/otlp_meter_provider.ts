@@ -20,8 +20,10 @@ export function createGrafanaMeterProvider(
 
 /**
  * Triggers an immediate collection and export of all accumulated metrics.
- * Fire-and-forget — does not block the caller.
+ * Awaiting the returned promise ensures the export completes before the
+ * caller continues — important on Deno Deploy where isolates may be frozen
+ * as soon as the response is sent.
  */
-export function flushMetrics(): void {
-  activeMeterProvider?.forceFlush();
+export function flushMetrics(): Promise<void> {
+  return activeMeterProvider?.forceFlush() ?? Promise.resolve();
 }

@@ -32,6 +32,9 @@ if (config.grafana) {
     },
   );
   metrics.setGlobalMeterProvider(meterProvider);
+  console.info("[telemetry] Grafana MeterProvider registered");
+} else {
+  console.info("[telemetry] Grafana config not found, metrics disabled");
 }
 
 await configure({

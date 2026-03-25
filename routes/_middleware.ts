@@ -170,7 +170,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     const { counter, histogram } = getInstruments();
     counter.add(1, metricAttrs);
     histogram.record(duration, metricAttrs);
-    flushMetrics();
+    await flushMetrics();
     logger.error("Request", {
       method,
       path,
@@ -196,7 +196,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   const { counter, histogram } = getInstruments();
   counter.add(1, metricAttrs);
   histogram.record(duration, metricAttrs);
-  flushMetrics();
+  await flushMetrics();
 
   const data = {
     method,
