@@ -2,7 +2,7 @@ import { assertEquals } from "@std/assert";
 import { createPrismaGameRepository } from "./repository.ts";
 import type { PrismaClient } from "../generated/prisma/client.ts";
 import { createSpyTracer } from "../telemetry/testing.ts";
-import { SpanStatusCode } from "npm:@opentelemetry/api@1";
+import { SpanStatusCode } from "@opentelemetry/api";
 
 // deno-lint-ignore no-explicit-any
 type MockPrisma = Record<string, any>;

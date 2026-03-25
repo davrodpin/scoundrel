@@ -25,5 +25,9 @@ export function createGrafanaMeterProvider(
  * as soon as the response is sent.
  */
 export function flushMetrics(): Promise<void> {
-  return activeMeterProvider?.forceFlush() ?? Promise.resolve();
+  if (!activeMeterProvider) {
+    console.debug("[otlp] flushMetrics called but no active MeterProvider");
+    return Promise.resolve();
+  }
+  return activeMeterProvider.forceFlush();
 }

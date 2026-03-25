@@ -29,7 +29,12 @@ export class ImmediateExportingMetricReader extends MetricReader {
 
   protected async onForceFlush(): Promise<void> {
     const { resourceMetrics } = await this.collect();
-    if (resourceMetrics.scopeMetrics.length === 0) return;
+    if (resourceMetrics.scopeMetrics.length === 0) {
+      console.debug(
+        "[otlp] collect() returned 0 scope metrics, skipping export",
+      );
+      return;
+    }
     await new Promise<void>((resolve) => {
       this.#exporter.export(resourceMetrics, () => resolve());
     });
