@@ -64,6 +64,9 @@ const pool = new pg.Pool({
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
+// Eagerly establish one connection so the first real request doesn't pay
+// the ~500ms cold-connect cost on a fresh Deno Deploy isolate.
+pool.connect().then((client) => client.release()).catch(() => {});
 const engine = createGameEngine();
 const repository = createPrismaGameRepository(prisma, tracer);
 const gameService = createGameService(
@@ -179,7 +182,10 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     if (instruments) {
       instruments.counter.add(1, metricAttrs);
       instruments.histogram.record(duration, metricAttrs);
-      await flushMetrics();
+      // Fire-and-forget: don't block the response on the ~550ms Grafana POST.
+      // Metrics are best-effort; the in-flight fetch will usually complete
+      // before Deno Deploy freezes the isolate.
+      flushMetrics().catch(() => {});
     }
     logger.error("Request", {
       method,
@@ -206,7 +212,10 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   if (instruments) {
     instruments.counter.add(1, metricAttrs);
     instruments.histogram.record(duration, metricAttrs);
-    await flushMetrics();
+    // Fire-and-forget: don't block the response on the ~550ms Grafana POST.
+    // Metrics are best-effort; the in-flight fetch will usually complete
+    // before Deno Deploy freezes the isolate.
+    flushMetrics().catch(() => {});
   }
 
   const data = {
