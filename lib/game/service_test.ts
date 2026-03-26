@@ -1,4 +1,5 @@
 import { assertEquals, assertLess, assertRejects } from "@std/assert";
+import { configure, type LogRecord } from "@logtape/logtape";
 import { AppError } from "@scoundrel/errors";
 import { createSpyTracer } from "../telemetry/testing.ts";
 import type {
@@ -1089,5 +1090,427 @@ Deno.test(
       DELAY_MS * 2 - 5,
       `expected parallel writes (~${DELAY_MS}ms) but elapsed=${elapsed}ms`,
     );
+  },
+);
+
+// ---------------------------------------------------------------------------
+// choose_card action log enrichment tests
+// ---------------------------------------------------------------------------
+
+async function captureGameLogs(
+  fn: () => Promise<unknown>,
+): Promise<LogRecord[]> {
+  const records: LogRecord[] = [];
+  await configure({
+    sinks: { capture: (r) => records.push(r) },
+    loggers: [
+      {
+        category: ["scoundrel", "game"],
+        lowestLevel: "debug",
+        sinks: ["capture"],
+      },
+    ],
+    reset: true,
+  });
+  await fn();
+  await configure({ sinks: {}, loggers: [], reset: true });
+  return records;
+}
+
+function makeChoosingState(
+  gameId: string,
+  overrides: Partial<GameState> = {},
+): GameState {
+  return {
+    gameId,
+    health: 20,
+    dungeon: [],
+    room: [],
+    discard: [],
+    equippedWeapon: null,
+    phase: { kind: "choosing", cardsChosen: 0, potionUsedThisTurn: false },
+    lastRoomAvoided: false,
+    turnNumber: 1,
+    lastCardPlayed: null,
+    ...overrides,
+  };
+}
+
+function makeChoosingStoredEvent(
+  _gameId: string,
+  state: GameState,
+): StoredEvent {
+  return {
+    sequence: 1,
+    payload: makeActionAppliedEvent(
+      1,
+      { type: "enter_room" } as GameAction,
+      state,
+    ),
+  };
+}
+
+Deno.test(
+  "submitAction choose_card monster (barehanded) — logs actionKind, card, damage",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const monsterCard = { suit: "clubs" as const, rank: 7 as const };
+    const stateBefore = makeChoosingState(gameId, {
+      room: [monsterCard],
+      health: 20,
+    });
+    const stateAfter = makeChoosingState(gameId, {
+      room: [],
+      health: 13,
+      lastCardPlayed: monsterCard,
+    });
+
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [makeChoosingStoredEvent(gameId, stateBefore)]);
+
+    const engine = createMockEngine({
+      getState: () => stateBefore,
+      submitAction: (_log, _action) => {
+        const event = makeActionAppliedEvent(
+          2,
+          { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+          stateAfter,
+        );
+        return {
+          ok: true,
+          state: stateAfter,
+          event,
+          eventLog: { gameId, events: [] },
+        };
+      },
+    });
+
+    const service = createGameService(
+      engine,
+      createMockRepository(storedEvents),
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const records = await captureGameLogs(() =>
+      service.submitAction(gameId, {
+        type: "choose_card",
+        cardIndex: 0,
+        fightWith: "barehanded",
+      })
+    );
+
+    const actionLog = records.find(
+      (r) => String(r.rawMessage) === "Action submitted",
+    );
+    assertEquals(actionLog?.properties.actionType, "choose_card");
+    assertEquals(actionLog?.properties.actionKind, "combat_barehanded");
+    assertEquals(actionLog?.properties.cardType, "monster");
+    assertEquals(actionLog?.properties.cardSuit, "clubs");
+    assertEquals(actionLog?.properties.cardRank, 7);
+    assertEquals(actionLog?.properties.fightWith, "barehanded");
+    assertEquals(actionLog?.properties.damage, 7);
+  },
+);
+
+Deno.test(
+  "submitAction choose_card monster (with weapon) — logs actionKind, card, weapon, damage",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const monsterCard = { suit: "spades" as const, rank: 11 as const };
+    const weaponCard = { suit: "diamonds" as const, rank: 5 as const };
+    const stateBefore = makeChoosingState(gameId, {
+      room: [monsterCard],
+      health: 20,
+      equippedWeapon: { card: weaponCard, slainMonsters: [] },
+    });
+    const stateAfter = makeChoosingState(gameId, {
+      room: [],
+      health: 14,
+      lastCardPlayed: monsterCard,
+      equippedWeapon: { card: weaponCard, slainMonsters: [monsterCard] },
+    });
+
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [makeChoosingStoredEvent(gameId, stateBefore)]);
+
+    const engine = createMockEngine({
+      getState: () => stateBefore,
+      submitAction: (_log, _action) => {
+        const event = makeActionAppliedEvent(
+          2,
+          { type: "choose_card", cardIndex: 0, fightWith: "weapon" },
+          stateAfter,
+        );
+        return {
+          ok: true,
+          state: stateAfter,
+          event,
+          eventLog: { gameId, events: [] },
+        };
+      },
+    });
+
+    const service = createGameService(
+      engine,
+      createMockRepository(storedEvents),
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const records = await captureGameLogs(() =>
+      service.submitAction(gameId, {
+        type: "choose_card",
+        cardIndex: 0,
+        fightWith: "weapon",
+      })
+    );
+
+    const actionLog = records.find(
+      (r) => String(r.rawMessage) === "Action submitted",
+    );
+    assertEquals(actionLog?.properties.actionKind, "combat_with_weapon");
+    assertEquals(actionLog?.properties.cardType, "monster");
+    assertEquals(actionLog?.properties.cardSuit, "spades");
+    assertEquals(actionLog?.properties.cardRank, 11);
+    assertEquals(actionLog?.properties.fightWith, "weapon");
+    assertEquals(actionLog?.properties.damage, 6);
+    assertEquals(actionLog?.properties.weaponSuit, "diamonds");
+    assertEquals(actionLog?.properties.weaponRank, 5);
+  },
+);
+
+Deno.test(
+  "submitAction choose_card weapon — logs actionKind equip_weapon",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const weaponCard = { suit: "diamonds" as const, rank: 8 as const };
+    const stateBefore = makeChoosingState(gameId, {
+      room: [weaponCard],
+      health: 20,
+    });
+    const stateAfter = makeChoosingState(gameId, {
+      room: [],
+      health: 20,
+      lastCardPlayed: weaponCard,
+      equippedWeapon: { card: weaponCard, slainMonsters: [] },
+    });
+
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [makeChoosingStoredEvent(gameId, stateBefore)]);
+
+    const engine = createMockEngine({
+      getState: () => stateBefore,
+      submitAction: (_log, _action) => {
+        const event = makeActionAppliedEvent(
+          2,
+          { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+          stateAfter,
+        );
+        return {
+          ok: true,
+          state: stateAfter,
+          event,
+          eventLog: { gameId, events: [] },
+        };
+      },
+    });
+
+    const service = createGameService(
+      engine,
+      createMockRepository(storedEvents),
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const records = await captureGameLogs(() =>
+      service.submitAction(gameId, {
+        type: "choose_card",
+        cardIndex: 0,
+        fightWith: "barehanded",
+      })
+    );
+
+    const actionLog = records.find(
+      (r) => String(r.rawMessage) === "Action submitted",
+    );
+    assertEquals(actionLog?.properties.actionKind, "equip_weapon");
+    assertEquals(actionLog?.properties.cardType, "weapon");
+    assertEquals(actionLog?.properties.cardSuit, "diamonds");
+    assertEquals(actionLog?.properties.cardRank, 8);
+  },
+);
+
+Deno.test(
+  "submitAction choose_card potion — logs actionKind drink_potion and healthHealed",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const potionCard = { suit: "hearts" as const, rank: 5 as const };
+    const stateBefore = makeChoosingState(gameId, {
+      room: [potionCard],
+      health: 15,
+    });
+    const stateAfter = makeChoosingState(gameId, {
+      room: [],
+      health: 20,
+      lastCardPlayed: potionCard,
+    });
+
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [makeChoosingStoredEvent(gameId, stateBefore)]);
+
+    const engine = createMockEngine({
+      getState: () => stateBefore,
+      submitAction: (_log, _action) => {
+        const event = makeActionAppliedEvent(
+          2,
+          { type: "choose_card", cardIndex: 0, fightWith: "barehanded" },
+          stateAfter,
+        );
+        return {
+          ok: true,
+          state: stateAfter,
+          event,
+          eventLog: { gameId, events: [] },
+        };
+      },
+    });
+
+    const service = createGameService(
+      engine,
+      createMockRepository(storedEvents),
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const records = await captureGameLogs(() =>
+      service.submitAction(gameId, {
+        type: "choose_card",
+        cardIndex: 0,
+        fightWith: "barehanded",
+      })
+    );
+
+    const actionLog = records.find(
+      (r) => String(r.rawMessage) === "Action submitted",
+    );
+    assertEquals(actionLog?.properties.actionKind, "drink_potion");
+    assertEquals(actionLog?.properties.cardType, "potion");
+    assertEquals(actionLog?.properties.cardSuit, "hearts");
+    assertEquals(actionLog?.properties.cardRank, 5);
+    assertEquals(actionLog?.properties.healthHealed, 5);
+  },
+);
+
+Deno.test(
+  "submitAction choose_card (auto-enter-room) — logs enriched card data",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const monsterCard = { suit: "clubs" as const, rank: 5 as const };
+    const roomReadyState: GameState = {
+      ...makeInitialState(gameId),
+      room: [monsterCard],
+      dungeon: [],
+      phase: { kind: "room_ready" },
+    };
+    const choosingState = makeChoosingState(gameId, {
+      room: [monsterCard],
+      health: 20,
+    });
+    const stateAfter = makeChoosingState(gameId, {
+      room: [],
+      health: 15,
+      lastCardPlayed: monsterCard,
+    });
+
+    const createdEvent = makeCreatedEvent(roomReadyState);
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [{ sequence: 0, payload: createdEvent }]);
+
+    let submitCallCount = 0;
+    const engine = createMockEngine({
+      getState: (_log) => roomReadyState,
+      submitAction: (_log, _action) => {
+        submitCallCount++;
+        if (submitCallCount === 1) {
+          // enter_room
+          const event = makeActionAppliedEvent(
+            1,
+            { type: "enter_room" },
+            choosingState,
+          );
+          return {
+            ok: true,
+            state: choosingState,
+            event,
+            eventLog: { gameId, events: [createdEvent, event] },
+          };
+        }
+        // choose_card
+        const event = makeActionAppliedEvent(2, {
+          type: "choose_card",
+          cardIndex: 0,
+          fightWith: "barehanded",
+        }, stateAfter);
+        return {
+          ok: true,
+          state: stateAfter,
+          event,
+          eventLog: { gameId, events: [] },
+        };
+      },
+    });
+
+    const service = createGameService(
+      engine,
+      createMockRepository(storedEvents),
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const records = await captureGameLogs(() =>
+      service.submitAction(gameId, {
+        type: "choose_card",
+        cardIndex: 0,
+        fightWith: "barehanded",
+      })
+    );
+
+    const actionLog = records.find(
+      (r) => String(r.rawMessage) === "Action submitted",
+    );
+    assertEquals(actionLog?.properties.actionKind, "combat_barehanded");
+    assertEquals(actionLog?.properties.cardType, "monster");
+    assertEquals(actionLog?.properties.cardSuit, "clubs");
+    assertEquals(actionLog?.properties.cardRank, 5);
+    assertEquals(actionLog?.properties.damage, 5);
+  },
+);
+
+Deno.test(
+  "submitAction non-choose_card action — logs without enriched card fields",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const createdEvent = makeCreatedEvent(makeInitialState(gameId));
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [{ sequence: 0, payload: createdEvent }]);
+
+    const service = createGameService(
+      createMockEngine(),
+      createMockRepository(storedEvents),
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const records = await captureGameLogs(() =>
+      service.submitAction(gameId, { type: "draw_card" })
+    );
+
+    const actionLog = records.find(
+      (r) => String(r.rawMessage) === "Action submitted",
+    );
+    assertEquals(actionLog?.properties.actionType, "draw_card");
+    assertEquals(actionLog?.properties.actionKind, undefined);
+    assertEquals(actionLog?.properties.cardType, undefined);
   },
 );
