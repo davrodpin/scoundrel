@@ -275,7 +275,7 @@ export function createGameService(
 
           const extraLogData = isChooseCardAction(action)
             ? buildChooseCardLogData(currentState, newState, action)
-            : {};
+            : { actionKind: actionType };
           logger.info("Action submitted", {
             gameId,
             actionType,

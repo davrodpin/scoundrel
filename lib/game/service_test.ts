@@ -1510,7 +1510,120 @@ Deno.test(
       (r) => String(r.rawMessage) === "Action submitted",
     );
     assertEquals(actionLog?.properties.actionType, "draw_card");
-    assertEquals(actionLog?.properties.actionKind, undefined);
+    assertEquals(actionLog?.properties.actionKind, "draw_card");
     assertEquals(actionLog?.properties.cardType, undefined);
+  },
+);
+
+Deno.test(
+  "submitAction avoid_room — logs actionKind avoid_room",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const roomReadyState: GameState = {
+      ...makeInitialState(gameId),
+      room: [
+        { suit: "clubs", rank: 5 },
+        { suit: "diamonds", rank: 3 },
+        { suit: "hearts", rank: 7 },
+        { suit: "spades", rank: 10 },
+      ],
+      phase: { kind: "room_ready" },
+    };
+    const createdEvent = makeCreatedEvent(roomReadyState);
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [{ sequence: 0, payload: createdEvent }]);
+
+    const engine = createMockEngine({
+      getState: () => roomReadyState,
+      submitAction: (_log, action) => {
+        const afterState: GameState = {
+          ...roomReadyState,
+          room: [],
+          phase: { kind: "drawing" },
+        };
+        const event = makeActionAppliedEvent(1, action, afterState);
+        return {
+          ok: true,
+          state: afterState,
+          event,
+          eventLog: { gameId, events: [createdEvent, event] },
+        };
+      },
+    });
+
+    const service = createGameService(
+      engine,
+      createMockRepository(storedEvents),
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const records = await captureGameLogs(() =>
+      service.submitAction(gameId, { type: "avoid_room" })
+    );
+
+    const actionLog = records.find(
+      (r) => String(r.rawMessage) === "Action submitted",
+    );
+    assertEquals(actionLog?.properties.actionType, "avoid_room");
+    assertEquals(actionLog?.properties.actionKind, "avoid_room");
+  },
+);
+
+Deno.test(
+  "submitAction enter_room — logs actionKind enter_room",
+  async () => {
+    const gameId = "00000000-0000-0000-0000-000000000001";
+    const roomReadyState: GameState = {
+      ...makeInitialState(gameId),
+      room: [
+        { suit: "clubs", rank: 5 },
+        { suit: "diamonds", rank: 3 },
+        { suit: "hearts", rank: 7 },
+        { suit: "spades", rank: 10 },
+      ],
+      phase: { kind: "room_ready" },
+    };
+    const createdEvent = makeCreatedEvent(roomReadyState);
+    const storedEvents = new Map<string, StoredEvent[]>();
+    storedEvents.set(gameId, [{ sequence: 0, payload: createdEvent }]);
+
+    const engine = createMockEngine({
+      getState: () => roomReadyState,
+      submitAction: (_log, action) => {
+        const choosingState: GameState = {
+          ...roomReadyState,
+          phase: {
+            kind: "choosing",
+            cardsChosen: 0,
+            potionUsedThisTurn: false,
+          },
+        };
+        const event = makeActionAppliedEvent(1, action, choosingState);
+        return {
+          ok: true,
+          state: choosingState,
+          event,
+          eventLog: { gameId, events: [createdEvent, event] },
+        };
+      },
+    });
+
+    const service = createGameService(
+      engine,
+      createMockRepository(storedEvents),
+      TEST_CONFIG,
+      createSpyTracer().tracer,
+    );
+
+    const records = await captureGameLogs(() =>
+      service.submitAction(gameId, { type: "enter_room" })
+    );
+
+    const actionLog = records.find(
+      (r) => String(r.rawMessage) === "Action submitted",
+    );
+    assertEquals(actionLog?.properties.actionType, "enter_room");
+    assertEquals(actionLog?.properties.actionKind, "enter_room");
   },
 );
