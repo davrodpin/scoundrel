@@ -35,8 +35,8 @@ import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
 import {
   isPending,
   isPendingAvoidRoom,
-  pendingActionLabel,
   type PendingAction,
+  pendingActionLabel,
 } from "./pending_action.ts";
 import {
   getInitialDeckId,
