@@ -1,3 +1,5 @@
+import type { Card } from "@scoundrel/engine";
+import { getCardType } from "@scoundrel/engine";
 import { AppError } from "@scoundrel/errors";
 
 const BODY_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -94,5 +96,43 @@ export async function captureRequestBody(
     return await req.clone().json();
   } catch {
     return null;
+  }
+}
+
+export function resolveActionKind(
+  body: unknown,
+  lastCardPlayed: Card | null,
+): string | undefined {
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    !("type" in body) ||
+    typeof (body as { type: unknown }).type !== "string"
+  ) {
+    return undefined;
+  }
+
+  const actionType = (body as { type: string }).type;
+
+  if (actionType !== "choose_card") {
+    return actionType;
+  }
+
+  if (!lastCardPlayed) {
+    return "choose_card";
+  }
+
+  const cardType = getCardType(lastCardPlayed);
+  switch (cardType) {
+    case "monster": {
+      const fightWith = (body as { fightWith?: string }).fightWith;
+      return fightWith === "weapon"
+        ? "combat_with_weapon"
+        : "combat_barehanded";
+    }
+    case "weapon":
+      return "equip_weapon";
+    case "potion":
+      return "drink_potion";
   }
 }

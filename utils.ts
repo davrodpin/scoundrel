@@ -9,6 +9,7 @@ export interface State {
   config: AppConfig;
   gameService: GameService;
   feedbackService: FeedbackService | null;
+  actionKind?: string;
 }
 
 export const define = createDefine<State>();

@@ -172,12 +172,15 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   } catch (error) {
     const duration = Date.now() - start;
     const status = extractErrorStatus(error);
-    const metricAttrs = {
+    const metricAttrs: Record<string, string | number> = {
       service_name: "scoundrel",
       "http.request.method": method,
       "http.route": normalizePath(path),
       "http.response.status_code": status,
     };
+    if (ctx.state.actionKind) {
+      metricAttrs["action.kind"] = ctx.state.actionKind;
+    }
     const instruments = getInstruments();
     if (instruments) {
       instruments.counter.add(1, metricAttrs);
@@ -202,12 +205,15 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   }
   const duration = Date.now() - start;
   const status = response.status;
-  const metricAttrs = {
+  const metricAttrs: Record<string, string | number> = {
     service_name: "scoundrel",
     "http.request.method": method,
     "http.route": normalizePath(path),
     "http.response.status_code": status,
   };
+  if (ctx.state.actionKind) {
+    metricAttrs["action.kind"] = ctx.state.actionKind;
+  }
   const instruments = getInstruments();
   if (instruments) {
     instruments.counter.add(1, metricAttrs);
