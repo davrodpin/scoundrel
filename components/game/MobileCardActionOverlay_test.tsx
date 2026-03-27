@@ -137,6 +137,67 @@ Deno.test("MobileCardActionOverlay - renders card at larger preview size", () =>
   assertEquals(html.includes("w-[clamp(160px,45vw,260px)]"), true);
 });
 
+Deno.test("MobileCardActionOverlay - hides cancel button when pendingLabel is set", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+      pendingLabel="Striking with steel..."
+    />,
+  );
+  assertEquals(html.includes("Cancel"), false);
+});
+
+Deno.test("MobileCardActionOverlay - shows pending label when pendingLabel is set", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+      pendingLabel="Fighting barehanded..."
+    />,
+  );
+  assertEquals(html.includes("Fighting barehanded..."), true);
+});
+
+Deno.test("MobileCardActionOverlay - shows cancel button when pendingLabel is null", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+      pendingLabel={null}
+    />,
+  );
+  assertEquals(html.includes("Cancel"), true);
+});
+
+Deno.test("MobileCardActionOverlay - shows animate-pulse on pending label", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+      pendingLabel="Striking with steel..."
+    />,
+  );
+  assertEquals(html.includes("animate-pulse"), true);
+});
+
+Deno.test("MobileCardActionOverlay - disables background click when pending", () => {
+  const html = render(
+    <MobileCardActionOverlay
+      card={monsterCard}
+      actions={makeActions()}
+      onCancel={noop}
+      pendingLabel="Striking with steel..."
+    />,
+  );
+  // The outer div should have pointer-events-none to prevent dismissal
+  assertEquals(html.includes("pointer-events-none"), true);
+});
+
 Deno.test("MobileCardActionOverlay - overlay is vertically centered", () => {
   const html = render(
     <MobileCardActionOverlay

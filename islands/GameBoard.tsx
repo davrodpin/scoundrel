@@ -35,6 +35,7 @@ import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
 import {
   isPending,
   isPendingAvoidRoom,
+  pendingActionLabel,
   type PendingAction,
 } from "./pending_action.ts";
 import {
@@ -861,6 +862,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             focusedCardIndex.value = null;
           }}
           deck={activeDeck}
+          pendingLabel={pendingActionLabel(pendingAction.value)}
         />
       )}
 

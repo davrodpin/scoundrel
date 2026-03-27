@@ -8,6 +8,7 @@ type MobileCardActionOverlayProps = {
   actions: HealthDisplayActions;
   onCancel: () => void;
   deck?: DeckInfo;
+  pendingLabel?: string | null;
 };
 
 type OverlayButtonDef = {
@@ -19,8 +20,9 @@ type OverlayButtonDef = {
 };
 
 export function MobileCardActionOverlay(
-  { card, actions, onCancel, deck }: MobileCardActionOverlayProps,
+  { card, actions, onCancel, deck, pendingLabel }: MobileCardActionOverlayProps,
 ) {
+  const isPending = !!pendingLabel;
   const buttonDefs: OverlayButtonDef[] = [
     {
       label: "Fight w/ Weapon",
@@ -60,8 +62,8 @@ export function MobileCardActionOverlay(
 
   return (
     <div
-      class="fixed inset-0 z-40 overflow-y-auto md:hidden"
-      onClick={onCancel}
+      class={`fixed inset-0 z-40 overflow-y-auto md:hidden${isPending ? " pointer-events-none" : ""}`}
+      onClick={isPending ? undefined : onCancel}
     >
       <div class="flex min-h-full items-center justify-center p-4 bg-shadow/80">
         <div
@@ -94,14 +96,22 @@ export function MobileCardActionOverlay(
             ))}
           </div>
 
-          {/* Cancel */}
-          <button
-            type="button"
-            class="w-full px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface border-dungeon-border text-parchment hover:border-torch-amber"
-            onClick={onCancel}
-          >
-            Cancel
-          </button>
+          {/* Pending label or Cancel */}
+          {isPending
+            ? (
+              <div class="w-full px-4 py-1.5 text-xs text-center font-body text-torch-amber animate-pulse">
+                {pendingLabel}
+              </div>
+            )
+            : (
+              <button
+                type="button"
+                class="w-full px-4 py-1.5 text-xs rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface border-dungeon-border text-parchment hover:border-torch-amber"
+                onClick={onCancel}
+              >
+                Cancel
+              </button>
+            )}
         </div>
       </div>
     </div>
