@@ -8,37 +8,7 @@ import {
 import { type ExportResult, ExportResultCode } from "@opentelemetry/core";
 import type { HrTime } from "@opentelemetry/api";
 import { getLogger } from "@logtape/logtape";
-
-type OtlpAnyValue =
-  | { stringValue: string }
-  | { intValue: string }
-  | { doubleValue: number }
-  | { boolValue: boolean };
-
-function toOtlpValue(v: unknown): OtlpAnyValue {
-  if (typeof v === "string") return { stringValue: v };
-  if (typeof v === "number") {
-    if (Number.isInteger(v)) return { intValue: String(v) };
-    return { doubleValue: v };
-  }
-  if (typeof v === "boolean") return { boolValue: v };
-  return { stringValue: String(v) };
-}
-
-type OtlpKeyValue = { key: string; value: OtlpAnyValue };
-
-function toOtlpAttributes(
-  attrs: Record<string, unknown>,
-): OtlpKeyValue[] {
-  return Object.entries(attrs)
-    .filter(([, v]) => v != null)
-    .map(([key, value]) => ({
-      key,
-      value: Array.isArray(value)
-        ? { stringValue: JSON.stringify(value) }
-        : toOtlpValue(value),
-    }));
-}
+import { toOtlpAttributes } from "./otlp_helpers.ts";
 
 function hrTimeToNanoString([seconds, nanos]: HrTime): string {
   // Use BigInt to avoid precision loss: current Unix time in nanoseconds

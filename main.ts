@@ -1,8 +1,12 @@
 import { App, staticFiles } from "fresh";
-import { configure, getConsoleSink } from "@logtape/logtape";
+import { configure, getConsoleSink, type Sink } from "@logtape/logtape";
 import { selectFormatter } from "@scoundrel/log-format";
 import { config } from "@scoundrel/config";
-import { createGrafanaMeterProvider } from "@scoundrel/telemetry";
+import {
+  createGrafanaLogProvider,
+  createGrafanaMeterProvider,
+  getGrafanaLogSink,
+} from "@scoundrel/telemetry";
 import { type State } from "./utils.ts";
 
 export { selectFormatter };
@@ -21,32 +25,56 @@ if (config.grafana) {
   const credentials = btoa(
     `${config.grafana.instanceId}:${config.grafana.apiToken}`,
   );
+  const resourceAttributes = {
+    "service.name": "scoundrel",
+    "deployment.environment": config.app.env,
+  };
+  const authHeaders = { Authorization: `Basic ${credentials}` };
+
   // Build a fetch-based MeterProvider so metrics reach Grafana Cloud via OTLP
   // without depending on Node's http module (unavailable on Deno Deploy).
   createGrafanaMeterProvider(
     `${config.grafana.endpoint}/v1/metrics`,
-    { Authorization: `Basic ${credentials}` },
-    {
-      "service.name": "scoundrel",
-      "deployment.environment": config.app.env,
-    },
+    authHeaders,
+    resourceAttributes,
   );
   console.info("[telemetry] Grafana MeterProvider registered");
+
+  // Build a fetch-based log exporter so logs reach Grafana Cloud via OTLP.
+  createGrafanaLogProvider(
+    `${config.grafana.endpoint}/v1/logs`,
+    authHeaders,
+    resourceAttributes,
+  );
+  console.info("[telemetry] Grafana log provider registered");
 } else {
-  console.info("[telemetry] Grafana config not found, metrics disabled");
+  console.info(
+    "[telemetry] Grafana config not found, metrics and logs disabled",
+  );
 }
 
+const sinks: Record<string, Sink> = {
+  console: getConsoleSink({ formatter }),
+};
+
+const grafanaLogSink = getGrafanaLogSink();
+if (grafanaLogSink) {
+  sinks.grafana = grafanaLogSink;
+}
+
+const scoundrelSinks = grafanaLogSink ? ["console", "grafana"] : ["console"];
+
 await configure({
-  sinks: {
-    console: getConsoleSink({ formatter }),
-  },
+  sinks,
   loggers: [
     {
       category: ["scoundrel"],
       lowestLevel: "info",
-      sinks: ["console"],
+      sinks: scoundrelSinks,
     },
     {
+      // Keep meta logs console-only to avoid infinite recursion if the
+      // log exporter itself triggers LogTape meta-logging.
       category: ["logtape", "meta"],
       lowestLevel: "warning",
       sinks: ["console"],
