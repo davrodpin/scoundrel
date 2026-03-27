@@ -1,6 +1,7 @@
 import { GameActionSchema } from "@scoundrel/engine";
 import { AppError } from "@scoundrel/errors";
 import { define } from "@/utils.ts";
+import { resolveActionKind } from "@/routes/_middleware_helpers.ts";
 
 export const handler = define.handlers({
   async POST(ctx) {
@@ -19,6 +20,10 @@ export const handler = define.handlers({
     const view = await ctx.state.gameService.submitAction(
       ctx.params.id,
       parseResult.data,
+    );
+    ctx.state.actionKind = resolveActionKind(
+      parseResult.data,
+      view.lastCardPlayed,
     );
     return Response.json(view);
   },

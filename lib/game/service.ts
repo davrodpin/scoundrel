@@ -1,7 +1,13 @@
 import { getLogger } from "@logtape/logtape";
 import { SpanStatusCode } from "@opentelemetry/api";
 import type { Counter, Meter, Tracer } from "@opentelemetry/api";
-import type { EventLog, GameEngine } from "@scoundrel/engine";
+import type {
+  ChooseCardAction,
+  EventLog,
+  GameEngine,
+  GameState,
+} from "@scoundrel/engine";
+import { getCardType } from "@scoundrel/engine";
 import { AppError } from "@scoundrel/errors";
 import { isPlayerNameAllowed } from "@scoundrel/validation";
 import { z } from "zod";
@@ -139,7 +145,7 @@ export function createGameService(
             isChooseCardAction(action) &&
             currentState.phase.kind === "room_ready"
           ) {
-            const newState = await tracer.startActiveSpan(
+            const { preChooseState, newState } = await tracer.startActiveSpan(
               "game.submitAction.autoEnterRoom",
               async (childSpan) => {
                 try {
@@ -165,7 +171,10 @@ export function createGameService(
                     });
                   }
                   await repository.appendEvent(gameId, chooseResult.event);
-                  return chooseResult.state;
+                  return {
+                    preChooseState: enterResult.state,
+                    newState: chooseResult.state,
+                  };
                 } catch (err) {
                   childSpan.recordException(err as Error);
                   childSpan.setStatus({ code: SpanStatusCode.ERROR });
@@ -174,7 +183,7 @@ export function createGameService(
                   childSpan.end();
                 }
               },
-            ) as Awaited<ReturnType<GameEngine["getState"]>>;
+            ) as { preChooseState: GameState; newState: GameState };
 
             if (newState.phase.kind === "game_over") {
               await tracer.startActiveSpan(
@@ -208,7 +217,11 @@ export function createGameService(
               );
             }
 
-            logger.info("Action submitted", { gameId, actionType });
+            logger.info("Action submitted", {
+              gameId,
+              actionType,
+              ...buildChooseCardLogData(preChooseState, newState, action),
+            });
             span.setAttribute(
               "game.completed",
               newState.phase.kind === "game_over",
@@ -260,7 +273,14 @@ export function createGameService(
             );
           }
 
-          logger.info("Action submitted", { gameId, actionType });
+          const extraLogData = isChooseCardAction(action)
+            ? buildChooseCardLogData(currentState, newState, action)
+            : { actionKind: actionType };
+          logger.info("Action submitted", {
+            gameId,
+            actionType,
+            ...extraLogData,
+          });
           span.setAttribute(
             "game.completed",
             newState.phase.kind === "game_over",
@@ -361,11 +381,53 @@ export function createGameService(
 
 function isChooseCardAction(
   action: unknown,
-): action is { type: "choose_card" } {
+): action is ChooseCardAction {
   return (
     typeof action === "object" &&
     action !== null &&
     "type" in action &&
     (action as { type: string }).type === "choose_card"
   );
+}
+
+function buildChooseCardLogData(
+  stateBefore: GameState,
+  stateAfter: GameState,
+  action: ChooseCardAction,
+): Record<string, string | number | null> {
+  const card = stateBefore.room[action.cardIndex];
+  const cardType = getCardType(card);
+  const base = {
+    cardType,
+    cardSuit: card.suit,
+    cardRank: card.rank,
+  };
+
+  switch (cardType) {
+    case "monster": {
+      const damage = stateBefore.health - stateAfter.health;
+      const weaponFields: Record<string, string | number | null> =
+        action.fightWith === "weapon" && stateBefore.equippedWeapon !== null
+          ? {
+            weaponSuit: stateBefore.equippedWeapon.card.suit,
+            weaponRank: stateBefore.equippedWeapon.card.rank,
+          }
+          : {};
+      return {
+        ...base,
+        actionKind: action.fightWith === "weapon"
+          ? "combat_with_weapon"
+          : "combat_barehanded",
+        fightWith: action.fightWith,
+        damage,
+        ...weaponFields,
+      };
+    }
+    case "weapon":
+      return { ...base, actionKind: "equip_weapon" };
+    case "potion": {
+      const healthHealed = stateAfter.health - stateBefore.health;
+      return { ...base, actionKind: "drink_potion", healthHealed };
+    }
+  }
 }
