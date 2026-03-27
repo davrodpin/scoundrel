@@ -36,6 +36,7 @@ import {
   isPending,
   isPendingAvoidRoom,
   type PendingAction,
+  pendingActionLabel,
 } from "./pending_action.ts";
 import {
   getInitialDeckId,
@@ -861,6 +862,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             focusedCardIndex.value = null;
           }}
           deck={activeDeck}
+          pendingLabel={pendingActionLabel(pendingAction.value)}
         />
       )}
 
