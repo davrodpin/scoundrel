@@ -62,7 +62,9 @@ export function MobileCardActionOverlay(
 
   return (
     <div
-      class={`fixed inset-0 z-40 overflow-y-auto md:hidden${isPending ? " pointer-events-none" : ""}`}
+      class={`fixed inset-0 z-40 overflow-y-auto md:hidden${
+        isPending ? " pointer-events-none" : ""
+      }`}
       onClick={isPending ? undefined : onCancel}
     >
       <div class="flex min-h-full items-center justify-center p-4 bg-shadow/80">
