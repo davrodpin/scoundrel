@@ -5,3 +5,8 @@ export {
   flushMetrics,
   getMeter,
 } from "./otlp_meter_provider.ts";
+export {
+  createGrafanaLogProvider,
+  flushLogs,
+  getGrafanaLogSink,
+} from "./otlp_log_provider.ts";

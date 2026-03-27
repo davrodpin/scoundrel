@@ -10,7 +10,13 @@ import {
 } from "@scoundrel/game-service";
 import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
-import { flushMetrics, getMeter, getTracer, trace } from "@scoundrel/telemetry";
+import {
+  flushLogs,
+  flushMetrics,
+  getMeter,
+  getTracer,
+  trace,
+} from "@scoundrel/telemetry";
 import type { Counter, Histogram } from "@opentelemetry/api";
 import { define } from "@/utils.ts";
 import {
@@ -201,6 +207,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
       userAgent,
       ...extractErrorInfo(error),
     });
+    flushLogs().catch(() => {});
     throw error;
   }
   const duration = Date.now() - start;
@@ -242,6 +249,10 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
   } else {
     logger.info("Request", data);
   }
+
+  // Fire-and-forget: flush logs alongside metrics so they ship before the
+  // Deno Deploy isolate freezes. Both are best-effort.
+  flushLogs().catch(() => {});
 
   return response;
 });
