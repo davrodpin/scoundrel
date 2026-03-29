@@ -5,6 +5,48 @@ import HealthPotionDemo from "./demos/HealthPotionDemo.tsx";
 import RoomFlowDemo from "./demos/RoomFlowDemo.tsx";
 import WeaponDegradationDemo from "./demos/WeaponDegradationDemo.tsx";
 
+const TOC_ENTRIES = [
+  { id: "overview", label: "Overview" },
+  { id: "setup", label: "Setup" },
+  { id: "card-types", label: "Card Types" },
+  { id: "turn-flow", label: "Turn Flow" },
+  { id: "combat", label: "Combat" },
+  { id: "weapon-degradation", label: "Weapon Degradation" },
+  { id: "health-potions", label: "Health Potions" },
+  { id: "room-avoidance", label: "Room Avoidance" },
+  { id: "game-interface", label: "Game Interface" },
+  { id: "keyboard-shortcuts", label: "Keyboard Shortcuts" },
+  { id: "scoring", label: "Scoring" },
+];
+
+function TableOfContents() {
+  return (
+    <nav
+      aria-label="Table of contents"
+      class="bg-dungeon-surface border border-dungeon-border rounded-sm p-4"
+    >
+      <h2 class="font-heading text-torch-amber text-sm uppercase tracking-wider mb-3">
+        Contents
+      </h2>
+      <ol class="space-y-1">
+        {TOC_ENTRIES.map(({ id, label }, i) => (
+          <li key={id} class="flex items-baseline gap-2">
+            <span class="font-body text-parchment-dark/50 text-xs w-5 text-right shrink-0">
+              {i + 1}.
+            </span>
+            <a
+              href={`#${id}`}
+              class="font-body text-sm text-parchment hover:text-torch-amber transition-colors"
+            >
+              {label}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
 function SectionHeading({ children, id }: { children: string; id: string }) {
   return (
     <h2 class="group font-heading text-torch-amber text-2xl border-b border-dungeon-border pb-2 mb-4 flex items-center gap-2">
@@ -58,6 +100,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
       )}
 
       <main class="max-w-3xl mx-auto px-4 py-8 space-y-12">
+        {!embedded && <TableOfContents />}
         {/* Overview */}
         <section id="overview">
           <SectionHeading id="overview">Overview</SectionHeading>
