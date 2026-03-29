@@ -76,10 +76,9 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
           <Prose>
             Scoundrel uses a standard 52-card deck with all Jokers, Red Face
             Cards (J, Q, K of Hearts and Diamonds), and Red Aces removed. This
-            leaves{" "}
-            <strong class="text-torch-amber">44 cards</strong>: 26 monsters, 9
-            weapons, and 9 potions. Shuffle and place the deck face-down — that
-            is your Dungeon. You start with{" "}
+            leaves <strong class="text-torch-amber">44 cards</strong>: 26
+            monsters, 9 weapons, and 9 potions. Shuffle and place the deck
+            face-down — that is your Dungeon. You start with{" "}
             <strong class="text-torch-amber">20 Health</strong>.
           </Prose>
           <div class="flex gap-3 mt-4 flex-wrap items-end">
@@ -148,10 +147,10 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
           <SectionHeading id="turn-flow">Turn Flow</SectionHeading>
           <Prose>
             Flip four cards face-up to form a Room. You must face{" "}
-            <strong class="text-torch-amber">3 of the 4</strong>{" "}
-            cards. The remaining card stays and becomes part of the next room.
-            You may also avoid an entire room (scooping all 4 to the bottom),
-            but never two rooms in a row.
+            <strong class="text-torch-amber">3 of the 4</strong> cards. The
+            remaining card stays and becomes part of the next room. You may also
+            avoid an entire room (scooping all 4 to the bottom), but never two
+            rooms in a row.
           </Prose>
           <div class="mt-4">
             <RoomFlowDemo />
@@ -181,10 +180,10 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
           <Prose>
             Once you use a weapon against a monster, it can only be used against
             monsters with a{" "}
-            <strong class="text-torch-amber">lower or equal rank</strong>{" "}
-            than the last monster it slew. The weapon stays equipped even when
-            it can no longer be used — it might still be useful for weaker
-            monsters later. Remember, you can{" "}
+            <strong class="text-torch-amber">lower or equal rank</strong> than
+            the last monster it slew. The weapon stays equipped even when it can
+            no longer be used — it might still be useful for weaker monsters
+            later. Remember, you can{" "}
             <strong class="text-torch-amber">
               always choose to fight barehanded
             </strong>{" "}
@@ -220,7 +219,8 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
             Dungeon. However, you{" "}
             <strong class="text-blood-red">
               cannot avoid two rooms in a row
-            </strong>. If you avoided the last room, you must face this one.
+            </strong>
+            . If you avoided the last room, you must face this one.
           </Prose>
         </section>
 
@@ -254,11 +254,10 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                   Flee the Dungeon
                 </h3>
                 <Prose>
-                  Returns you to the main menu. Your game is not lost — use
-                  the{" "}
-                  <strong class="text-torch-amber">Copy Link</strong>{" "}
-                  button to copy your game URL before fleeing, and you can
-                  resume your run anytime by visiting that link.
+                  Returns you to the main menu. Your game is not lost — use the{" "}
+                  <strong class="text-torch-amber">Copy Link</strong> button to
+                  copy your game URL before fleeing, and you can resume your run
+                  anytime by visiting that link.
                 </Prose>
               </div>
             </div>
@@ -315,9 +314,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                 </svg>
               </div>
               <div>
-                <h3 class="font-heading text-torch-amber text-lg">
-                  Copy Link
-                </h3>
+                <h3 class="font-heading text-torch-amber text-lg">Copy Link</h3>
                 <Prose>
                   Copies a shareable URL for your current game to the clipboard.
                   Anyone with the link can view your run and resume it if it is
