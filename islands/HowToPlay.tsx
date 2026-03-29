@@ -220,7 +220,8 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
             Dungeon. However, you{" "}
             <strong class="text-blood-red">
               cannot avoid two rooms in a row
-            </strong>. If you avoided the last room, you must face this one.
+            </strong>
+            . If you avoided the last room, you must face this one.
           </Prose>
         </section>
 
@@ -254,9 +255,11 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                   Flee the Dungeon
                 </h3>
                 <Prose>
-                  Abandons your current run and returns to the main menu. Your
-                  progress will be lost — only the truly faint of heart would
-                  use this.
+                  Returns you to the main menu. Your game is not lost — use the
+                  {" "}
+                  <strong class="text-torch-amber">Copy Link</strong>{" "}
+                  button to copy your game URL before fleeing, and you can
+                  resume your run anytime by visiting that link.
                 </Prose>
               </div>
             </div>
@@ -313,9 +316,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                 </svg>
               </div>
               <div>
-                <h3 class="font-heading text-torch-amber text-lg">
-                  Copy Link
-                </h3>
+                <h3 class="font-heading text-torch-amber text-lg">Copy Link</h3>
                 <Prose>
                   Copies a shareable URL for your current game to the clipboard.
                   Anyone with the link can view your run and resume it if it is
