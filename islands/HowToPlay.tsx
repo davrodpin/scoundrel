@@ -254,9 +254,11 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                   Flee the Dungeon
                 </h3>
                 <Prose>
-                  Abandons your current run and returns to the main menu. Your
-                  progress will be lost — only the truly faint of heart would
-                  use this.
+                  Returns you to the main menu. Your game is not lost — use
+                  the{" "}
+                  <strong class="text-torch-amber">Copy Link</strong>{" "}
+                  button to copy your game URL before fleeing, and you can
+                  resume your run anytime by visiting that link.
                 </Prose>
               </div>
             </div>
