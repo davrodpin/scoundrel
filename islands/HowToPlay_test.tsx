@@ -36,6 +36,51 @@ Deno.test("HowToPlay - weapon degradation section clarifies barehanded is always
   );
 });
 
+Deno.test("HowToPlay - standalone shows table of contents with Contents heading", () => {
+  const html = render(<HowToPlay />);
+  assertEquals(
+    html.includes("Contents"),
+    true,
+    "Standalone page should show a Table of Contents",
+  );
+});
+
+Deno.test("HowToPlay - standalone ToC links to all 11 sections", () => {
+  const html = render(<HowToPlay />);
+  const tocAnchors = [
+    "#overview",
+    "#setup",
+    "#card-types",
+    "#turn-flow",
+    "#combat",
+    "#weapon-degradation",
+    "#health-potions",
+    "#room-avoidance",
+    "#game-interface",
+    "#keyboard-shortcuts",
+    "#scoring",
+  ];
+  // Count occurrences of each anchor — ToC adds a second one beyond the heading link
+  for (const anchor of tocAnchors) {
+    const count = html.split(`href="${anchor}"`).length - 1;
+    assertEquals(
+      count >= 2,
+      true,
+      `Expected at least 2 occurrences of href="${anchor}" (heading + ToC), got ${count}`,
+    );
+  }
+});
+
+Deno.test("HowToPlay - embedded hides table of contents", () => {
+  const html = render(<HowToPlay embedded />);
+  // The "Contents" nav heading should not appear when embedded
+  assertEquals(
+    html.includes(`aria-label="Table of contents"`),
+    false,
+    "Embedded mode should hide the table of contents",
+  );
+});
+
 Deno.test("HowToPlay - section headings render anchor links for all 11 sections", () => {
   const html = render(<HowToPlay />);
   const anchors = [
