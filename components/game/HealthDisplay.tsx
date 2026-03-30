@@ -105,7 +105,7 @@ export function HealthDisplay(
       } ${healFlash ? "animate-heal-glow" : ""}`}
     >
       <div class="flex w-full border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
-        {/* Name field */}
+        {/* Hero + Vitality combined field */}
         <div class="px-5 py-3 flex flex-col gap-1.5 flex-1 min-w-[140px]">
           <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
             Hero
@@ -113,14 +113,10 @@ export function HealthDisplay(
           <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight truncate">
             {playerName}
           </span>
-        </div>
-
-        {/* Health field */}
-        <div class="px-5 py-3 flex flex-col gap-1.5">
-          <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-            Vitality
-          </span>
-          <div class="flex items-baseline gap-2">
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
+              Vitality
+            </span>
             <span class="font-heading text-xl text-parchment leading-tight">
               {health}
             </span>
