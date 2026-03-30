@@ -107,16 +107,14 @@ export function HealthDisplay(
       <div class="flex w-full border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
         {/* Hero + Vitality combined field */}
         <div class="px-5 py-4 flex flex-col flex-1 min-w-[140px]">
-          {/* Top half — Hero label at top, name centered between label and divider */}
+          {/* Top half — Hero label at top, name anchored to divider */}
           <div class="flex flex-col flex-1 pb-3">
             <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
               Hero
             </span>
-            <div class="flex-1 flex items-center">
-              <span class="font-heading text-3xl text-parchment leading-tight truncate w-full">
-                {playerName}
-              </span>
-            </div>
+            <span class="mt-auto font-heading text-3xl text-parchment leading-tight truncate">
+              {playerName}
+            </span>
           </div>
           {/* Centered divider */}
           <div class="border-t border-dungeon-border/60" />
