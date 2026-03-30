@@ -41,5 +41,5 @@ Deno.test("RoomArea - empty slots use responsive width", () => {
     />,
   );
   assertEquals(html.includes("w-[clamp(70px,20vw,100px)]"), true);
-  assertEquals(html.includes("md:w-[clamp(140px,28vw,230px)]"), true);
+  assertEquals(html.includes("md:w-[clamp(100px,22vh,230px)]"), true);
 });
