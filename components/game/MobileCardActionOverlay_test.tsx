@@ -15,6 +15,8 @@ function makeActions(
 ): HealthDisplayActions {
   return {
     avoidRoom: { enabled: false, onClick: noop },
+    drawCard: { enabled: false, onClick: noop, pending: false },
+    fillRoom: { enabled: false, onClick: noop, pending: false },
     fightWithWeapon: { enabled: false, tooltip: "", onClick: noop },
     fightBarehanded: { enabled: false, tooltip: "", onClick: noop },
     equipWeapon: { enabled: false, tooltip: "", onClick: noop },

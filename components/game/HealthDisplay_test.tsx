@@ -12,6 +12,8 @@ function makeActions(
 ): HealthDisplayActions {
   return {
     avoidRoom: { enabled: false, onClick: noop },
+    drawCard: { enabled: false, onClick: noop, pending: false },
+    fillRoom: { enabled: false, onClick: noop, pending: false },
     fightWithWeapon: { enabled: false, tooltip: "", onClick: noop },
     fightBarehanded: { enabled: false, tooltip: "", onClick: noop },
     equipWeapon: { enabled: false, tooltip: "", onClick: noop },
@@ -35,7 +37,7 @@ Deno.test("HealthDisplay - renders health values", () => {
   assertEquals(html.includes("20"), true);
 });
 
-Deno.test("HealthDisplay - renders all 5 action buttons when actions provided", () => {
+Deno.test("HealthDisplay - renders all 7 action buttons when actions provided", () => {
   const html = render(
     <HealthDisplay
       health={15}
@@ -45,6 +47,8 @@ Deno.test("HealthDisplay - renders all 5 action buttons when actions provided", 
     />,
   );
   assertEquals(html.includes("Avoid Room"), true);
+  assertEquals(html.includes("Draw Card"), true);
+  assertEquals(html.includes("Fill Room"), true);
   assertEquals(html.includes("Fight w/ Weapon"), true);
   assertEquals(html.includes("Fight Barehanded"), true);
   assertEquals(html.includes("Equip Weapon"), true);
@@ -255,6 +259,46 @@ Deno.test("HealthDisplay - renders back to menu button when toolButtons provided
     />,
   );
   assertEquals(html.includes(`aria-label="Flee the Dungeon"`), true);
+});
+
+Deno.test("HealthDisplay - Draw Card shows animate-dungeon-draw when pending", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions({
+        drawCard: { enabled: true, onClick: noop, pending: true },
+      })}
+    />,
+  );
+  assertEquals(html.includes("animate-dungeon-draw"), true);
+});
+
+Deno.test("HealthDisplay - Fill Room shows animate-dungeon-draw when pending", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions({
+        fillRoom: { enabled: true, onClick: noop, pending: true },
+      })}
+    />,
+  );
+  assertEquals(html.includes("animate-dungeon-draw"), true);
+});
+
+Deno.test("HealthDisplay - action columns use bg-dungeon-bg grouping containers", () => {
+  const html = render(
+    <HealthDisplay
+      health={15}
+      maxHealth={20}
+      playerName="Aragorn"
+      actions={makeActions()}
+    />,
+  );
+  assertEquals(html.includes("bg-dungeon-bg"), true);
 });
 
 Deno.test("HealthDisplay - back to menu button has Flee the Dungeon tooltip", () => {
