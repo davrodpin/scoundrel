@@ -720,6 +720,17 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             }}
           />
 
+          {/* Action Bar */}
+          <ActionBar
+            phase={state.phase}
+            cardsChosen={cardsChosen}
+            lastRoomAvoided={state.lastRoomAvoided}
+            cardSelected={selectedCardIndex.value !== null}
+            roomSize={state.room.length}
+            panelState={panelState}
+            pendingAction={pendingAction.value}
+          />
+
           {/* Main play area */}
           <div class="grid grid-cols-[auto_auto_auto] gap-4 items-stretch">
             {/* Dungeon pile */}
@@ -752,17 +763,6 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             </GameSection>
           </div>
         </div>
-
-        {/* Action Bar */}
-        <ActionBar
-          phase={state.phase}
-          cardsChosen={cardsChosen}
-          lastRoomAvoided={state.lastRoomAvoided}
-          cardSelected={selectedCardIndex.value !== null}
-          roomSize={state.room.length}
-          panelState={panelState}
-          pendingAction={pendingAction.value}
-        />
 
         {/* Error message */}
         {errorMsg.value && (

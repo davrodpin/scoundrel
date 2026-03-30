@@ -100,7 +100,7 @@ export function HealthDisplay(
 
   return (
     <div
-      class={`hidden md:block mb-10 ${
+      class={`hidden md:block mb-2 ${
         damageFlash ? "animate-damage-flash" : ""
       } ${healFlash ? "animate-heal-glow" : ""}`}
     >
