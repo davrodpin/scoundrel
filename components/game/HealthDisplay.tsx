@@ -148,7 +148,7 @@ export function HealthDisplay(
             </span>
             <div class="flex items-stretch gap-2">
               {/* Column: Dungeon — Avoid Room / Draw Card / Fill Room */}
-              <div class="flex flex-col gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
+              <div class="flex flex-col justify-end gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
                 <ActionTooltipButton
                   label="Avoid Room"
                   color="bg-torch-amber text-white border-torch-amber hover:bg-torch-glow"
@@ -183,7 +183,7 @@ export function HealthDisplay(
               </div>
 
               {/* Column: Combat — Fight w/ Weapon / Fight Barehanded */}
-              <div class="flex flex-col gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
+              <div class="flex flex-col justify-end gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
                 <ActionTooltipButton
                   label="Fight w/ Weapon"
                   color="bg-weapon-steel text-white border-weapon-steel hover:border-torch-amber"
@@ -201,7 +201,7 @@ export function HealthDisplay(
               </div>
 
               {/* Column: Potion — Drink Potion */}
-              <div class="flex flex-col justify-center gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
+              <div class="flex flex-col justify-end gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
                 <ActionTooltipButton
                   label="Drink Potion"
                   color="bg-potion-green text-white border-potion-green hover:border-torch-amber"
