@@ -53,7 +53,7 @@ export function CardImage(
   }
 
   const widthClass = sizeClass ??
-    "w-[clamp(70px,20vw,100px)] md:w-[clamp(100px,22vh,230px)]";
+    "w-[clamp(70px,20vw,100px)] md:w-[clamp(140px,28vw,230px)]";
 
   return (
     <button

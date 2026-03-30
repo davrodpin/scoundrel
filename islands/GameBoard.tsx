@@ -699,7 +699,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       />
 
       {/* ── DESKTOP LAYOUT (hidden on mobile) ── */}
-      <div class="hidden md:flex md:flex-col md:items-center w-full h-dvh overflow-hidden">
+      <div class="hidden md:flex md:flex-col md:items-center w-full">
         {/* Shared container: Health Display + game grid share the same width */}
         <div class="w-fit">
           {/* Health Display */}
