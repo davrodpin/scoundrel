@@ -124,7 +124,7 @@ export function HealthDisplay(
               / {maxHealth}
             </span>
           </div>
-          <div class="w-36 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
+          <div class="w-full h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
             <div
               class={`h-full ${barColor} transition-[width] duration-500`}
               style={`width: ${pct}%`}
