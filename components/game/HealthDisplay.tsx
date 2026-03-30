@@ -106,29 +106,37 @@ export function HealthDisplay(
     >
       <div class="flex w-full border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
         {/* Hero + Vitality combined field */}
-        <div class="px-5 py-3 flex flex-col gap-1.5 flex-1 min-w-[140px]">
-          <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-            Hero
-          </span>
-          <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight truncate">
-            {playerName}
-          </span>
-          <div class="flex items-baseline gap-2 mt-1">
+        <div class="px-5 py-4 flex flex-col flex-1 min-w-[140px]">
+          {/* Top half — Hero, aligned to divider */}
+          <div class="flex flex-col justify-end flex-1 gap-0.5 pb-3">
             <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-              Vitality
+              Hero
             </span>
-            <span class="font-heading text-xl text-parchment leading-tight">
-              {health}
-            </span>
-            <span class="text-parchment-dark/50 font-body text-sm">
-              / {maxHealth}
+            <span class="font-heading text-xl text-parchment leading-tight truncate">
+              {playerName}
             </span>
           </div>
-          <div class="w-full h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
-            <div
-              class={`h-full ${barColor} transition-[width] duration-500`}
-              style={`width: ${pct}%`}
-            />
+          {/* Centered divider */}
+          <div class="border-t border-dungeon-border/60" />
+          {/* Bottom half — Vitality, anchored to divider */}
+          <div class="flex flex-col flex-1 gap-1.5 pt-3">
+            <div class="flex items-baseline gap-2">
+              <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
+                Vitality
+              </span>
+              <span class="font-heading text-xl text-parchment leading-tight">
+                {health}
+              </span>
+              <span class="text-parchment-dark/50 font-body text-sm">
+                / {maxHealth}
+              </span>
+            </div>
+            <div class="w-full h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
+              <div
+                class={`h-full ${barColor} transition-[width] duration-500`}
+                style={`width: ${pct}%`}
+              />
+            </div>
           </div>
         </div>
 
