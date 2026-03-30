@@ -45,8 +45,8 @@ function ActionTooltipButton(
 ) {
   const pendingClass = pending ? " animate-dungeon-draw" : "";
   const btnClass = enabled
-    ? `px-3 py-1 text-sm rounded-sm border font-body transition-colors duration-200 ${color}${pendingClass}`
-    : "px-3 py-1 text-sm rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface text-parchment-dark border-dungeon-border opacity-40 cursor-not-allowed";
+    ? `px-4 py-1.5 text-sm rounded-sm border font-body transition-colors duration-200 ${color}${pendingClass}`
+    : "px-4 py-1.5 text-sm rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface text-parchment-dark border-dungeon-border opacity-40 cursor-not-allowed";
 
   if (!tooltip || !enabled) {
     return (
@@ -106,25 +106,25 @@ export function HealthDisplay(
     >
       <div class="flex w-full border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
         {/* Hero + Vitality combined field */}
-        <div class="px-4 py-2.5 flex flex-col gap-1 min-w-[160px] max-w-[220px]">
+        <div class="px-5 py-3 flex flex-col gap-1.5 flex-1 min-w-[140px]">
           <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
             Hero
           </span>
-          <span class="font-heading text-lg text-parchment border-b border-dungeon-border/60 pb-1 leading-tight truncate">
+          <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight truncate">
             {playerName}
           </span>
-          <div class="flex items-baseline gap-1.5 mt-0.5">
+          <div class="flex items-baseline gap-2 mt-1">
             <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
               Vitality
             </span>
-            <span class="font-heading text-lg text-parchment leading-tight">
+            <span class="font-heading text-xl text-parchment leading-tight">
               {health}
             </span>
-            <span class="text-parchment-dark/50 font-body text-xs">
+            <span class="text-parchment-dark/50 font-body text-sm">
               / {maxHealth}
             </span>
           </div>
-          <div class="w-full h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
+          <div class="w-36 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
             <div
               class={`h-full ${barColor} transition-[width] duration-500`}
               style={`width: ${pct}%`}
@@ -134,13 +134,13 @@ export function HealthDisplay(
 
         {/* Actions field */}
         {actions && (
-          <div class="px-4 py-2.5 flex flex-col gap-1.5 flex-1 min-w-0">
+          <div class="px-5 py-3 flex flex-col gap-1.5 min-w-0">
             <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
               Actions
             </span>
-            <div class="flex items-start gap-2">
+            <div class="flex items-stretch gap-2">
               {/* Column: Dungeon — Avoid Room / Draw Card / Fill Room */}
-              <div class="flex flex-col gap-1 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-1.5 py-1.5">
+              <div class="flex flex-col gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
                 <ActionTooltipButton
                   label="Avoid Room"
                   color="bg-torch-amber text-white border-torch-amber hover:bg-torch-glow"
@@ -164,7 +164,7 @@ export function HealthDisplay(
               </div>
 
               {/* Column: Weapon — Equip Weapon */}
-              <div class="flex flex-col gap-1 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-1.5 py-1.5">
+              <div class="flex flex-col justify-end gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
                 <ActionTooltipButton
                   label="Equip Weapon"
                   color="bg-parchment-dark text-white border-parchment-dark hover:bg-parchment"
@@ -175,7 +175,7 @@ export function HealthDisplay(
               </div>
 
               {/* Column: Combat — Fight w/ Weapon / Fight Barehanded */}
-              <div class="flex flex-col gap-1 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-1.5 py-1.5">
+              <div class="flex flex-col gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
                 <ActionTooltipButton
                   label="Fight w/ Weapon"
                   color="bg-weapon-steel text-white border-weapon-steel hover:border-torch-amber"
@@ -193,7 +193,7 @@ export function HealthDisplay(
               </div>
 
               {/* Column: Potion — Drink Potion */}
-              <div class="flex flex-col gap-1 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-1.5 py-1.5">
+              <div class="flex flex-col justify-center gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
                 <ActionTooltipButton
                   label="Drink Potion"
                   color="bg-potion-green text-white border-potion-green hover:border-torch-amber"
@@ -208,7 +208,7 @@ export function HealthDisplay(
 
         {/* Menu field */}
         {toolButtons && (
-          <div class="px-4 py-2.5 flex flex-col gap-1.5 flex-shrink-0">
+          <div class="px-5 py-3 flex flex-col gap-1.5 flex-shrink-0">
             <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
               Menu
             </span>
