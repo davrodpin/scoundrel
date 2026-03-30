@@ -74,6 +74,17 @@ function createMockRepository(
       storedEvents.set(gameId, events);
       return Promise.resolve();
     },
+    appendEvents(
+      gameId: string,
+      newEvents: readonly EngineGameEvent[],
+    ): Promise<void> {
+      const events = storedEvents.get(gameId) ?? [];
+      for (const event of newEvents) {
+        events.push({ sequence: event.id, payload: event });
+      }
+      storedEvents.set(gameId, events);
+      return Promise.resolve();
+    },
     getLatestEvent(gameId: string): Promise<StoredEvent | null> {
       const events = storedEvents.get(gameId);
       if (!events || events.length === 0) return Promise.resolve(null);

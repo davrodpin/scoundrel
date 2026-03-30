@@ -35,6 +35,7 @@ import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
 import {
   isPending,
   isPendingAvoidRoom,
+  isPendingFillRoom,
   type PendingAction,
   pendingActionLabel,
 } from "./pending_action.ts";
@@ -231,6 +232,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           equipWeapon: panelStateNow.equipWeapon.enabled && !isLoadingNow,
           drawCard: view.phase.kind === "drawing" &&
             view.dungeonCount > 0 && !isLoadingNow,
+          fillRoom: view.phase.kind === "drawing" &&
+            view.dungeonCount > 0 && !isLoadingNow,
           openRules: true,
           copyLink: true,
           openLeaderboard: true,
@@ -272,6 +275,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
               break;
             case "drawCard":
               handleDrawCard();
+              break;
+            case "fillRoom":
+              handleFillRoom();
               break;
             case "openRules":
               handleToggleRules();
@@ -380,6 +386,11 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   function handleDrawCard() {
     pendingAction.value = { kind: "draw_card" };
     dispatch({ type: "draw_card" });
+  }
+
+  function handleFillRoom() {
+    pendingAction.value = { kind: "fill_room" };
+    dispatch({ type: "fill_room" });
   }
 
   function handleAvoidRoom() {
@@ -641,6 +652,10 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     !isLoading;
   const isDungeonPending = isDrawPhase &&
     pendingAction.value.kind === "draw_card";
+  const isFillRoomInteractive = isDrawPhase && state.dungeonCount > 0 &&
+    !isLoading;
+  const isFillRoomPending = isDrawPhase &&
+    isPendingFillRoom(pendingAction.value);
 
   return (
     <div
@@ -705,6 +720,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
                 onClick={handleDrawCard}
                 pending={isDungeonPending}
                 deck={activeDeck}
+                onFillRoom={handleFillRoom}
+                fillRoomInteractive={isFillRoomInteractive}
+                fillRoomPending={isFillRoomPending}
               />
             </GameSection>
 
@@ -828,6 +846,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
               interactive={isDungeonInteractive}
               onClick={handleDrawCard}
               pending={isDungeonPending}
+              onFillRoom={handleFillRoom}
+              fillRoomInteractive={isFillRoomInteractive}
+              fillRoomPending={isFillRoomPending}
             />
           )
           : (

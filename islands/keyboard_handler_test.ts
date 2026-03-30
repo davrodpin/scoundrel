@@ -26,6 +26,7 @@ function makeState(overrides: StateOverrides = {}): KeyboardState {
       fightBarehanded: false,
       equipWeapon: false,
       drawCard: false,
+      fillRoom: false,
       openRules: false,
       copyLink: false,
       openLeaderboard: false,
@@ -492,6 +493,37 @@ Deno.test("D (uppercase) triggers drawCard when enabled in non-interactive state
 Deno.test("d returns none when drawCard disabled and not interactive", () => {
   assertEquals(
     handleKeyboardEvent("d", makeState({ isInteractive: false })),
+    { type: "none" },
+  );
+});
+
+// ─── Fill room (F key, non-interactive phase) ────────────────────────────────
+
+Deno.test("f triggers fillRoom when enabled in non-interactive state", () => {
+  const state = makeState({
+    isInteractive: false,
+    actions: { fillRoom: true },
+  });
+  assertEquals(
+    handleKeyboardEvent("f", state),
+    { type: "action", action: "fillRoom" },
+  );
+});
+
+Deno.test("F (uppercase) triggers fillRoom when enabled", () => {
+  const state = makeState({
+    isInteractive: false,
+    actions: { fillRoom: true },
+  });
+  assertEquals(
+    handleKeyboardEvent("F", state),
+    { type: "action", action: "fillRoom" },
+  );
+});
+
+Deno.test("f returns none when fillRoom disabled", () => {
+  assertEquals(
+    handleKeyboardEvent("f", makeState({ isInteractive: false })),
     { type: "none" },
   );
 });

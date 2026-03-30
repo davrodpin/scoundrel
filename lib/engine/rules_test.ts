@@ -275,3 +275,36 @@ Deno.test("choose_card with potion card is valid regardless of fightWith", () =>
   };
   assertEquals(validateAction(state, action), { valid: true });
 });
+
+// --- fill_room ---
+
+Deno.test("fill_room valid when phase is drawing", () => {
+  const state = makeState({ phase: { kind: "drawing" } });
+  const action: GameAction = { type: "fill_room" };
+  assertEquals(validateAction(state, action), { valid: true });
+});
+
+Deno.test("fill_room invalid when phase is room_ready", () => {
+  const state = makeState({ phase: { kind: "room_ready" } });
+  const action: GameAction = { type: "fill_room" };
+  const result = validateAction(state, action);
+  assertEquals(result.valid, false);
+});
+
+Deno.test("fill_room invalid when phase is choosing", () => {
+  const state = makeState({
+    phase: { kind: "choosing", cardsChosen: 0, potionUsedThisTurn: false },
+  });
+  const action: GameAction = { type: "fill_room" };
+  const result = validateAction(state, action);
+  assertEquals(result.valid, false);
+});
+
+Deno.test("fill_room invalid when phase is game_over", () => {
+  const state = makeState({
+    phase: { kind: "game_over", reason: "dead" },
+  });
+  const action: GameAction = { type: "fill_room" };
+  const result = validateAction(state, action);
+  assertEquals(result.valid, false);
+});

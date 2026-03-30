@@ -29,6 +29,16 @@ function validateAvoidRoom(state: GameState): ValidationResult {
   return { valid: true };
 }
 
+function validateFillRoom(state: GameState): ValidationResult {
+  if (state.phase.kind !== "drawing") {
+    return {
+      valid: false,
+      reason: "Cannot fill room: phase is not drawing",
+    };
+  }
+  return { valid: true };
+}
+
 function validateEnterRoom(state: GameState): ValidationResult {
   if (state.phase.kind !== "room_ready") {
     return {
@@ -98,5 +108,7 @@ export function validateAction(
       return validateEnterRoom(state);
     case "choose_card":
       return validateChooseCard(state, action.cardIndex, action.fightWith);
+    case "fill_room":
+      return validateFillRoom(state);
   }
 }

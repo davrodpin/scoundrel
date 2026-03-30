@@ -123,3 +123,21 @@ Deno.test("GameActionSchema rejects enter_room with extra fields", () => {
   });
   assertEquals(result.success, false);
 });
+
+// --- fill_room ---
+
+Deno.test("GameActionSchema parses valid fill_room action", () => {
+  const result = GameActionSchema.safeParse({ type: "fill_room" });
+  assertEquals(result.success, true);
+  if (result.success) {
+    assertEquals(result.data, { type: "fill_room" });
+  }
+});
+
+Deno.test("GameActionSchema rejects fill_room with extra fields", () => {
+  const result = GameActionSchema.safeParse({
+    type: "fill_room",
+    extra: "field",
+  });
+  assertEquals(result.success, false);
+});

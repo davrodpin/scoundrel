@@ -5,6 +5,7 @@ export type ActionKey =
   | "fightBarehanded"
   | "equipWeapon"
   | "drawCard"
+  | "fillRoom"
   | "openRules"
   | "copyLink"
   | "openLeaderboard";
@@ -53,9 +54,12 @@ export function handleKeyboardEvent(
 ): KeyboardIntent {
   const lowerKey = key.toLowerCase();
 
-  // Draw card works outside card-interactive mode (drawing phase)
+  // Draw card / fill room work outside card-interactive mode (drawing phase)
   if (lowerKey === "d" && state.actions.drawCard) {
     return { type: "action", action: "drawCard" };
+  }
+  if (lowerKey === "f" && state.actions.fillRoom) {
+    return { type: "action", action: "fillRoom" };
   }
 
   // UI panel actions work in any game phase

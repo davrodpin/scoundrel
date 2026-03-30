@@ -16,6 +16,10 @@ export type GameRepository = {
     event: EngineGameEvent,
   ): Promise<void>;
   appendEvent(gameId: string, event: EngineGameEvent): Promise<void>;
+  appendEvents(
+    gameId: string,
+    events: readonly EngineGameEvent[],
+  ): Promise<void>;
   getLatestEvent(gameId: string): Promise<StoredEvent | null>;
   getAllEvents(gameId: string): Promise<StoredEvent[]>;
   updateStatus(
@@ -106,6 +110,30 @@ export function createPrismaGameRepository(
             sequence: event.id,
             payload: event as unknown as Prisma.InputJsonValue,
           },
+        });
+      });
+    },
+
+    appendEvents(
+      gameId: string,
+      events: readonly EngineGameEvent[],
+    ): Promise<void> {
+      if (events.length === 0) return Promise.resolve();
+      return withSpan(tracer, "db.appendEvents", {
+        "db.operation": "createMany",
+        "game.id": gameId,
+        "event.count": events.length,
+      }, async () => {
+        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+          for (const event of events) {
+            await tx.gameEvent.create({
+              data: {
+                gameId,
+                sequence: event.id,
+                payload: event as unknown as Prisma.InputJsonValue,
+              },
+            });
+          }
         });
       });
     },

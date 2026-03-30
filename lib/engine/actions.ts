@@ -18,15 +18,21 @@ export const ChooseCardActionSchema = z.object({
   fightWith: z.enum(["weapon", "barehanded"]),
 }).strict();
 
+export const FillRoomActionSchema = z.object({
+  type: z.literal("fill_room"),
+}).strict();
+
 export const GameActionSchema = z.discriminatedUnion("type", [
   DrawCardActionSchema,
   AvoidRoomActionSchema,
   EnterRoomActionSchema,
   ChooseCardActionSchema,
+  FillRoomActionSchema,
 ]);
 
 export type DrawCardAction = z.infer<typeof DrawCardActionSchema>;
 export type AvoidRoomAction = z.infer<typeof AvoidRoomActionSchema>;
 export type EnterRoomAction = z.infer<typeof EnterRoomActionSchema>;
 export type ChooseCardAction = z.infer<typeof ChooseCardActionSchema>;
+export type FillRoomAction = z.infer<typeof FillRoomActionSchema>;
 export type GameAction = z.infer<typeof GameActionSchema>;

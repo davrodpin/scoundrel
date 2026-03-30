@@ -1,7 +1,8 @@
 import { getLogger } from "@logtape/logtape";
 import { SpanStatusCode } from "@opentelemetry/api";
-import type { Counter, Meter, Tracer } from "@opentelemetry/api";
+import type { Counter, Meter, Span, Tracer } from "@opentelemetry/api";
 import type {
+  ActionAppliedEvent,
   ChooseCardAction,
   EventLog,
   GameEngine,
@@ -140,6 +141,21 @@ export function createGameService(
 
           const currentState = engine.getState(syntheticLog);
           span.setAttribute("game.phase", currentState.phase.kind);
+
+          if (isFillRoomAction(action)) {
+            return await handleFillRoom(
+              engine,
+              repository,
+              syntheticLog,
+              currentState,
+              gameId,
+              playerName,
+              span,
+              tracer,
+              logger,
+              getGameInstruments,
+            );
+          }
 
           if (
             isChooseCardAction(action) &&
@@ -388,6 +404,93 @@ function isChooseCardAction(
     "type" in action &&
     (action as { type: string }).type === "choose_card"
   );
+}
+
+function isFillRoomAction(
+  action: unknown,
+): boolean {
+  return (
+    typeof action === "object" &&
+    action !== null &&
+    "type" in action &&
+    (action as { type: string }).type === "fill_room"
+  );
+}
+
+function handleFillRoom(
+  engine: GameEngine,
+  repository: GameRepository,
+  syntheticLog: EventLog,
+  currentState: GameState,
+  gameId: string,
+  playerName: string,
+  span: Span,
+  tracer: Tracer,
+  logger: ReturnType<typeof getLogger>,
+  getGameInstruments: () => { inProgress: Counter; completed: Counter } | null,
+): Promise<GameView> {
+  return tracer.startActiveSpan(
+    "game.submitAction.fillRoom",
+    async (childSpan) => {
+      try {
+        const events: ActionAppliedEvent[] = [];
+        let eventLog = syntheticLog;
+        let state = currentState;
+
+        while (state.phase.kind === "drawing" && state.dungeon.length > 0) {
+          const result = engine.submitAction(eventLog, {
+            type: "draw_card",
+          });
+          if (!result.ok) {
+            throw new AppError("InvalidActionError", 422, {
+              gameId,
+              detail: result.error,
+            });
+          }
+          events.push(result.event);
+          eventLog = result.eventLog;
+          state = result.state;
+        }
+
+        childSpan.setAttribute("fill_room.cards_drawn", events.length);
+        await repository.appendEvents(gameId, events);
+
+        if (state.phase.kind === "game_over") {
+          const score = engine.getScore(state);
+          await Promise.all([
+            repository.updateStatus(gameId, "completed", score),
+            repository.createLeaderboardEntry(
+              gameId,
+              playerName,
+              score,
+              new Date(),
+            ),
+          ]);
+          getGameInstruments()?.completed.add(1);
+          logger.info("Game completed", { gameId, score });
+          logger.info("Leaderboard entry created", { gameId, score });
+        }
+
+        logger.info("Action submitted", {
+          gameId,
+          actionType: "fill_room",
+          actionKind: "fill_room",
+          cardsDrawn: events.length,
+        });
+        span.setAttribute(
+          "game.completed",
+          state.phase.kind === "game_over",
+        );
+        return toGameView(state, playerName);
+      } catch (err) {
+        childSpan.recordException(err as Error);
+        childSpan.setStatus({ code: SpanStatusCode.ERROR });
+        throw err;
+      } finally {
+        childSpan.end();
+      }
+    },
+  ) as Promise<GameView>;
 }
 
 function buildChooseCardLogData(

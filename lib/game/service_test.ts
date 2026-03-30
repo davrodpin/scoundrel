@@ -87,6 +87,17 @@ function createMockRepository(
       storedEvents.set(gameId, events);
       return Promise.resolve();
     },
+    appendEvents(
+      gameId: string,
+      newEvents: readonly EngineGameEvent[],
+    ): Promise<void> {
+      const events = storedEvents.get(gameId) ?? [];
+      for (const event of newEvents) {
+        events.push({ sequence: event.id, payload: event });
+      }
+      storedEvents.set(gameId, events);
+      return Promise.resolve();
+    },
     getLatestEvent(gameId: string): Promise<StoredEvent | null> {
       const events = storedEvents.get(gameId);
       if (!events || events.length === 0) return Promise.resolve(null);
@@ -1627,3 +1638,213 @@ Deno.test(
     assertEquals(actionLog?.properties.actionKind, "enter_room");
   },
 );
+
+// ---------------------------------------------------------------------------
+// fill_room tests
+// ---------------------------------------------------------------------------
+
+function createDrawCardEngine(initialState: GameState): GameEngine {
+  const createdEvent = makeCreatedEvent(initialState);
+  return {
+    createGame(): { state: GameState; eventLog: EventLog } {
+      return {
+        state: initialState,
+        eventLog: { gameId: initialState.gameId, events: [createdEvent] },
+      };
+    },
+    submitAction(
+      eventLog: EventLog,
+      action: GameAction,
+    ): {
+      ok: true;
+      state: GameState;
+      event: ActionAppliedEvent;
+      eventLog: EventLog;
+    } | { ok: false; error: string } {
+      const currentState = this.getState(eventLog);
+
+      if (
+        action.type === "draw_card" && currentState.phase.kind === "drawing"
+      ) {
+        const drawnCard = currentState.dungeon[0];
+        const remainingDungeon = currentState.dungeon.slice(1);
+        const newRoom = [...currentState.room, drawnCard];
+        const roomFull = newRoom.length >= 4;
+        const dungeonEmpty = remainingDungeon.length === 0;
+
+        const newState: GameState = {
+          ...currentState,
+          dungeon: remainingDungeon,
+          room: newRoom,
+          phase: roomFull || dungeonEmpty
+            ? { kind: "room_ready" }
+            : { kind: "drawing" },
+        };
+        const event = makeActionAppliedEvent(
+          eventLog.events.length,
+          action,
+          newState,
+        );
+        return {
+          ok: true,
+          state: newState,
+          event,
+          eventLog: {
+            gameId: eventLog.gameId,
+            events: [...eventLog.events, event],
+          },
+        };
+      }
+
+      return { ok: false, error: `Unsupported action: ${action.type}` };
+    },
+    getState(eventLog: EventLog): GameState {
+      const lastEvent = eventLog.events[eventLog.events.length - 1];
+      if (lastEvent.kind === "game_created") return lastEvent.initialState;
+      return lastEvent.stateAfter;
+    },
+    replay(_eventLog: EventLog): readonly GameState[] {
+      return [];
+    },
+    getScore(_state: GameState): number {
+      return 0;
+    },
+  };
+}
+
+Deno.test("fill_room draws cards until room has 4", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const initialState: GameState = {
+    ...makeInitialState(gameId),
+    dungeon: [
+      { suit: "clubs", rank: 5 },
+      { suit: "spades", rank: 10 },
+      { suit: "clubs", rank: 3 },
+      { suit: "spades", rank: 7 },
+      { suit: "hearts", rank: 2 },
+    ],
+    room: [],
+  };
+
+  const storedEvents = new Map<string, StoredEvent[]>();
+  const repository = createMockRepository(storedEvents);
+  const engine = createDrawCardEngine(initialState);
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  const created = await service.createGame("Hero");
+  const view = await service.submitAction(created.gameId, {
+    type: "fill_room",
+  });
+
+  assertEquals(view.room.length, 4);
+  assertEquals(view.dungeonCount, 1);
+  assertEquals(view.phase, { kind: "room_ready" });
+});
+
+Deno.test("fill_room draws only remaining cards when dungeon has less than 4", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const initialState: GameState = {
+    ...makeInitialState(gameId),
+    dungeon: [
+      { suit: "clubs", rank: 5 },
+      { suit: "spades", rank: 10 },
+    ],
+    room: [],
+  };
+
+  const storedEvents = new Map<string, StoredEvent[]>();
+  const repository = createMockRepository(storedEvents);
+  const engine = createDrawCardEngine(initialState);
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  const created = await service.createGame("Hero");
+  const view = await service.submitAction(created.gameId, {
+    type: "fill_room",
+  });
+
+  assertEquals(view.room.length, 2);
+  assertEquals(view.dungeonCount, 0);
+  assertEquals(view.phase, { kind: "room_ready" });
+});
+
+Deno.test("fill_room with 1 leftover card draws only 3", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const initialState: GameState = {
+    ...makeInitialState(gameId),
+    dungeon: [
+      { suit: "clubs", rank: 5 },
+      { suit: "spades", rank: 10 },
+      { suit: "clubs", rank: 3 },
+      { suit: "spades", rank: 7 },
+    ],
+    room: [{ suit: "hearts", rank: 2 }],
+  };
+
+  const storedEvents = new Map<string, StoredEvent[]>();
+  const repository = createMockRepository(storedEvents);
+  const engine = createDrawCardEngine(initialState);
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  const created = await service.createGame("Hero");
+  const view = await service.submitAction(created.gameId, {
+    type: "fill_room",
+  });
+
+  assertEquals(view.room.length, 4);
+  assertEquals(view.dungeonCount, 1);
+  assertEquals(view.phase, { kind: "room_ready" });
+});
+
+Deno.test("fill_room persists all individual draw events", async () => {
+  const gameId = "00000000-0000-0000-0000-000000000001";
+  const initialState: GameState = {
+    ...makeInitialState(gameId),
+    dungeon: [
+      { suit: "clubs", rank: 5 },
+      { suit: "spades", rank: 10 },
+      { suit: "clubs", rank: 3 },
+      { suit: "spades", rank: 7 },
+    ],
+    room: [],
+  };
+
+  const storedEvents = new Map<string, StoredEvent[]>();
+  const repository = createMockRepository(storedEvents);
+  const engine = createDrawCardEngine(initialState);
+  const service = createGameService(
+    engine,
+    repository,
+    TEST_CONFIG,
+    createSpyTracer().tracer,
+  );
+
+  const created = await service.createGame("Hero");
+  await service.submitAction(created.gameId, { type: "fill_room" });
+
+  const events = storedEvents.get(created.gameId);
+  // 1 game_created + 4 draw_card events = 5 total
+  assertEquals(events?.length, 5);
+  // All draw events should be action_applied with draw_card
+  for (let i = 1; i < events!.length; i++) {
+    const payload = events![i].payload;
+    assertEquals(payload.kind, "action_applied");
+    if (payload.kind === "action_applied") {
+      assertEquals(payload.action.type, "draw_card");
+    }
+  }
+});
