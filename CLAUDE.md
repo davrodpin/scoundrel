@@ -4,11 +4,11 @@ Every task MUST begin by loading the relevant skills. Do NOT write or modify any
 code until you have read the matching SKILL.md files. Do not rely on memory —
 read the file every time.
 
-| Trigger                                      | Skill to Load   | File to Read                              |
-| -------------------------------------------- | --------------- | ----------------------------------------- |
-| Any code change (feature, bug, test)         | tdd-development | `.claude/skills/tdd-development/SKILL.md` |
-| Any file change (code, docs, config, skills) | git-workflow    | `.claude/skills/git-workflow/SKILL.md`    |
-| Building or modifying UI components          | game-frontend   | `.claude/skills/game-frontend/SKILL.md`   |
+| Trigger                                                                                                                                                                                                     | Skill to Load   | File to Read                              |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ----------------------------------------- |
+| Any code change (feature, bug, test)                                                                                                                                                                        | tdd-development | `.claude/skills/tdd-development/SKILL.md` |
+| Any file change — code, tests, .md docs (including CLAUDE.md), .json/.yaml/.toml config, dashboard files, assets, .claude/ directory files (skills, settings, SKILL.md files), or anything else in the repo | git-workflow    | `.claude/skills/git-workflow/SKILL.md`    |
+| Building or modifying UI components                                                                                                                                                                         | game-frontend   | `.claude/skills/game-frontend/SKILL.md`   |
 
 Multiple skills often apply to the same task. Load ALL that match.
 
