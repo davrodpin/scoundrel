@@ -1,7 +1,7 @@
 import { getLogger } from "@logtape/logtape";
 import { PrismaClient } from "../lib/generated/prisma/client.ts";
 import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
+import { createResilientRepository } from "@scoundrel/db";
 import { createCleanupService } from "@scoundrel/cleanup";
 import { createGameEngine } from "@scoundrel/engine";
 import {
@@ -62,19 +62,18 @@ function normalizePath(path: string): string {
   return path.replace(UUID_SEGMENT_REGEX, "/{id}");
 }
 
-const pool = new pg.Pool({
+const adapter = new PrismaPg({
   connectionString: config.db.url,
-  max: 5,
-  connectionTimeoutMillis: 5000,
+  max: 3,
+  connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
+  allowExitOnIdle: true,
 });
-const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
-// Eagerly establish one connection so the first real request doesn't pay
-// the ~500ms cold-connect cost on a fresh Deno Deploy isolate.
-pool.connect().then((client) => client.release()).catch(() => {});
 const engine = createGameEngine();
-const repository = createPrismaGameRepository(prisma, tracer);
+const repository = createResilientRepository(
+  createPrismaGameRepository(prisma, tracer),
+);
 const gameService = createGameService(
   engine,
   repository,

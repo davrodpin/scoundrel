@@ -62,6 +62,7 @@
     "@scoundrel/validation": "./lib/validation/mod.ts",
     "@scoundrel/telemetry": "./lib/telemetry/mod.ts",
     "@scoundrel/feedback": "./lib/feedback/mod.ts",
+    "@scoundrel/db": "./lib/db/mod.ts",
     "obscenity": "npm:obscenity@^0.4.6",
     "@opentelemetry/api": "npm:@opentelemetry/api@^1",
     "@opentelemetry/core": "npm:@opentelemetry/core@^2",
