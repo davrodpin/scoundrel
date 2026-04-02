@@ -1,6 +1,6 @@
 ---
 name: git-workflow
-description: How to use git worktrees, commit code, push changes, and create pull requests. Use this skill whenever ANY file in the repository is modified — code, tests, documentation, markdown, config files, skill files, or anything else. Every change goes through a worktree.
+description: How to use git worktrees, commit, push, and open pull requests for this repository. This skill must be used for every single file change — no exceptions. That includes .ts/.go code, tests, .md docs, .json/.yaml/.toml config, dashboard definitions, assets, and anything under .claude/ (skills, settings, SKILL.md files). Editing CLAUDE.md itself also requires this skill. If you are about to edit or create any file in this repository, load this skill first. Every change goes through a worktree, never directly on main.
 ---
 
 # Git Workflow
