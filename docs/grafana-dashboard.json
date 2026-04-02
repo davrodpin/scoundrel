@@ -306,7 +306,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Total number of games ever completed. A growing number indicates healthy player engagement.",
+      "description": "Total games completed within the selected time range. Uses increase() to correctly sum across counter resets (e.g. service restarts on Deno Deploy).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -353,12 +353,12 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(game_completed_total{deployment_environment=\"$deployment_environment\"})",
+          "expr": "sum(increase(game_completed_total{deployment_environment=\"$deployment_environment\"}[$__range]))",
           "legendFormat": "",
           "refId": "A"
         }
       ],
-      "title": "Total Games Played",
+      "title": "Games Completed (period)",
       "type": "stat"
     },
     {
