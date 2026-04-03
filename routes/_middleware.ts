@@ -67,7 +67,6 @@ const adapter = new PrismaPg({
   max: 3,
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
-  allowExitOnIdle: true,
 });
 const prisma = new PrismaClient({ adapter });
 const engine = createGameEngine();
