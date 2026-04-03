@@ -1,6 +1,7 @@
 import { assertEquals, assertStrictEquals, assertThrows } from "@std/assert";
 import { AppError } from "@scoundrel/errors";
 import {
+  buildRequestLogData,
   captureRequestBody,
   checkBodySize,
   extractClientIp,
@@ -276,4 +277,58 @@ Deno.test("extractUserAgent - returns User-Agent header value when present", () 
 Deno.test("extractUserAgent - returns 'unknown' when User-Agent header is absent", () => {
   const req = new Request("http://localhost/api/games");
   assertEquals(extractUserAgent(req), "unknown");
+});
+
+// buildRequestLogData tests
+Deno.test("buildRequestLogData - includes deployId when provided", () => {
+  const data = buildRequestLogData({
+    method: "GET",
+    path: "/api/games",
+    status: 200,
+    duration: 42,
+    gameId: undefined,
+    body: null,
+    clientIp: "1.2.3.4",
+    userAgent: "TestBot/1.0",
+    deployId: "abc123",
+  });
+  assertEquals(data.deployId, "abc123");
+});
+
+Deno.test("buildRequestLogData - includes deployId as undefined when not provided", () => {
+  const data = buildRequestLogData({
+    method: "GET",
+    path: "/api/games",
+    status: 200,
+    duration: 42,
+    gameId: undefined,
+    body: null,
+    clientIp: "1.2.3.4",
+    userAgent: "TestBot/1.0",
+    deployId: undefined,
+  });
+  assertEquals(data.deployId, undefined);
+});
+
+Deno.test("buildRequestLogData - includes all expected request fields", () => {
+  const data = buildRequestLogData({
+    method: "POST",
+    path: "/api/games/abc/actions",
+    status: 201,
+    duration: 10,
+    gameId: "abc",
+    body: { type: "enter_room" },
+    clientIp: "9.9.9.9",
+    userAgent: "Mozilla/5.0",
+    deployId: "deploy-xyz",
+  });
+  assertEquals(data.method, "POST");
+  assertEquals(data.path, "/api/games/abc/actions");
+  assertEquals(data.status, 201);
+  assertEquals(data.duration, 10);
+  assertEquals(data.gameId, "abc");
+  assertEquals(data.body, { type: "enter_room" });
+  assertEquals(data.clientIp, "9.9.9.9");
+  assertEquals(data.userAgent, "Mozilla/5.0");
+  assertEquals(data.deployId, "deploy-xyz");
 });
