@@ -207,7 +207,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
         body,
         clientIp,
         userAgent,
-        deployId: config.deploy.id,
+        buildId: config.deploy.id,
       }),
       ...extractErrorInfo(error),
     });
@@ -244,7 +244,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     body,
     clientIp,
     userAgent,
-    deployId: config.deploy.id,
+    buildId: config.deploy.id,
   });
 
   if (status >= 500) {

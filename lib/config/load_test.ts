@@ -8,7 +8,7 @@ const ALL_ENV_VARS = [
   "MAX_PLAYER_NAME_LENGTH",
   "DEFAULT_PLAYER_NAME",
   "LEADERBOARD_LIMIT",
-  "DENO_DEPLOYMENT_ID",
+  "DENO_DEPLOY_BUILD_ID",
   "GAME_RETENTION_DAYS",
   "TRELLO_API_KEY",
   "TRELLO_API_TOKEN",
@@ -19,6 +19,23 @@ const ALL_ENV_VARS = [
   "GRAFANA_API_TOKEN",
   "GRAFANA_OTLP_ENDPOINT",
 ];
+
+Deno.test(
+  {
+    name: "loadConfigFromEnv reads deploy.id from DENO_DEPLOY_BUILD_ID",
+    permissions: { env: ALL_ENV_VARS },
+  },
+  () => {
+    Deno.env.set("DENO_DEPLOY_BUILD_ID", "build-abc123");
+    try {
+      const raw = loadConfigFromEnv() as Record<string, unknown>;
+      const deploy = raw["deploy"] as Record<string, unknown>;
+      assertEquals(deploy["id"], "build-abc123");
+    } finally {
+      Deno.env.delete("DENO_DEPLOY_BUILD_ID");
+    }
+  },
+);
 
 Deno.test(
   {

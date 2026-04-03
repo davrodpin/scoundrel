@@ -93,7 +93,7 @@ export type RequestLogData = {
   body: unknown;
   clientIp: string;
   userAgent: string;
-  deployId: string | undefined;
+  buildId: string | undefined;
 };
 
 export function buildRequestLogData(params: RequestLogData): RequestLogData {
