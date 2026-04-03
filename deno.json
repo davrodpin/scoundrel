@@ -59,6 +59,7 @@
     "@scoundrel/game-service": "./lib/game/mod.ts",
     "@scoundrel/log-format": "./lib/log-format/mod.ts",
     "@scoundrel/cleanup": "./lib/cleanup/mod.ts",
+    "@scoundrel/metric-pusher": "./lib/metric-pusher/mod.ts",
     "@scoundrel/validation": "./lib/validation/mod.ts",
     "@scoundrel/telemetry": "./lib/telemetry/mod.ts",
     "@scoundrel/feedback": "./lib/feedback/mod.ts",
