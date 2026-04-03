@@ -93,7 +93,7 @@ export type RequestLogData = {
   body: unknown;
   clientIp: string;
   userAgent: string;
-  buildId: string | undefined;
+  revision: string | undefined;
 };
 
 export function buildRequestLogData(params: RequestLogData): RequestLogData {

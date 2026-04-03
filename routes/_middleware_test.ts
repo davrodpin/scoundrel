@@ -280,7 +280,7 @@ Deno.test("extractUserAgent - returns 'unknown' when User-Agent header is absent
 });
 
 // buildRequestLogData tests
-Deno.test("buildRequestLogData - includes buildId when provided", () => {
+Deno.test("buildRequestLogData - includes revision when provided", () => {
   const data = buildRequestLogData({
     method: "GET",
     path: "/api/games",
@@ -290,12 +290,12 @@ Deno.test("buildRequestLogData - includes buildId when provided", () => {
     body: null,
     clientIp: "1.2.3.4",
     userAgent: "TestBot/1.0",
-    buildId: "abc123",
+    revision: "abc123",
   });
-  assertEquals(data.buildId, "abc123");
+  assertEquals(data.revision, "abc123");
 });
 
-Deno.test("buildRequestLogData - includes buildId as undefined when not provided", () => {
+Deno.test("buildRequestLogData - includes revision as undefined when not provided", () => {
   const data = buildRequestLogData({
     method: "GET",
     path: "/api/games",
@@ -305,9 +305,9 @@ Deno.test("buildRequestLogData - includes buildId as undefined when not provided
     body: null,
     clientIp: "1.2.3.4",
     userAgent: "TestBot/1.0",
-    buildId: undefined,
+    revision: undefined,
   });
-  assertEquals(data.buildId, undefined);
+  assertEquals(data.revision, undefined);
 });
 
 Deno.test("buildRequestLogData - includes all expected request fields", () => {
@@ -320,7 +320,7 @@ Deno.test("buildRequestLogData - includes all expected request fields", () => {
     body: { type: "enter_room" },
     clientIp: "9.9.9.9",
     userAgent: "Mozilla/5.0",
-    buildId: "build-xyz",
+    revision: "build-xyz",
   });
   assertEquals(data.method, "POST");
   assertEquals(data.path, "/api/games/abc/actions");
@@ -330,5 +330,5 @@ Deno.test("buildRequestLogData - includes all expected request fields", () => {
   assertEquals(data.body, { type: "enter_room" });
   assertEquals(data.clientIp, "9.9.9.9");
   assertEquals(data.userAgent, "Mozilla/5.0");
-  assertEquals(data.buildId, "build-xyz");
+  assertEquals(data.revision, "build-xyz");
 });
