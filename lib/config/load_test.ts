@@ -18,6 +18,7 @@ const ALL_ENV_VARS = [
   "GRAFANA_INSTANCE_ID",
   "GRAFANA_API_TOKEN",
   "GRAFANA_OTLP_ENDPOINT",
+  "METRIC_PUSH_CRON_SCHEDULE",
 ];
 
 Deno.test(
@@ -120,6 +121,103 @@ Deno.test(
       Deno.env.delete("GRAFANA_INSTANCE_ID");
       Deno.env.delete("GRAFANA_API_TOKEN");
       Deno.env.delete("GRAFANA_OTLP_ENDPOINT");
+    }
+  },
+);
+
+Deno.test(
+  {
+    name:
+      "loadConfigFromEnv returns metricsPushSchedule '*/10 * * * *' for APP_ENV=production",
+    permissions: { env: ALL_ENV_VARS },
+  },
+  () => {
+    Deno.env.set("GRAFANA_INSTANCE_ID", "123456");
+    Deno.env.set("GRAFANA_API_TOKEN", "glc_abc");
+    Deno.env.set("GRAFANA_OTLP_ENDPOINT", "https://otlp.grafana.net/otlp");
+    Deno.env.set("APP_ENV", "production");
+    try {
+      const raw = loadConfigFromEnv() as Record<string, unknown>;
+      const grafana = raw["grafana"] as Record<string, unknown>;
+      assertEquals(grafana["metricsPushSchedule"], "*/10 * * * *");
+    } finally {
+      Deno.env.delete("GRAFANA_INSTANCE_ID");
+      Deno.env.delete("GRAFANA_API_TOKEN");
+      Deno.env.delete("GRAFANA_OTLP_ENDPOINT");
+      Deno.env.delete("APP_ENV");
+    }
+  },
+);
+
+Deno.test(
+  {
+    name:
+      "loadConfigFromEnv returns metricsPushSchedule '* * * * *' for APP_ENV=test",
+    permissions: { env: ALL_ENV_VARS },
+  },
+  () => {
+    Deno.env.set("GRAFANA_INSTANCE_ID", "123456");
+    Deno.env.set("GRAFANA_API_TOKEN", "glc_abc");
+    Deno.env.set("GRAFANA_OTLP_ENDPOINT", "https://otlp.grafana.net/otlp");
+    Deno.env.set("APP_ENV", "test");
+    try {
+      const raw = loadConfigFromEnv() as Record<string, unknown>;
+      const grafana = raw["grafana"] as Record<string, unknown>;
+      assertEquals(grafana["metricsPushSchedule"], "* * * * *");
+    } finally {
+      Deno.env.delete("GRAFANA_INSTANCE_ID");
+      Deno.env.delete("GRAFANA_API_TOKEN");
+      Deno.env.delete("GRAFANA_OTLP_ENDPOINT");
+      Deno.env.delete("APP_ENV");
+    }
+  },
+);
+
+Deno.test(
+  {
+    name:
+      "loadConfigFromEnv returns metricsPushSchedule '* * * * *' when APP_ENV is not set",
+    permissions: { env: ALL_ENV_VARS },
+  },
+  () => {
+    Deno.env.set("GRAFANA_INSTANCE_ID", "123456");
+    Deno.env.set("GRAFANA_API_TOKEN", "glc_abc");
+    Deno.env.set("GRAFANA_OTLP_ENDPOINT", "https://otlp.grafana.net/otlp");
+    Deno.env.delete("APP_ENV");
+    try {
+      const raw = loadConfigFromEnv() as Record<string, unknown>;
+      const grafana = raw["grafana"] as Record<string, unknown>;
+      assertEquals(grafana["metricsPushSchedule"], "* * * * *");
+    } finally {
+      Deno.env.delete("GRAFANA_INSTANCE_ID");
+      Deno.env.delete("GRAFANA_API_TOKEN");
+      Deno.env.delete("GRAFANA_OTLP_ENDPOINT");
+    }
+  },
+);
+
+Deno.test(
+  {
+    name:
+      "loadConfigFromEnv uses METRIC_PUSH_CRON_SCHEDULE env var over APP_ENV default",
+    permissions: { env: ALL_ENV_VARS },
+  },
+  () => {
+    Deno.env.set("GRAFANA_INSTANCE_ID", "123456");
+    Deno.env.set("GRAFANA_API_TOKEN", "glc_abc");
+    Deno.env.set("GRAFANA_OTLP_ENDPOINT", "https://otlp.grafana.net/otlp");
+    Deno.env.set("APP_ENV", "production");
+    Deno.env.set("METRIC_PUSH_CRON_SCHEDULE", "*/2 * * * *");
+    try {
+      const raw = loadConfigFromEnv() as Record<string, unknown>;
+      const grafana = raw["grafana"] as Record<string, unknown>;
+      assertEquals(grafana["metricsPushSchedule"], "*/2 * * * *");
+    } finally {
+      Deno.env.delete("GRAFANA_INSTANCE_ID");
+      Deno.env.delete("GRAFANA_API_TOKEN");
+      Deno.env.delete("GRAFANA_OTLP_ENDPOINT");
+      Deno.env.delete("APP_ENV");
+      Deno.env.delete("METRIC_PUSH_CRON_SCHEDULE");
     }
   },
 );

@@ -121,13 +121,17 @@ if (typeof Deno.cron === "function") {
         "deployment.environment": config.app.env,
       },
     });
-    Deno.cron("game-metrics-push", "* * * * *", async () => {
-      try {
-        await metricPusher.pushGameMetrics();
-      } catch (error) {
-        logger.error("Game metrics push failed", { error });
-      }
-    });
+    Deno.cron(
+      "game-metrics-push",
+      config.grafana.metricsPushSchedule,
+      async () => {
+        try {
+          await metricPusher.pushGameMetrics();
+        } catch (error) {
+          logger.error("Game metrics push failed", { error });
+        }
+      },
+    );
   }
 }
 

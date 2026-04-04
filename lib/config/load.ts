@@ -4,7 +4,20 @@ function parseOptionalInt(value: string | undefined): number | undefined {
   return isNaN(n) ? undefined : n;
 }
 
+function resolveMetricsPushSchedule(appEnv: string | undefined): string {
+  const explicit = Deno.env.get("METRIC_PUSH_CRON_SCHEDULE");
+  if (explicit) return explicit;
+
+  switch (appEnv) {
+    case "production":
+      return "*/10 * * * *";
+    default:
+      return "* * * * *";
+  }
+}
+
 export function loadConfigFromEnv(): unknown {
+  const appEnv = Deno.env.get("APP_ENV");
   return {
     db: { url: Deno.env.get("DATABASE_URL") },
     app: {
@@ -13,7 +26,7 @@ export function loadConfigFromEnv(): unknown {
       maxPlayerNameLength: parseOptionalInt(
         Deno.env.get("MAX_PLAYER_NAME_LENGTH"),
       ),
-      env: Deno.env.get("APP_ENV"),
+      env: appEnv,
     },
     game: {
       defaultPlayerName: Deno.env.get("DEFAULT_PLAYER_NAME"),
@@ -38,6 +51,7 @@ export function loadConfigFromEnv(): unknown {
         instanceId: Deno.env.get("GRAFANA_INSTANCE_ID"),
         apiToken: Deno.env.get("GRAFANA_API_TOKEN"),
         endpoint: Deno.env.get("GRAFANA_OTLP_ENDPOINT"),
+        metricsPushSchedule: resolveMetricsPushSchedule(appEnv),
       }
       : undefined,
   };
