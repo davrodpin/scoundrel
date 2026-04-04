@@ -20,6 +20,7 @@ import {
 import type { Counter, Histogram } from "@opentelemetry/api";
 import { define } from "@/utils.ts";
 import {
+  buildRequestLogData,
   captureRequestBody,
   checkBodySize,
   extractClientIp,
@@ -197,14 +198,17 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
       flushMetrics().catch(() => {});
     }
     logger.error("Request", {
-      method,
-      path,
-      status,
-      duration,
-      gameId,
-      body,
-      clientIp,
-      userAgent,
+      ...buildRequestLogData({
+        method,
+        path,
+        status,
+        duration,
+        gameId,
+        body,
+        clientIp,
+        userAgent,
+        revision: config.deploy.id,
+      }),
       ...extractErrorInfo(error),
     });
     flushLogs().catch(() => {});
@@ -231,7 +235,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     flushMetrics().catch(() => {});
   }
 
-  const data = {
+  const data = buildRequestLogData({
     method,
     path,
     status,
@@ -240,7 +244,8 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     body,
     clientIp,
     userAgent,
-  };
+    revision: config.deploy.id,
+  });
 
   if (status >= 500) {
     logger.error("Request", data);
