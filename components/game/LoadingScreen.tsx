@@ -1,4 +1,6 @@
 /** @jsxImportSource preact */
+import { useEffect, useState } from "preact/hooks";
+import { pickRandomQuote } from "./loading_quotes.ts";
 
 type LoadingScreenProps = {
   loaded: number;
@@ -7,6 +9,14 @@ type LoadingScreenProps = {
 
 export function LoadingScreen({ loaded, total }: LoadingScreenProps) {
   const pct = total === 0 ? 0 : Math.round((loaded / total) * 100);
+  const [quote, setQuote] = useState(() => pickRandomQuote());
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setQuote((prev) => pickRandomQuote(prev));
+    }, 4000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div class="min-h-dvh bg-dungeon-bg flex flex-col items-center justify-center gap-6">
@@ -25,8 +35,8 @@ export function LoadingScreen({ loaded, total }: LoadingScreenProps) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p class="text-parchment-dark font-body text-sm">
-        Loading cards... {loaded} / {total}
+      <p class="text-parchment-dark font-body text-sm italic text-center max-w-xs px-4">
+        {quote}
       </p>
     </div>
   );
