@@ -46,6 +46,7 @@ import {
 } from "./deck_preference.ts";
 import { preloadImages } from "./image_preloader.ts";
 import type { PreloadProgress } from "./image_preloader.ts";
+import { BUILD_ID } from "@fresh/build-id";
 
 type GameBoardProps = { gameId?: string };
 
@@ -318,9 +319,12 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       const activeDeck = availableDecks.value.find(
         (d) => d.id === selectedDeckId.value,
       );
-      const paths = activeDeck
+      const rawPaths = activeDeck
         ? getAllDeckCardImagePaths(activeDeck)
         : getAllCardImagePaths();
+      // Append the Fresh build ID so preloaded URLs match what the renderer
+      // requests, allowing the browser to serve card images from cache.
+      const paths = rawPaths.map((p) => `${p}?__frsh_c=${BUILD_ID}`);
       preloadProgress.value = { loaded: 0, total: paths.length };
       await preloadImages(paths, (progress) => {
         preloadProgress.value = progress;
