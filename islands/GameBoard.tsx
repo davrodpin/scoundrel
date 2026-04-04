@@ -22,6 +22,7 @@ import { GameOverOverlay } from "../components/game/GameOverOverlay.tsx";
 import { RulesPanel } from "../components/game/RulesPanel.tsx";
 import { LeaderboardPanel } from "../components/game/LeaderboardPanel.tsx";
 import { FeedbackPanel } from "../components/game/FeedbackPanel.tsx";
+import { LoadingScreen } from "../components/game/LoadingScreen.tsx";
 import { WelcomeScreen } from "../components/game/WelcomeScreen.tsx";
 import { MobileDungeonButton } from "../components/game/MobileDungeonButton.tsx";
 import { MobileCardActionOverlay } from "../components/game/MobileCardActionOverlay.tsx";
@@ -43,6 +44,8 @@ import {
   loadDeckPreference,
   saveDeckPreference,
 } from "./deck_preference.ts";
+import { preloadImages } from "./image_preloader.ts";
+import type { PreloadProgress } from "./image_preloader.ts";
 
 type GameBoardProps = { gameId?: string };
 
@@ -71,6 +74,7 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   const feedbackSubmitting = useSignal(false);
   const feedbackSubmitted = useSignal(false);
   const feedbackError = useSignal<string | null>(null);
+  const preloadProgress = useSignal<PreloadProgress | null>(null);
 
   async function fetchLeaderboard() {
     leaderboardLoading.value = true;
@@ -310,19 +314,21 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
       selectedCardIndex.value = null;
       errorMsg.value = null;
       showLeaderboard.value = false;
-      // Preload card images for the selected deck
+      // Preload card images for the selected deck before revealing the board.
       const activeDeck = availableDecks.value.find(
         (d) => d.id === selectedDeckId.value,
       );
       const paths = activeDeck
         ? getAllDeckCardImagePaths(activeDeck)
         : getAllCardImagePaths();
-      for (const path of paths) {
-        const img = new Image();
-        img.src = path;
-      }
+      preloadProgress.value = { loaded: 0, total: paths.length };
+      await preloadImages(paths, (progress) => {
+        preloadProgress.value = progress;
+      });
+      preloadProgress.value = null;
     } catch {
       errorMsg.value = "Failed to create game";
+      preloadProgress.value = null;
     } finally {
       pendingAction.value = { kind: "idle" };
     }
@@ -521,6 +527,16 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           maxMessageLength={2000}
         />
       </>
+    );
+  }
+
+  // Image preloading screen — shown after game creation while images are cached.
+  if (preloadProgress.value !== null) {
+    return (
+      <LoadingScreen
+        loaded={preloadProgress.value.loaded}
+        total={preloadProgress.value.total}
+      />
     );
   }
 
