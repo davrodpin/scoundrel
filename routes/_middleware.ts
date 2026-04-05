@@ -121,16 +121,13 @@ if (typeof Deno.cron === "function") {
         "service.name": "scoundrel",
         "deployment.environment": config.app.env,
       },
+      revision: config.deploy.id,
     });
     Deno.cron(
       "game-metrics-push",
       config.grafana.metricsPushSchedule,
       async () => {
-        try {
-          await metricPusher.pushGameMetrics();
-        } catch (error) {
-          logger.error("Game metrics push failed", { error });
-        }
+        await metricPusher.pushGameMetrics();
       },
     );
   }

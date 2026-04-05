@@ -9,6 +9,7 @@ export type MetricPusherConfig = {
   grafanaEndpoint: string;
   grafanaAuthHeaders: Record<string, string>;
   resourceAttributes: Record<string, string>;
+  revision?: string;
 };
 
 export type MetricPusherService = {
@@ -91,18 +92,26 @@ export function createMetricPusherService(
           body: JSON.stringify(payload),
         });
 
+        const revision = config.revision;
         if (response.ok) {
-          logger.info("Game metrics pushed", { inProgress, completed });
+          logger.info("Game metrics pushed", {
+            inProgress,
+            completed,
+            revision,
+          });
         } else {
           const body = await response.text().catch(() => "");
           logger.error("Game metrics push failed", {
             status: response.status,
             body,
+            revision,
           });
         }
       } catch (err) {
         logger.error("Game metrics push network error", {
           error: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
+          revision: config.revision,
         });
       }
     },
