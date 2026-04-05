@@ -120,6 +120,7 @@ if (typeof Deno.cron === "function") {
       resourceAttributes: {
         "service.name": "scoundrel",
         "deployment.environment": config.app.env,
+        "revision": config.deploy.id ?? "unknown",
       },
       revision: config.deploy.id,
     });

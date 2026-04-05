@@ -33,6 +33,7 @@ const BASE_CONFIG = {
   resourceAttributes: {
     "service.name": "scoundrel",
     "deployment.environment": "test",
+    "revision": "build-abc123",
   },
   revision: "build-abc123",
 };
@@ -141,8 +142,10 @@ Deno.test("pushGameMetrics payload includes resource attributes", async () => {
     body.resourceMetrics[0].resource.attributes;
   const serviceNameAttr = attrs.find((a) => a.key === "service.name");
   const envAttr = attrs.find((a) => a.key === "deployment.environment");
+  const revisionAttr = attrs.find((a) => a.key === "revision");
   assertEquals(serviceNameAttr?.value.stringValue, "scoundrel");
   assertEquals(envAttr?.value.stringValue, "test");
+  assertEquals(revisionAttr?.value.stringValue, "build-abc123");
 });
 
 Deno.test("pushGameMetrics does not throw when Grafana returns error status", async () => {
