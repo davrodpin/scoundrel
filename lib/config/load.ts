@@ -32,7 +32,7 @@ export function loadConfigFromEnv(): unknown {
       defaultPlayerName: Deno.env.get("DEFAULT_PLAYER_NAME"),
       leaderboardLimit: parseOptionalInt(Deno.env.get("LEADERBOARD_LIMIT")),
     },
-    deploy: { id: Deno.env.get("DENO_DEPLOYMENT_ID") },
+    deploy: { id: Deno.env.get("DENO_DEPLOY_BUILD_ID") },
     cleanup: {
       retentionDays: parseOptionalInt(Deno.env.get("GAME_RETENTION_DAYS")),
     },
