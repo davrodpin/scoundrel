@@ -8,6 +8,7 @@ import {
   createGameService,
   createPrismaGameRepository,
 } from "@scoundrel/game-service";
+import { createMetricPusherService } from "@scoundrel/metric-pusher";
 import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
 import {
@@ -20,6 +21,7 @@ import {
 import type { Counter, Histogram } from "@opentelemetry/api";
 import { define } from "@/utils.ts";
 import {
+  buildRequestLogData,
   captureRequestBody,
   checkBodySize,
   extractClientIp,
@@ -81,7 +83,6 @@ const gameService = createGameService(
     leaderboardLimit: config.game.leaderboardLimit,
   },
   tracer,
-  getMeter,
 );
 
 const logger = getLogger(["scoundrel", "http"]);
@@ -106,6 +107,29 @@ if (typeof Deno.cron === "function") {
       logger.error("Scheduled cleanup failed", { error });
     }
   });
+
+  if (config.grafana) {
+    const credentials = btoa(
+      `${config.grafana.instanceId}:${config.grafana.apiToken}`,
+    );
+    const metricPusher = createMetricPusherService(repository, {
+      grafanaEndpoint: `${config.grafana.endpoint}/v1/metrics`,
+      grafanaAuthHeaders: { Authorization: `Basic ${credentials}` },
+      resourceAttributes: {
+        "service.name": "scoundrel",
+        "deployment.environment": config.app.env,
+        "revision": config.deploy.id ?? "unknown",
+      },
+      revision: config.deploy.id,
+    });
+    Deno.cron(
+      "game-metrics-push",
+      config.grafana.metricsPushSchedule,
+      async () => {
+        await metricPusher.pushGameMetrics();
+      },
+    );
+  }
 }
 
 const GAME_ID_REGEX = /\/api\/games\/([^/]+)/;
@@ -195,14 +219,17 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
       flushMetrics().catch(() => {});
     }
     logger.error("Request", {
-      method,
-      path,
-      status,
-      duration,
-      gameId,
-      body,
-      clientIp,
-      userAgent,
+      ...buildRequestLogData({
+        method,
+        path,
+        status,
+        duration,
+        gameId,
+        body,
+        clientIp,
+        userAgent,
+        revision: config.deploy.id,
+      }),
       ...extractErrorInfo(error),
     });
     flushLogs().catch(() => {});
@@ -229,7 +256,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     flushMetrics().catch(() => {});
   }
 
-  const data = {
+  const data = buildRequestLogData({
     method,
     path,
     status,
@@ -238,7 +265,8 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     body,
     clientIp,
     userAgent,
-  };
+    revision: config.deploy.id,
+  });
 
   if (status >= 500) {
     logger.error("Request", data);

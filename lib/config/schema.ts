@@ -30,6 +30,7 @@ export const configSchema = z.object({
     instanceId: z.string().min(1),
     apiToken: z.string().min(1),
     endpoint: z.string().url(),
+    metricsPushSchedule: z.string().min(1),
   }).optional(),
 });
 

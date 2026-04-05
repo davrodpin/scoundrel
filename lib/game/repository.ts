@@ -38,6 +38,7 @@ export type GameRepository = {
     completedAt: Date,
   ): Promise<void>;
   deleteGamesOlderThan(cutoffDate: Date): Promise<number>;
+  countGamesByStatus(): Promise<{ inProgress: number; completed: number }>;
 };
 
 function withSpan<T>(
@@ -323,6 +324,16 @@ export function createPrismaGameRepository(
           }
           throw err;
         }
+      });
+    },
+
+    countGamesByStatus(): Promise<{ inProgress: number; completed: number }> {
+      return withSpan(tracer, "db.countGamesByStatus", {}, async () => {
+        const [inProgress, completed] = await Promise.all([
+          prisma.game.count({ where: { status: "in_progress" } }),
+          prisma.game.count({ where: { status: "completed" } }),
+        ]);
+        return { inProgress, completed };
       });
     },
 

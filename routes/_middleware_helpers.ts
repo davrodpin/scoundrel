@@ -84,6 +84,22 @@ export function extractErrorInfo(
   return { error: String(error), errorStack: "" };
 }
 
+export type RequestLogData = {
+  method: string;
+  path: string;
+  status: number;
+  duration: number;
+  gameId: string | undefined;
+  body: unknown;
+  clientIp: string;
+  userAgent: string;
+  revision: string | undefined;
+};
+
+export function buildRequestLogData(params: RequestLogData): RequestLogData {
+  return params;
+}
+
 export async function captureRequestBody(
   req: Request,
   method: string,
