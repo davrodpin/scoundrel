@@ -1,6 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import { SpanStatusCode } from "@opentelemetry/api";
-import type { Counter, Meter, Span, Tracer } from "@opentelemetry/api";
+import type { Span, Tracer } from "@opentelemetry/api";
 import type {
   ActionAppliedEvent,
   ChooseCardAction,
@@ -38,33 +38,8 @@ export function createGameService(
   repository: GameRepository,
   config: GameServiceConfig,
   tracer: Tracer,
-  getMeter?: () => Meter | undefined,
 ): GameService {
   const logger = getLogger(["scoundrel", "game"]);
-
-  let gamesInProgress: Counter | undefined;
-  let gamesCompleted: Counter | undefined;
-
-  function getGameInstruments(): {
-    inProgress: Counter;
-    completed: Counter;
-  } | null {
-    if (!gamesInProgress) {
-      const meter = getMeter?.();
-      if (!meter) return null;
-      gamesInProgress = meter.createCounter("game.in_progress", {
-        description: "Number of games started",
-        unit: "{game}",
-      });
-      gamesCompleted = meter.createCounter("game.completed", {
-        description: "Number of completed games",
-        unit: "{game}",
-      });
-    }
-    return gamesCompleted
-      ? { inProgress: gamesInProgress!, completed: gamesCompleted }
-      : null;
-  }
 
   function withSpan<T>(
     name: string,
@@ -99,7 +74,6 @@ export function createGameService(
         "player.name": playerName,
       }, async () => {
         await repository.createGame(state.gameId, playerName, createdEvent);
-        getGameInstruments()?.inProgress.add(1);
         logger.info("Game created", { gameId: state.gameId, playerName });
         return toGameView(state, playerName);
       });
@@ -153,7 +127,6 @@ export function createGameService(
               span,
               tracer,
               logger,
-              getGameInstruments,
             );
           }
 
@@ -216,7 +189,7 @@ export function createGameService(
                         new Date(),
                       ),
                     ]);
-                    getGameInstruments()?.completed.add(1);
+
                     logger.info("Game completed", { gameId, score });
                     logger.info("Leaderboard entry created", {
                       gameId,
@@ -275,7 +248,6 @@ export function createGameService(
                       new Date(),
                     ),
                   ]);
-                  getGameInstruments()?.completed.add(1);
                   logger.info("Game completed", { gameId, score });
                   logger.info("Leaderboard entry created", { gameId, score });
                 } catch (err) {
@@ -427,7 +399,6 @@ function handleFillRoom(
   span: Span,
   tracer: Tracer,
   logger: ReturnType<typeof getLogger>,
-  getGameInstruments: () => { inProgress: Counter; completed: Counter } | null,
 ): Promise<GameView> {
   return tracer.startActiveSpan(
     "game.submitAction.fillRoom",
@@ -466,7 +437,6 @@ function handleFillRoom(
               new Date(),
             ),
           ]);
-          getGameInstruments()?.completed.add(1);
           logger.info("Game completed", { gameId, score });
           logger.info("Leaderboard entry created", { gameId, score });
         }

@@ -1,4 +1,5 @@
 import { App, staticFiles } from "fresh";
+import { shouldApplyDeckCache } from "./main_helpers.ts";
 import { configure, getConsoleSink, type Sink } from "@logtape/logtape";
 import { selectFormatter } from "@scoundrel/log-format";
 import { config } from "@scoundrel/config";
@@ -83,6 +84,17 @@ await configure({
 });
 
 export const app = new App<State>();
+
+app.use(async function cacheStaticAssets(ctx) {
+  const response = await ctx.next();
+  if (shouldApplyDeckCache(ctx.url.pathname)) {
+    response.headers.set(
+      "Cache-Control",
+      "public, max-age=31536000, immutable",
+    );
+  }
+  return response;
+});
 
 app.use(staticFiles());
 

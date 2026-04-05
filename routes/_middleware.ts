@@ -1,13 +1,14 @@
 import { getLogger } from "@logtape/logtape";
 import { PrismaClient } from "../lib/generated/prisma/client.ts";
 import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
+import { createResilientRepository } from "@scoundrel/db";
 import { createCleanupService } from "@scoundrel/cleanup";
 import { createGameEngine } from "@scoundrel/engine";
 import {
   createGameService,
   createPrismaGameRepository,
 } from "@scoundrel/game-service";
+import { createMetricPusherService } from "@scoundrel/metric-pusher";
 import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
 import {
@@ -20,6 +21,7 @@ import {
 import type { Counter, Histogram } from "@opentelemetry/api";
 import { define } from "@/utils.ts";
 import {
+  buildRequestLogData,
   captureRequestBody,
   checkBodySize,
   extractClientIp,
@@ -62,19 +64,17 @@ function normalizePath(path: string): string {
   return path.replace(UUID_SEGMENT_REGEX, "/{id}");
 }
 
-const pool = new pg.Pool({
+const adapter = new PrismaPg({
   connectionString: config.db.url,
-  max: 5,
-  connectionTimeoutMillis: 5000,
+  max: 3,
+  connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
 });
-const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
-// Eagerly establish one connection so the first real request doesn't pay
-// the ~500ms cold-connect cost on a fresh Deno Deploy isolate.
-pool.connect().then((client) => client.release()).catch(() => {});
 const engine = createGameEngine();
-const repository = createPrismaGameRepository(prisma, tracer);
+const repository = createResilientRepository(
+  createPrismaGameRepository(prisma, tracer),
+);
 const gameService = createGameService(
   engine,
   repository,
@@ -83,7 +83,6 @@ const gameService = createGameService(
     leaderboardLimit: config.game.leaderboardLimit,
   },
   tracer,
-  getMeter,
 );
 
 const logger = getLogger(["scoundrel", "http"]);
@@ -108,6 +107,29 @@ if (typeof Deno.cron === "function") {
       logger.error("Scheduled cleanup failed", { error });
     }
   });
+
+  if (config.grafana) {
+    const credentials = btoa(
+      `${config.grafana.instanceId}:${config.grafana.apiToken}`,
+    );
+    const metricPusher = createMetricPusherService(repository, {
+      grafanaEndpoint: `${config.grafana.endpoint}/v1/metrics`,
+      grafanaAuthHeaders: { Authorization: `Basic ${credentials}` },
+      resourceAttributes: {
+        "service.name": "scoundrel",
+        "deployment.environment": config.app.env,
+        "revision": config.deploy.id ?? "unknown",
+      },
+      revision: config.deploy.id,
+    });
+    Deno.cron(
+      "game-metrics-push",
+      config.grafana.metricsPushSchedule,
+      async () => {
+        await metricPusher.pushGameMetrics();
+      },
+    );
+  }
 }
 
 const GAME_ID_REGEX = /\/api\/games\/([^/]+)/;
@@ -197,14 +219,17 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
       flushMetrics().catch(() => {});
     }
     logger.error("Request", {
-      method,
-      path,
-      status,
-      duration,
-      gameId,
-      body,
-      clientIp,
-      userAgent,
+      ...buildRequestLogData({
+        method,
+        path,
+        status,
+        duration,
+        gameId,
+        body,
+        clientIp,
+        userAgent,
+        revision: config.deploy.id,
+      }),
       ...extractErrorInfo(error),
     });
     flushLogs().catch(() => {});
@@ -231,7 +256,7 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     flushMetrics().catch(() => {});
   }
 
-  const data = {
+  const data = buildRequestLogData({
     method,
     path,
     status,
@@ -240,7 +265,8 @@ const requestLoggingMiddleware = define.middleware(async (ctx) => {
     body,
     clientIp,
     userAgent,
-  };
+    revision: config.deploy.id,
+  });
 
   if (status >= 500) {
     logger.error("Request", data);

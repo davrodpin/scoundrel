@@ -140,6 +140,9 @@ function createMockRepository(
     deleteGamesOlderThan(_cutoffDate: Date): Promise<number> {
       return Promise.resolve(0);
     },
+    countGamesByStatus(): Promise<{ inProgress: number; completed: number }> {
+      return Promise.resolve({ inProgress: 0, completed: 0 });
+    },
   };
 }
 
