@@ -17,6 +17,7 @@ function makeMockPrismaClient(): MockPrisma {
       findUnique: () => Promise.resolve(null),
       findMany: () => Promise.resolve([]),
       deleteMany: () => Promise.resolve({ count: 0 }),
+      count: () => Promise.resolve(0),
     },
     gameEvent: {
       create: () => Promise.resolve(),
@@ -52,6 +53,7 @@ Deno.test("createPrismaGameRepository returns object with all repository methods
   assertEquals(typeof repo.getLeaderboardEntry, "function");
   assertEquals(typeof repo.createLeaderboardEntry, "function");
   assertEquals(typeof repo.deleteGamesOlderThan, "function");
+  assertEquals(typeof repo.countGamesByStatus, "function");
 });
 
 Deno.test("createGame calls $transaction on prisma client", async () => {
@@ -584,4 +586,37 @@ Deno.test("createLeaderboardEntry inserts when same score but different playerNa
   );
 
   assertEquals(upsertCalled, true);
+});
+
+Deno.test("countGamesByStatus returns inProgress and completed counts from prisma", async () => {
+  const mockPrisma = makeMockPrismaClient();
+  mockPrisma.game.count = (args: { where: { status: string } }) => {
+    if (args.where.status === "in_progress") return Promise.resolve(7);
+    if (args.where.status === "completed") return Promise.resolve(53);
+    return Promise.resolve(0);
+  };
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
+  );
+
+  const result = await repo.countGamesByStatus();
+
+  assertEquals(result.inProgress, 7);
+  assertEquals(result.completed, 53);
+});
+
+Deno.test("countGamesByStatus returns zeros when no games exist", async () => {
+  const mockPrisma = makeMockPrismaClient();
+
+  const repo = createPrismaGameRepository(
+    mockPrisma as unknown as PrismaClient,
+    createSpyTracer().tracer,
+  );
+
+  const result = await repo.countGamesByStatus();
+
+  assertEquals(result.inProgress, 0);
+  assertEquals(result.completed, 0);
 });

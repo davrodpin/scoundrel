@@ -8,6 +8,7 @@ import {
   createGameService,
   createPrismaGameRepository,
 } from "@scoundrel/game-service";
+import { createMetricPusherService } from "@scoundrel/metric-pusher";
 import { createFeedbackService } from "@scoundrel/feedback";
 import { config } from "@scoundrel/config";
 import {
@@ -84,7 +85,6 @@ const gameService = createGameService(
     leaderboardLimit: config.game.leaderboardLimit,
   },
   tracer,
-  getMeter,
 );
 
 const logger = getLogger(["scoundrel", "http"]);
@@ -109,6 +109,29 @@ if (typeof Deno.cron === "function") {
       logger.error("Scheduled cleanup failed", { error });
     }
   });
+
+  if (config.grafana) {
+    const credentials = btoa(
+      `${config.grafana.instanceId}:${config.grafana.apiToken}`,
+    );
+    const metricPusher = createMetricPusherService(repository, {
+      grafanaEndpoint: `${config.grafana.endpoint}/v1/metrics`,
+      grafanaAuthHeaders: { Authorization: `Basic ${credentials}` },
+      resourceAttributes: {
+        "service.name": "scoundrel",
+        "deployment.environment": config.app.env,
+        "revision": config.deploy.id ?? "unknown",
+      },
+      revision: config.deploy.id,
+    });
+    Deno.cron(
+      "game-metrics-push",
+      config.grafana.metricsPushSchedule,
+      async () => {
+        await metricPusher.pushGameMetrics();
+      },
+    );
+  }
 }
 
 const GAME_ID_REGEX = /\/api\/games\/([^/]+)/;
