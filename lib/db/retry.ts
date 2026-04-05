@@ -84,5 +84,6 @@ export function createResilientRepository(
       ),
     deleteGamesOlderThan: (cutoffDate) =>
       wrap(() => inner.deleteGamesOlderThan(cutoffDate)),
+    countGamesByStatus: () => wrap(() => inner.countGamesByStatus()),
   };
 }
