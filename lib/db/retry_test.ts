@@ -184,8 +184,7 @@ function makeStubRepo(overrides: Partial<GameRepository> = {}): GameRepository {
     getLeaderboardRank: () => Promise.resolve({ rank: 1, totalEntries: 1 }),
     createLeaderboardEntry: () => Promise.resolve(),
     deleteGamesOlderThan: () => Promise.resolve(0),
-    countGamesByStatus: () =>
-      Promise.resolve({ inProgress: 0, completed: 0 }),
+    countGamesByStatus: () => Promise.resolve({ inProgress: 0, completed: 0 }),
     ...overrides,
   };
   return stub;
