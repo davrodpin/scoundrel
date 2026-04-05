@@ -753,6 +753,8 @@ function describeAction(
       const card = stateBefore.dungeon[0];
       return card ? `Draw ${formatCardLong(card)}` : "Draw card";
     }
+    case "fill_room":
+      return "Fill room";
     case "avoid_room":
       return "Avoid room";
     case "enter_room":

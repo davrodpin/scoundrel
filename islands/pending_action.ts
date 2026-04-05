@@ -1,6 +1,7 @@
 export type PendingAction =
   | { kind: "idle" }
   | { kind: "draw_card" }
+  | { kind: "fill_room" }
   | { kind: "avoid_room" }
   | {
     kind: "choose_card";
@@ -24,7 +25,11 @@ export function isPendingOnCard(
 }
 
 export function isPendingDraw(action: PendingAction): boolean {
-  return action.kind === "draw_card";
+  return action.kind === "draw_card" || action.kind === "fill_room";
+}
+
+export function isPendingFillRoom(action: PendingAction): boolean {
+  return action.kind === "fill_room";
 }
 
 export function isPendingAvoidRoom(action: PendingAction): boolean {
@@ -51,6 +56,8 @@ export function pendingActionLabel(action: PendingAction): string | null {
       return null;
     case "draw_card":
       return "Drawing fate...";
+    case "fill_room":
+      return "Entering the room...";
     case "avoid_room":
       return "Retreating from the room...";
     case "choose_card":

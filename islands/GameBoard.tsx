@@ -36,6 +36,7 @@ import { handleKeyboardEvent, type KeyboardState } from "./keyboard_handler.ts";
 import {
   isPending,
   isPendingAvoidRoom,
+  isPendingFillRoom,
   type PendingAction,
   pendingActionLabel,
 } from "./pending_action.ts";
@@ -236,6 +237,8 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
           equipWeapon: panelStateNow.equipWeapon.enabled && !isLoadingNow,
           drawCard: view.phase.kind === "drawing" &&
             view.dungeonCount > 0 && !isLoadingNow,
+          fillRoom: view.phase.kind === "drawing" &&
+            view.dungeonCount > 0 && !isLoadingNow,
           openRules: true,
           copyLink: true,
           openLeaderboard: true,
@@ -277,6 +280,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
               break;
             case "drawCard":
               handleDrawCard();
+              break;
+            case "fillRoom":
+              handleFillRoom();
               break;
             case "openRules":
               handleToggleRules();
@@ -390,6 +396,11 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
   function handleDrawCard() {
     pendingAction.value = { kind: "draw_card" };
     dispatch({ type: "draw_card" });
+  }
+
+  function handleFillRoom() {
+    pendingAction.value = { kind: "fill_room" };
+    dispatch({ type: "fill_room" });
   }
 
   function handleAvoidRoom() {
@@ -555,6 +566,16 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     ? state.phase.cardsChosen
     : 0;
 
+  const isDrawPhase = state.phase.kind === "drawing";
+  const isDungeonInteractive = isDrawPhase && state.dungeonCount > 0 &&
+    !isLoading;
+  const isDungeonPending = isDrawPhase &&
+    pendingAction.value.kind === "draw_card";
+  const isFillRoomInteractive = isDrawPhase && state.dungeonCount > 0 &&
+    !isLoading;
+  const isFillRoomPending = isDrawPhase &&
+    isPendingFillRoom(pendingAction.value);
+
   // Compute action panel state
   const panelState = computeActionPanel(
     {
@@ -571,6 +592,16 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     avoidRoom: {
       enabled: panelState.avoidRoom.enabled && !isLoading,
       onClick: handleAvoidRoom,
+    },
+    drawCard: {
+      enabled: isDungeonInteractive,
+      onClick: handleDrawCard,
+      pending: isDungeonPending,
+    },
+    fillRoom: {
+      enabled: isFillRoomInteractive,
+      onClick: handleFillRoom,
+      pending: isFillRoomPending,
     },
     fightWithWeapon: {
       enabled: panelState.fightWithWeapon.enabled && !isLoading,
@@ -656,12 +687,6 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
     }
   }
 
-  const isDrawPhase = state.phase.kind === "drawing";
-  const isDungeonInteractive = isDrawPhase && state.dungeonCount > 0 &&
-    !isLoading;
-  const isDungeonPending = isDrawPhase &&
-    pendingAction.value.kind === "draw_card";
-
   return (
     <div
       class="min-h-dvh bg-dungeon-bg text-parchment p-2 md:p-4 font-body flex flex-col items-center"
@@ -715,6 +740,17 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             }}
           />
 
+          {/* Action Bar */}
+          <ActionBar
+            phase={state.phase}
+            cardsChosen={cardsChosen}
+            lastRoomAvoided={state.lastRoomAvoided}
+            cardSelected={selectedCardIndex.value !== null}
+            roomSize={state.room.length}
+            panelState={panelState}
+            pendingAction={pendingAction.value}
+          />
+
           {/* Main play area */}
           <div class="grid grid-cols-[auto_auto_auto] gap-4 items-stretch">
             {/* Dungeon pile */}
@@ -747,17 +783,6 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
             </GameSection>
           </div>
         </div>
-
-        {/* Action Bar */}
-        <ActionBar
-          phase={state.phase}
-          cardsChosen={cardsChosen}
-          lastRoomAvoided={state.lastRoomAvoided}
-          cardSelected={selectedCardIndex.value !== null}
-          roomSize={state.room.length}
-          panelState={panelState}
-          pendingAction={pendingAction.value}
-        />
 
         {/* Error message */}
         {errorMsg.value && (
@@ -848,6 +873,9 @@ export default function GameBoard({ gameId: initialGameId }: GameBoardProps) {
               interactive={isDungeonInteractive}
               onClick={handleDrawCard}
               pending={isDungeonPending}
+              onFillRoom={handleFillRoom}
+              fillRoomInteractive={isFillRoomInteractive}
+              fillRoomPending={isFillRoomPending}
             />
           )
           : (

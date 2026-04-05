@@ -13,8 +13,13 @@ type DungeonPileProps = {
 };
 
 export function DungeonPile(
-  { count, interactive = false, onClick, pending = false, deck }:
-    DungeonPileProps,
+  {
+    count,
+    interactive = false,
+    onClick,
+    pending = false,
+    deck,
+  }: DungeonPileProps,
 ) {
   const [loaded, setLoaded] = useState(false);
   const cursorClass = interactive ? "cursor-pointer hover:scale-105" : "";

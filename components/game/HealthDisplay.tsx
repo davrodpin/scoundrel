@@ -6,6 +6,8 @@ export type HealthDisplayActionButton = {
 
 export type HealthDisplayActions = {
   avoidRoom: { enabled: boolean; onClick: () => void };
+  drawCard: { enabled: boolean; onClick: () => void; pending: boolean };
+  fillRoom: { enabled: boolean; onClick: () => void; pending: boolean };
   fightWithWeapon: HealthDisplayActionButton;
   fightBarehanded: HealthDisplayActionButton;
   equipWeapon: HealthDisplayActionButton;
@@ -31,27 +33,19 @@ type HealthDisplayProps = {
   toolButtons?: ToolButtons;
 };
 
-type ActionButtonDef = {
-  label: string;
-  color: string;
-  button: HealthDisplayActionButton | {
-    enabled: boolean;
-    tooltip?: string;
-    onClick: () => void;
-  };
-};
-
 function ActionTooltipButton(
-  { label, color, enabled, tooltip, onClick }: {
+  { label, color, enabled, tooltip, onClick, pending }: {
     label: string;
     color: string;
     enabled: boolean;
     tooltip?: string;
     onClick: () => void;
+    pending?: boolean;
   },
 ) {
+  const pendingClass = pending ? " animate-dungeon-draw" : "";
   const btnClass = enabled
-    ? `px-4 py-1.5 text-sm rounded-sm border font-body transition-colors duration-200 ${color}`
+    ? `px-4 py-1.5 text-sm rounded-sm border font-body transition-colors duration-200 ${color}${pendingClass}`
     : "px-4 py-1.5 text-sm rounded-sm border font-body transition-colors duration-200 bg-dungeon-surface text-parchment-dark border-dungeon-border opacity-40 cursor-not-allowed";
 
   if (!tooltip || !enabled) {
@@ -104,76 +98,45 @@ export function HealthDisplay(
   if (pct <= 25) barColor = "bg-blood-bright";
   else if (pct <= 50) barColor = "bg-torch-amber";
 
-  const buttonDefs: ActionButtonDef[] = actions
-    ? [
-      {
-        label: "Avoid Room",
-        color:
-          "bg-torch-amber text-white border-torch-amber hover:bg-torch-glow",
-        button: { ...actions.avoidRoom, tooltip: "" },
-      },
-      {
-        label: "Fight w/ Weapon",
-        color:
-          "bg-weapon-steel text-white border-weapon-steel hover:border-torch-amber",
-        button: actions.fightWithWeapon,
-      },
-      {
-        label: "Fight Barehanded",
-        color:
-          "bg-blood-red text-white border-blood-red hover:border-blood-bright",
-        button: actions.fightBarehanded,
-      },
-      {
-        label: "Equip Weapon",
-        color:
-          "bg-parchment-dark text-white border-parchment-dark hover:bg-parchment",
-        button: actions.equipWeapon,
-      },
-      {
-        label: "Drink Potion",
-        color:
-          "bg-potion-green text-white border-potion-green hover:border-torch-amber",
-        button: actions.drinkPotion,
-      },
-    ]
-    : [];
-
   return (
     <div
-      class={`hidden md:block mb-10 ${
+      class={`hidden md:block mb-2 ${
         damageFlash ? "animate-damage-flash" : ""
       } ${healFlash ? "animate-heal-glow" : ""}`}
     >
       <div class="flex w-full border border-dungeon-border bg-dungeon-surface rounded-sm divide-x divide-dungeon-border">
-        {/* Name field */}
-        <div class="px-5 py-3 flex flex-col gap-1.5 flex-1 min-w-[140px]">
-          <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-            Hero
-          </span>
-          <span class="font-heading text-xl text-parchment border-b border-dungeon-border/60 pb-1 leading-tight truncate">
-            {playerName}
-          </span>
-        </div>
-
-        {/* Health field */}
-        <div class="px-5 py-3 flex flex-col gap-1.5">
-          <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
-            Vitality
-          </span>
-          <div class="flex items-baseline gap-2">
-            <span class="font-heading text-xl text-parchment leading-tight">
-              {health}
+        {/* Hero + Vitality combined field */}
+        <div class="px-5 py-4 flex flex-col flex-1 min-w-[140px]">
+          {/* Top half — Hero label at top, name anchored to divider */}
+          <div class="flex flex-col flex-1 pb-3">
+            <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
+              Hero
             </span>
-            <span class="text-parchment-dark/50 font-body text-sm">
-              / {maxHealth}
+            <span class="mt-auto font-heading text-3xl text-parchment leading-tight truncate">
+              {playerName}
             </span>
           </div>
-          <div class="w-36 h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
-            <div
-              class={`h-full ${barColor} transition-[width] duration-500`}
-              style={`width: ${pct}%`}
-            />
+          {/* Centered divider */}
+          <div class="border-t border-dungeon-border/60" />
+          {/* Bottom half — Vitality, anchored to divider */}
+          <div class="flex flex-col flex-1 gap-1.5 pt-3">
+            <div class="flex items-baseline gap-2">
+              <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
+                Vitality
+              </span>
+              <span class="font-heading text-xl text-parchment leading-tight">
+                {health}
+              </span>
+              <span class="text-parchment-dark/50 font-body text-sm">
+                / {maxHealth}
+              </span>
+            </div>
+            <div class="w-full h-1.5 bg-dungeon-bg rounded-sm border border-dungeon-border/60 overflow-hidden">
+              <div
+                class={`h-full ${barColor} transition-[width] duration-500`}
+                style={`width: ${pct}%`}
+              />
+            </div>
           </div>
         </div>
 
@@ -183,17 +146,70 @@ export function HealthDisplay(
             <span class="text-parchment-dark/70 text-xs font-body uppercase tracking-[0.2em]">
               Actions
             </span>
-            <div class="flex flex-wrap gap-1.5">
-              {buttonDefs.map(({ label, color, button }) => (
+            <div class="flex items-stretch gap-2">
+              {/* Column: Dungeon — Avoid Room / Draw Card / Fill Room */}
+              <div class="flex flex-col justify-end gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
                 <ActionTooltipButton
-                  key={label}
-                  label={label}
-                  color={color}
-                  enabled={button.enabled}
-                  tooltip={"tooltip" in button ? button.tooltip : ""}
-                  onClick={button.onClick}
+                  label="Avoid Room"
+                  color="bg-torch-amber text-white border-torch-amber hover:bg-torch-glow"
+                  enabled={actions.avoidRoom.enabled}
+                  onClick={actions.avoidRoom.onClick}
                 />
-              ))}
+                <ActionTooltipButton
+                  label="Draw Card"
+                  color="bg-dungeon-surface text-parchment border-dungeon-border hover:border-torch-amber hover:text-torch-glow"
+                  enabled={actions.drawCard.enabled}
+                  onClick={actions.drawCard.onClick}
+                  pending={actions.drawCard.pending}
+                />
+                <ActionTooltipButton
+                  label="Fill Room"
+                  color="border-torch-amber text-torch-amber hover:bg-torch-amber hover:text-ink bg-dungeon-surface"
+                  enabled={actions.fillRoom.enabled}
+                  onClick={actions.fillRoom.onClick}
+                  pending={actions.fillRoom.pending}
+                />
+              </div>
+
+              {/* Column: Weapon — Equip Weapon */}
+              <div class="flex flex-col justify-end gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
+                <ActionTooltipButton
+                  label="Equip Weapon"
+                  color="bg-parchment-dark text-white border-parchment-dark hover:bg-parchment"
+                  enabled={actions.equipWeapon.enabled}
+                  tooltip={actions.equipWeapon.tooltip}
+                  onClick={actions.equipWeapon.onClick}
+                />
+              </div>
+
+              {/* Column: Combat — Fight w/ Weapon / Fight Barehanded */}
+              <div class="flex flex-col justify-end gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
+                <ActionTooltipButton
+                  label="Fight w/ Weapon"
+                  color="bg-weapon-steel text-white border-weapon-steel hover:border-torch-amber"
+                  enabled={actions.fightWithWeapon.enabled}
+                  tooltip={actions.fightWithWeapon.tooltip}
+                  onClick={actions.fightWithWeapon.onClick}
+                />
+                <ActionTooltipButton
+                  label="Fight Barehanded"
+                  color="bg-blood-red text-white border-blood-red hover:border-blood-bright"
+                  enabled={actions.fightBarehanded.enabled}
+                  tooltip={actions.fightBarehanded.tooltip}
+                  onClick={actions.fightBarehanded.onClick}
+                />
+              </div>
+
+              {/* Column: Potion — Drink Potion */}
+              <div class="flex flex-col justify-end gap-1.5 bg-dungeon-bg border border-dungeon-border/30 rounded-sm px-2 py-2">
+                <ActionTooltipButton
+                  label="Drink Potion"
+                  color="bg-potion-green text-white border-potion-green hover:border-torch-amber"
+                  enabled={actions.drinkPotion.enabled}
+                  tooltip={actions.drinkPotion.tooltip}
+                  onClick={actions.drinkPotion.onClick}
+                />
+              </div>
             </div>
           </div>
         )}

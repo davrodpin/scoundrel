@@ -18,7 +18,7 @@ Deno.test("MobileDungeonButton - hidden on desktop (md:hidden)", () => {
   assertEquals(html.includes("md:hidden"), true);
 });
 
-Deno.test("MobileDungeonButton - shows Draw from Dungeon text", () => {
+Deno.test("MobileDungeonButton - shows Draw Card text", () => {
   const html = render(
     <MobileDungeonButton
       isEmpty={false}
@@ -27,7 +27,19 @@ Deno.test("MobileDungeonButton - shows Draw from Dungeon text", () => {
       pending={false}
     />,
   );
-  assertEquals(html.includes("Draw from Dungeon"), true);
+  assertEquals(html.includes("Draw Card"), true);
+});
+
+Deno.test("MobileDungeonButton - shows Fill Room button", () => {
+  const html = render(
+    <MobileDungeonButton
+      isEmpty={false}
+      interactive
+      onClick={noop}
+      pending={false}
+    />,
+  );
+  assertEquals(html.includes("Fill Room"), true);
 });
 
 Deno.test("MobileDungeonButton - shows Dungeon Empty text when isEmpty", () => {

@@ -190,7 +190,10 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
         <section id="turn-flow">
           <SectionHeading id="turn-flow">Turn Flow</SectionHeading>
           <Prose>
-            Flip four cards face-up to form a Room. You must face{" "}
+            Flip four cards face-up to form a Room. You can draw cards one at a
+            time, or use <strong class="text-torch-amber">Fill Room</strong>
+            {" "}
+            to draw all remaining cards at once. You must face{" "}
             <strong class="text-torch-amber">3 of the 4</strong>{" "}
             cards. The remaining card stays and becomes part of the next room.
             You may also avoid an entire room (scooping all 4 to the bottom),
@@ -429,6 +432,7 @@ export default function HowToPlay({ embedded = false }: HowToPlayProps) {
                   ["A", "Avoid Room"],
                   ["E", "Equip Weapon"],
                   ["D", "Draw a Card (drawing phase)"],
+                  ["F", "Fill Room (drawing phase)"],
                   ["P", "Drink Potion"],
                   ["?", "Open / close Rules"],
                   ["L", "Open / close the Death Ledger"],

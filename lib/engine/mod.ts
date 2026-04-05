@@ -23,9 +23,10 @@ export type {
   ChooseCardAction,
   DrawCardAction,
   EnterRoomAction,
+  FillRoomAction,
   GameAction,
 } from "./actions.ts";
-export { GameActionSchema } from "./actions.ts";
+export { FillRoomActionSchema, GameActionSchema } from "./actions.ts";
 
 // Events
 export type {

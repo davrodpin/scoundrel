@@ -67,6 +67,8 @@ export function createResilientRepository(
       wrap(() => inner.createGame(gameId, playerName, event)),
     appendEvent: (gameId, event) =>
       wrap(() => inner.appendEvent(gameId, event)),
+    appendEvents: (gameId, events) =>
+      wrap(() => inner.appendEvents(gameId, events)),
     getLatestEvent: (gameId) => wrap(() => inner.getLatestEvent(gameId)),
     getAllEvents: (gameId) => wrap(() => inner.getAllEvents(gameId)),
     updateStatus: (gameId, status, score) =>

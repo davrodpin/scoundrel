@@ -17,6 +17,10 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       return handleEnterRoom(state);
     case "choose_card":
       return handleChooseCard(state, action.cardIndex, action.fightWith);
+    case "fill_room":
+      throw new Error(
+        "fill_room is a composite action handled by the service layer, not the reducer",
+      );
   }
 }
 

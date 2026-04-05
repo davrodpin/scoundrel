@@ -24,7 +24,7 @@ Deno.test("getActionBarHint - drawing phase with empty room", () => {
   const phase: GamePhase = { kind: "drawing" };
   assertEquals(
     getActionBarHint(phase, false, false, 0),
-    "Draw a card from the Dungeon (D)",
+    "Draw a card (D) or Fill Room (F)",
   );
 });
 
@@ -32,7 +32,7 @@ Deno.test("getActionBarHint - drawing phase with cards already in room", () => {
   const phase: GamePhase = { kind: "drawing" };
   assertEquals(
     getActionBarHint(phase, false, false, 2),
-    "Draw another card (D)",
+    "Draw another card (D) or Fill Room (F)",
   );
 });
 
@@ -258,7 +258,7 @@ Deno.test("getActionBarHint - mobileMode, drawing phase empty room", () => {
   const phase: GamePhase = { kind: "drawing" };
   assertEquals(
     getActionBarHint(phase, false, false, 0, undefined, true),
-    "Draw a card from the Dungeon",
+    "Draw a card or Fill Room",
   );
 });
 
@@ -266,7 +266,7 @@ Deno.test("getActionBarHint - mobileMode, drawing phase with cards in room", () 
   const phase: GamePhase = { kind: "drawing" };
   assertEquals(
     getActionBarHint(phase, false, false, 2, undefined, true),
-    "Draw another card",
+    "Draw another card or Fill Room",
   );
 });
 

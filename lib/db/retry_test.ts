@@ -174,6 +174,7 @@ function makeStubRepo(overrides: Partial<GameRepository> = {}): GameRepository {
   const stub: GameRepository = {
     createGame: () => Promise.resolve(),
     appendEvent: () => Promise.resolve(),
+    appendEvents: () => Promise.resolve(),
     getLatestEvent: () => Promise.resolve(null),
     getAllEvents: () => Promise.resolve([]),
     updateStatus: () => Promise.resolve(),
@@ -195,6 +196,7 @@ Deno.test("createResilientRepository — has all GameRepository methods", () => 
   const methods: (keyof GameRepository)[] = [
     "createGame",
     "appendEvent",
+    "appendEvents",
     "getLatestEvent",
     "getAllEvents",
     "updateStatus",

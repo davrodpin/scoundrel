@@ -73,10 +73,12 @@ export function getActionBarHint(
   switch (phase.kind) {
     case "drawing":
       return roomSize > 0
-        ? mobileMode ? "Draw another card" : "Draw another card (D)"
+        ? mobileMode
+          ? "Draw another card or Fill Room"
+          : "Draw another card (D) or Fill Room (F)"
         : mobileMode
-        ? "Draw a card from the Dungeon"
-        : "Draw a card from the Dungeon (D)";
+        ? "Draw a card or Fill Room"
+        : "Draw a card (D) or Fill Room (F)";
     case "room_ready":
       return lastRoomAvoided || mobileMode
         ? mobileMode ? "Select a card to play" : "Select a card to play (←→ ↩︎)"
